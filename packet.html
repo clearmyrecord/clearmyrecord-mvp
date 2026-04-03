@@ -5,89 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Official Form Packet - ClearMyRecord</title>
   <link rel="stylesheet" href="css/styles.css" />
-
-  <style>
-    .finder-card {
-      margin-top: 22px;
-      background: #ffffff;
-      border: 1px solid #d8e4f2;
-      border-radius: 16px;
-      padding: 22px;
-      box-shadow: 0 8px 20px rgba(16, 35, 70, 0.05);
-    }
-
-    .finder-card h3 {
-      margin-top: 0;
-      margin-bottom: 8px;
-    }
-
-    .finder-subtext {
-      margin: 0 0 16px;
-      color: #607086;
-    }
-
-    .finder-table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-bottom: 18px;
-    }
-
-    .finder-table th,
-    .finder-table td {
-      text-align: left;
-      padding: 12px;
-      border-bottom: 1px solid #e6edf7;
-      vertical-align: top;
-    }
-
-    .finder-table th {
-      width: 34%;
-      background: #f8fbff;
-    }
-
-    .finder-checklist {
-      margin-top: 12px;
-      margin-bottom: 18px;
-    }
-
-    .finder-checklist h4 {
-      margin-bottom: 8px;
-    }
-
-    .finder-checklist ul {
-      padding-left: 20px;
-      line-height: 1.7;
-    }
-
-    .finder-fields label {
-      display: block;
-      margin-top: 14px;
-      margin-bottom: 8px;
-      font-weight: 600;
-    }
-
-    .finder-fields input {
-      width: 100%;
-      padding: 13px 14px;
-      border-radius: 10px;
-      border: 1px solid #ced9ea;
-      background: #fbfdff;
-      font-size: 15px;
-    }
-
-    .finder-actions {
-      margin-top: 18px;
-    }
-
-    .finder-success {
-      margin-top: 16px;
-      background: #eafaf0;
-      border: 1px solid #bfe7cc;
-      color: #146c3a;
-      border-radius: 12px;
-      padding: 14px;
-    }
-  </style>
 </head>
 <body>
   <header class="topbar no-print">
@@ -105,12 +22,16 @@
       <div class="packet-header no-print">
         <h1>Official-form mode</h1>
         <p class="supporting-text">
-          This version renders a more court-style packet based on the state and county entered.
+          This version renders a court-style packet and includes the court finder and case lookup helper.
         </p>
 
         <div class="packet-actions">
-          <button class="primary-btn packet-btn" onclick="window.print()">Print / Save as PDF</button>
-          <button class="secondary-btn packet-btn" onclick="downloadPacketJson()">Download Data</button>
+          <button class="primary-btn packet-btn" type="button" onclick="window.print()">
+            Print / Save as PDF
+          </button>
+          <button class="secondary-btn packet-btn" type="button" onclick="downloadPacketJson()">
+            Download Data
+          </button>
         </div>
       </div>
 
@@ -122,6 +43,6 @@
   <script src="js/rules.js"></script>
   <script src="js/courts.js"></script>
   <script src="js/forms.js"></script>
-  <script src="js/app.js"></script>
+  <script src="js/app.js?v=2"></script>
 </body>
 </html>
