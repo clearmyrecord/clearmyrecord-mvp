@@ -1,39 +1,82 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<title>Record Details</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Record Details - ClearMyRecord</title>
+  <link rel="stylesheet" href="css/styles.css" />
 </head>
-
 <body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="logo">ClearMyRecord</div>
+      <nav class="nav">
+        <a href="index.html">Home</a>
+        <a href="how-it-works.html">How It Works</a>
+      </nav>
+    </div>
+  </header>
 
-<h1>Record Details</h1>
+  <main class="page">
+    <div class="progress-wrap">
+      <div class="progress-pill">Step 2 of 3</div>
+    </div>
 
-<p>Type of offense:</p>
+    <section class="card">
+      <h1>Next: Record details</h1>
+      <p class="supporting-text">
+        Tell us a little more so we can estimate eligibility.
+      </p>
 
-<select>
-<option>Drug possession</option>
-<option>Theft</option>
-<option>Other</option>
-</select>
+      <form class="form-grid">
+        <label for="county">County</label>
+        <input id="county" type="text" placeholder="Example: Wood County" />
 
-<br><br>
+        <label for="felony">Offense level</label>
+        <select id="felony" required>
+          <option value="">Select offense level</option>
+          <option value="3">3rd Degree Felony</option>
+          <option value="4">4th Degree Felony</option>
+          <option value="5">5th Degree Felony</option>
+        </select>
 
-<label>Was the offense violent?</label>
-<select id="violent">
-  <option value="no">No</option>
-  <option value="yes">Yes</option>
-</select>
-<br><br>
+        <label for="violent">Was the offense violent?</label>
+        <select id="violent" required>
+          <option value="">Select one</option>
+          <option value="no">No</option>
+          <option value="yes">Yes</option>
+        </select>
 
-<p>Years since conviction:</p>
+        <label for="years">Years since final discharge / disposition</label>
+        <input id="years" type="number" min="0" placeholder="Example: 5" required />
 
-<input type="number">
+        <label for="fines">Have all fines been paid?</label>
+        <select id="fines" required>
+          <option value="">Select one</option>
+          <option value="yes">Yes</option>
+          <option value="no">No</option>
+        </select>
 
-<a href="results.html">
-<button>Check Eligibility</button>
-</a>
-<script src="js/rules.js"></script>
-<script src="js/app.js"></script>
-  
+        <label for="openCases">Any open criminal cases?</label>
+        <select id="openCases" required>
+          <option value="">Select one</option>
+          <option value="no">No</option>
+          <option value="yes">Yes</option>
+        </select>
+
+        <label for="convictions">How many convictions are involved?</label>
+        <input id="convictions" type="number" min="1" placeholder="Example: 1" required />
+
+        <div class="form-actions">
+          <button type="button" class="primary-btn" onclick="checkEligibility()">
+            Next: Eligibility Result
+          </button>
+        </div>
+      </form>
+    </section>
+  </main>
+
+  <script src="js/rules.js"></script>
+  <script src="js/app.js"></script>
 </body>
 </html>
