@@ -178,6 +178,7 @@ function goToPacket() {
 
 window.onload = function () {
   renderResultPage();
+  renderCourtFinder();
   renderReminderBox();
   renderChecklist("checklist-box");
   renderPacketPage();
@@ -219,6 +220,87 @@ function renderResultPage() {
       </div>
     </div>
   `;
+}
+
+function renderCourtFinder() {
+  const box = document.getElementById("court-finder-box");
+  if (!box) return;
+
+  const stateRaw = localStorage.getItem("state") || "";
+  const county = localStorage.getItem("county") || "";
+  const court = getCourtConfig(stateRaw, county);
+
+  box.innerHTML = `
+    <div class="finder-card">
+      <h3>Court Finder + Case Lookup Helper</h3>
+      <p class="finder-subtext">
+        Based on your state and county, this is the best starting point for locating your case.
+      </p>
+
+      <table class="finder-table">
+        <tr>
+          <th>Likely Court</th>
+          <td>${escapeHtml(court.courtName)}</td>
+        </tr>
+        <tr>
+          <th>Address / Location</th>
+          <td>${escapeHtml(court.courtAddress)}</td>
+        </tr>
+        <tr>
+          <th>Lookup Source</th>
+          <td>${escapeHtml(court.lookupLabel)}</td>
+        </tr>
+        <tr>
+          <th>Website</th>
+          <td>
+            ${
+              court.lookupUrl
+                ? `<a href="${escapeHtml(court.lookupUrl)}" target="_blank" rel="noopener noreferrer">${escapeHtml(court.lookupUrl)}</a>`
+                : "Not yet mapped"
+            }
+          </td>
+        </tr>
+      </table>
+
+      <div class="finder-checklist">
+        <h4>How to find your case number</h4>
+        <ul>
+          ${court.lookupInstructions.map(item => `<li>${escapeHtml(item)}</li>`).join("")}
+        </ul>
+      </div>
+
+      <div class="finder-fields">
+        <label for="caseNumber">Case Number</label>
+        <input id="caseNumber" type="text" placeholder="Enter case number if found" value="${escapeHtml(localStorage.getItem("caseNumber") || "")}" />
+
+        <label for="dispositionDate">Disposition / Final Discharge Date</label>
+        <input id="dispositionDate" type="text" placeholder="MM/DD/YYYY or YYYY-MM-DD" value="${escapeHtml(localStorage.getItem("dispositionDate") || "")}" />
+
+        <div class="finder-actions">
+          <button class="primary-btn" onclick="saveCaseLookupData()">Save Lookup Info</button>
+        </div>
+
+        <div id="finder-success"></div>
+      </div>
+    </div>
+  `;
+}
+
+function saveCaseLookupData() {
+  const caseNumber = document.getElementById("caseNumber")?.value.trim() || "";
+  const dispositionDate = document.getElementById("dispositionDate")?.value.trim() || "";
+  const success = document.getElementById("finder-success");
+
+  localStorage.setItem("caseNumber", caseNumber);
+  localStorage.setItem("dispositionDate", dispositionDate);
+
+  if (success) {
+    success.innerHTML = `
+      <div class="finder-success">
+        Case lookup info saved.
+      </div>
+    `;
+  }
 }
 
 function renderReminderBox() {
@@ -330,20 +412,12 @@ function initializeChecklist() {
   const county = localStorage.getItem("county") || "";
   const resultRaw = localStorage.getItem("eligibilityResult");
   const result = resultRaw ? JSON.parse(resultRaw) : null;
-
-  let court = {
-    courtName: "Correct court",
-    courtAddress: "",
-    filingFee: ""
-  };
-
-  if (typeof getCourtConfig === "function") {
-    court = getCourtConfig(stateRaw, county);
-  }
+  const court = getCourtConfig(stateRaw, county);
 
   const checklistItems = [
     `Confirm the exact court${court.courtName ? `: ${court.courtName}` : ""}`,
-    "Find and verify your case number",
+    "Use the lookup helper to find your case number",
+    "Save your case number and disposition date",
     "Confirm final discharge / disposition date",
     "Confirm all fines and fees are paid",
     "Review your generated packet",
@@ -399,17 +473,15 @@ function renderChecklist(containerId) {
       </div>
 
       <div class="checklist-items">
-        ${items
-          .map((item, index) => {
-            const checked = state[index] ? "checked" : "";
-            return `
-              <label class="checklist-item">
-                <input type="checkbox" ${checked} onchange="toggleChecklistItem(${index})" />
-                <span>${escapeHtml(item)}</span>
-              </label>
-            `;
-          })
-          .join("")}
+        ${items.map((item, index) => {
+          const checked = state[index] ? "checked" : "";
+          return `
+            <label class="checklist-item">
+              <input type="checkbox" ${checked} onchange="toggleChecklistItem(${index})" />
+              <span>${escapeHtml(item)}</span>
+            </label>
+          `;
+        }).join("")}
       </div>
 
       <div class="checklist-footer">
@@ -464,7 +536,9 @@ function renderPacketPage() {
     years: localStorage.getItem("years") || "",
     fines: localStorage.getItem("fines") || "",
     openCases: localStorage.getItem("openCases") || "",
-    convictions: localStorage.getItem("convictions") || ""
+    convictions: localStorage.getItem("convictions") || "",
+    caseNumber: localStorage.getItem("caseNumber") || "",
+    dispositionDate: localStorage.getItem("dispositionDate") || ""
   };
 
   const court = typeof getCourtConfig === "function"
@@ -502,7 +576,7 @@ function renderPacketPage() {
 
         <div class="official-right">
           <div class="official-case-box">
-            <div><strong>${escapeHtml(form.caseLabel)}</strong> ____________________</div>
+            <div><strong>${escapeHtml(form.caseLabel)}</strong> ${escapeHtml(data.caseNumber || "____________________")}</div>
             <div><strong>Court:</strong> ${escapeHtml(court.courtName)}</div>
             <div><strong>County:</strong> ${escapeHtml(data.county || "[County]")}</div>
           </div>
@@ -536,8 +610,8 @@ function renderPacketPage() {
           <tr><th>Fines Paid</th><td>${escapeHtml(formatYesNo(data.fines))}</td></tr>
           <tr><th>Open Cases</th><td>${escapeHtml(formatYesNo(data.openCases))}</td></tr>
           <tr><th>Convictions Involved</th><td>${escapeHtml(data.convictions)}</td></tr>
-          <tr><th>Case Number</th><td>____________________</td></tr>
-          <tr><th>Date of Final Discharge</th><td>____________________</td></tr>
+          <tr><th>Case Number</th><td>${escapeHtml(data.caseNumber || "____________________")}</td></tr>
+          <tr><th>Date of Final Discharge</th><td>${escapeHtml(data.dispositionDate || "____________________")}</td></tr>
         </table>
       </div>
 
@@ -554,6 +628,7 @@ function renderPacketPage() {
           <tr><th>Court</th><td>${escapeHtml(court.courtName)}</td></tr>
           <tr><th>Address / Location</th><td>${escapeHtml(court.courtAddress)}</td></tr>
           <tr><th>Fee Note</th><td>${escapeHtml(court.filingFee)}</td></tr>
+          <tr><th>Lookup Source</th><td>${escapeHtml(court.lookupLabel || "Not mapped")}</td></tr>
         </table>
 
         <ul class="packet-list">
