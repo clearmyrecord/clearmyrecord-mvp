@@ -1,3 +1,213 @@
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: Arial, Helvetica, sans-serif;
+  background: #f3f7fc;
+  color: #1b2430;
+  line-height: 1.5;
+}
+
+a {
+  color: #123d8f;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+/* Layout */
+
+.topbar {
+  background: #123d8f;
+  color: #ffffff;
+  padding: 16px 0;
+  box-shadow: 0 2px 10px rgba(18, 61, 143, 0.18);
+}
+
+.topbar-inner {
+  width: min(1100px, 92%);
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 18px;
+}
+
+.logo {
+  font-weight: 700;
+  font-size: 22px;
+  letter-spacing: 0.2px;
+}
+
+.nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+}
+
+.nav a {
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.page {
+  width: min(1100px, 92%);
+  margin: 28px auto 60px;
+}
+
+.card {
+  background: #ffffff;
+  border: 1px solid #d8e4f2;
+  border-radius: 18px;
+  padding: 26px;
+  box-shadow: 0 10px 30px rgba(16, 35, 70, 0.06);
+}
+
+.wide-card {
+  width: 100%;
+}
+
+.supporting-text {
+  margin-top: 8px;
+  margin-bottom: 0;
+  color: #607086;
+  font-size: 15px;
+}
+
+/* Generic form styling */
+
+label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: #203047;
+}
+
+input,
+select,
+textarea {
+  width: 100%;
+  padding: 13px 14px;
+  border-radius: 10px;
+  border: 1px solid #ced9ea;
+  background: #fbfdff;
+  font-size: 15px;
+  color: #1b2430;
+  outline: none;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: #123d8f;
+  box-shadow: 0 0 0 3px rgba(18, 61, 143, 0.12);
+}
+
+button {
+  font: inherit;
+  cursor: pointer;
+  border: none;
+}
+
+.primary-btn,
+.secondary-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 12px 18px;
+  border-radius: 10px;
+  font-weight: 700;
+  transition: transform 0.08s ease, box-shadow 0.08s ease, opacity 0.08s ease;
+}
+
+.primary-btn:hover,
+.secondary-btn:hover {
+  transform: translateY(-1px);
+}
+
+.primary-btn {
+  background: #123d8f;
+  color: #ffffff;
+  box-shadow: 0 6px 16px rgba(18, 61, 143, 0.18);
+}
+
+.secondary-btn {
+  background: #eef4fc;
+  color: #123d8f;
+  border: 1px solid #c9d8ef;
+}
+
+/* Results */
+
+.result-card {
+  border-radius: 16px;
+  padding: 22px;
+  border: 1px solid #d8e4f2;
+  background: #ffffff;
+  box-shadow: 0 8px 20px rgba(16, 35, 70, 0.05);
+}
+
+.result-card h3 {
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+.result-status {
+  display: inline-block;
+  padding: 8px 12px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.2px;
+  margin-bottom: 8px;
+}
+
+.result-card.eligible .result-status,
+.packet-status.eligible {
+  background: #eafaf0;
+  color: #146c3a;
+  border: 1px solid #bfe7cc;
+}
+
+.result-card.not-eligible .result-status,
+.packet-status.not-eligible {
+  background: #fff2f0;
+  color: #a33a2b;
+  border: 1px solid #efc4bc;
+}
+
+.result-card.review .result-status,
+.packet-status.review {
+  background: #fff8e8;
+  color: #8a6300;
+  border: 1px solid #ebd28f;
+}
+
+.next-step-box {
+  margin-top: 18px;
+  background: #f8fbff;
+  border: 1px solid #dbe8f7;
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.next-step-box p {
+  margin: 8px 0 0;
+}
+
+/* Court finder */
+
 .finder-card {
   margin-top: 22px;
   background: #ffffff;
@@ -34,6 +244,7 @@
 .finder-table th {
   width: 34%;
   background: #f8fbff;
+  font-weight: 700;
 }
 
 .finder-checklist {
@@ -42,10 +253,11 @@
 }
 
 .finder-checklist h4 {
-  margin-bottom: 8px;
+  margin: 0 0 8px;
 }
 
 .finder-checklist ul {
+  margin: 0;
   padding-left: 20px;
   line-height: 1.7;
 }
@@ -77,4 +289,389 @@
   color: #146c3a;
   border-radius: 12px;
   padding: 14px;
+}
+
+/* Reminder */
+
+.reminder-card {
+  margin-top: 22px;
+  background: #ffffff;
+  border: 1px solid #d8e4f2;
+  border-radius: 16px;
+  padding: 22px;
+  box-shadow: 0 8px 20px rgba(16, 35, 70, 0.05);
+}
+
+.reminder-card h3 {
+  margin-top: 0;
+  margin-bottom: 10px;
+}
+
+.reminder-card p {
+  margin-top: 0;
+  margin-bottom: 14px;
+}
+
+.reminder-card label {
+  margin-top: 14px;
+}
+
+.reminder-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.reminder-success {
+  margin-top: 16px;
+  background: #eafaf0;
+  border: 1px solid #bfe7cc;
+  color: #146c3a;
+  border-radius: 12px;
+  padding: 14px;
+}
+
+/* Checklist */
+
+.checklist-card {
+  margin-top: 22px;
+  background: #ffffff;
+  border: 1px solid #d8e4f2;
+  border-radius: 16px;
+  padding: 22px;
+  box-shadow: 0 8px 20px rgba(16, 35, 70, 0.05);
+}
+
+.checklist-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+
+.checklist-header h3 {
+  margin: 0;
+}
+
+.checklist-subtext {
+  margin: 6px 0 0;
+  color: #607086;
+}
+
+.checklist-progress-badge {
+  white-space: nowrap;
+  background: #eef4fc;
+  color: #123d8f;
+  border: 1px solid #c9d8ef;
+  border-radius: 999px;
+  padding: 8px 12px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.checklist-progress-bar {
+  width: 100%;
+  height: 12px;
+  background: #e9f0f9;
+  border-radius: 999px;
+  overflow: hidden;
+  margin-bottom: 18px;
+}
+
+.checklist-progress-fill {
+  height: 100%;
+  background: #123d8f;
+  border-radius: 999px;
+}
+
+.checklist-items {
+  display: grid;
+  gap: 12px;
+}
+
+.checklist-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 14px;
+  border: 1px solid #e2eaf5;
+  border-radius: 12px;
+  background: #fbfdff;
+}
+
+.checklist-item input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+  flex: 0 0 auto;
+}
+
+.checklist-item span {
+  display: block;
+  line-height: 1.5;
+}
+
+.checklist-footer {
+  margin-top: 18px;
+}
+
+/* Packet page */
+
+.packet-header h1 {
+  margin-top: 0;
+  margin-bottom: 8px;
+}
+
+.packet-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 18px;
+  margin-bottom: 8px;
+}
+
+.packet-btn {
+  min-width: 180px;
+}
+
+.packet-content {
+  margin-top: 10px;
+}
+
+.packet-section {
+  background: #ffffff;
+  border: 1px solid #d8e4f2;
+  border-radius: 16px;
+  padding: 22px;
+}
+
+.packet-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+.packet-table th,
+.packet-table td {
+  text-align: left;
+  padding: 12px;
+  border: 1px solid #dde7f4;
+  vertical-align: top;
+}
+
+.packet-table th {
+  width: 38%;
+  background: #f8fbff;
+  font-weight: 700;
+}
+
+.packet-list {
+  margin: 16px 0 0;
+  padding-left: 20px;
+  line-height: 1.7;
+}
+
+.packet-status {
+  display: inline-block;
+  margin-bottom: 12px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+/* Official form */
+
+.official-form {
+  margin-top: 22px;
+  background: #ffffff;
+  border: 1px solid #d8e4f2;
+  border-radius: 16px;
+  padding: 34px;
+  box-shadow: 0 8px 20px rgba(16, 35, 70, 0.05);
+}
+
+.official-caption {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.caption-line {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+}
+
+.official-case-grid {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 24px;
+  align-items: start;
+  margin-bottom: 26px;
+}
+
+.official-party-block,
+.official-case-box {
+  border: 1px solid #cfdced;
+  padding: 16px;
+  min-height: 110px;
+  background: #ffffff;
+}
+
+.official-title {
+  text-align: center;
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 22px;
+  text-transform: uppercase;
+}
+
+.official-paragraph {
+  margin-bottom: 24px;
+  line-height: 1.7;
+}
+
+.official-section {
+  margin-top: 24px;
+}
+
+.official-section h3 {
+  margin: 0 0 12px;
+  font-size: 18px;
+  color: #102346;
+}
+
+.official-signature-block {
+  margin-top: 42px;
+  max-width: 420px;
+}
+
+.signature-line {
+  margin-bottom: 8px;
+  font-size: 18px;
+  letter-spacing: 1px;
+}
+
+.signature-date {
+  margin-top: 10px;
+}
+
+/* Generic helpers */
+
+.no-print {
+  display: block;
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* Responsive */
+
+@media (max-width: 900px) {
+  .official-case-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .packet-table th,
+  .finder-table th {
+    width: 42%;
+  }
+}
+
+@media (max-width: 700px) {
+  .topbar-inner,
+  .checklist-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .page {
+    width: min(94%, 1100px);
+    margin-top: 20px;
+  }
+
+  .card,
+  .finder-card,
+  .reminder-card,
+  .checklist-card,
+  .official-form,
+  .packet-section {
+    padding: 18px;
+  }
+
+  .packet-actions,
+  .reminder-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .primary-btn,
+  .secondary-btn,
+  .packet-btn {
+    width: 100%;
+  }
+
+  .finder-table,
+  .packet-table {
+    display: block;
+    overflow-x: auto;
+  }
+}
+
+/* Print */
+
+@media print {
+  body {
+    background: #ffffff;
+    color: #000000;
+    font-size: 12pt;
+  }
+
+  .no-print,
+  .topbar,
+  .packet-header,
+  #packet-checklist-box,
+  .finder-card {
+    display: none !important;
+  }
+
+  .page {
+    width: 100%;
+    margin: 0;
+  }
+
+  .card,
+  .wide-card,
+  .official-form {
+    border: none;
+    box-shadow: none;
+    padding: 0;
+    margin: 0;
+    border-radius: 0;
+  }
+
+  .official-form {
+    margin-top: 0;
+  }
+
+  .official-title {
+    font-size: 18pt;
+  }
+
+  .official-section {
+    page-break-inside: avoid;
+  }
+
+  .official-signature-block {
+    margin-top: 48px;
+  }
+
+  a {
+    color: #000000;
+    text-decoration: none;
+  }
 }
