@@ -5,6 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Sealing Packet - ClearMyRecord</title>
 
+  <script src="js/court-form-configs.js"></script>
+  <script src="js/pdf-generator.js"></script>
+
   <style>
     * {
       box-sizing: border-box;
@@ -275,6 +278,22 @@
     </section>
 
     <section class="card">
+      <h2 class="section-title">Court-Ready PDF Forms</h2>
+      <div class="highlight-box">
+        ClearMyRecord can now generate a completed court-form PDF using your stored record data. This works best when you upload the exact official court template and map its fields or coordinates in the court form config file.
+      </div>
+
+      <div class="actions">
+        <button class="btn btn-primary" onclick="generateCourtReadyPdf('ohio_generic_sealing_application')">
+          Generate Sealing PDF
+        </button>
+        <button class="btn btn-secondary" onclick="generateCourtReadyPdf('ohio_generic_expungement_application')">
+          Generate Expungement PDF
+        </button>
+      </div>
+    </section>
+
+    <section class="card">
       <h2 class="section-title">Filing Instructions</h2>
       <div id="instructions"></div>
     </section>
@@ -332,7 +351,6 @@
 
       document.getElementById("statusText").innerHTML = status;
 
-      // Instructions
       let instructions = "";
       if (result.sealingAvailable) {
         instructions += `<p><strong>Sealing:</strong> File an Application for Sealing of Record in the court where the case was handled after ${result.sealingEligibilityDate}.</p>`;
@@ -346,23 +364,22 @@
 
       document.getElementById("instructions").innerHTML = instructions;
 
-      // Documents
       document.getElementById("documents").innerHTML = `
         <li>Case numbers for each offense</li>
         <li>Discharge documentation (proof sentence completed)</li>
-        <li>Payment receipts (fines/fees)</li>
-        <li>Identification</li>
+        <li>Payment receipts for sentence fines and fees</li>
+        <li>Photo identification</li>
+        <li>The exact court name and county for each filing</li>
       `;
 
-      // Offense table
       if (result.offenseResults?.length) {
         const rows = result.offenseResults.map((o, i) => `
           <tr>
             <td>${i + 1}</td>
-            <td>${o.chargeLabel}</td>
-            <td>${o.level}</td>
-            <td>${o.sealingDate}</td>
-            <td>${o.expungementDate}</td>
+            <td>${o.chargeLabel || ""}</td>
+            <td>${o.level || ""}</td>
+            <td>${o.sealingDate || ""}</td>
+            <td>${o.expungementDate || ""}</td>
           </tr>
         `).join("");
 
@@ -380,13 +397,12 @@
         `;
       }
 
-      // Next steps
       document.getElementById("nextSteps").innerHTML = `
         <li>Confirm all case details are accurate</li>
         <li>Verify discharge completion dates</li>
-        <li>Double-check exclusions (DV, violent, sex offenses)</li>
-        <li>File in correct court</li>
-        <li>Prepare for possible hearing</li>
+        <li>Confirm the correct court and county</li>
+        <li>Generate the matching court-ready PDF form</li>
+        <li>Review the completed form before filing</li>
       `;
     }
 
