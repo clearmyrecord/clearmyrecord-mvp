@@ -10,8 +10,8 @@ function saveApplicantProfile(profile) {
   localStorage.setItem("cmrApplicantProfile", JSON.stringify(profile));
 }
 
-function setStatus(message, type = "") {
-  const box = document.getElementById("statusBox");
+function setStatus(message, type) {
+  var box = document.getElementById("statusBox");
   if (!box) return;
 
   box.className = "status";
@@ -21,38 +21,56 @@ function setStatus(message, type = "") {
   box.textContent = message;
 }
 
+function getAvailableCharges() {
+  if (window.chargeLibrary && Array.isArray(window.chargeLibrary) && window.chargeLibrary.length) {
+    return window.chargeLibrary;
+  }
+
+  if (window.cmrFallbackCharges && Array.isArray(window.cmrFallbackCharges) && window.cmrFallbackCharges.length) {
+    return window.cmrFallbackCharges;
+  }
+
+  return [];
+}
+
 function populateOffenseTypeOptions() {
-  const select = document.getElementById("offenseType");
+  var select = document.getElementById("offenseType");
   if (!select) return;
 
-  if (!window.chargeLibrary || !Array.isArray(window.chargeLibrary)) {
-    select.innerHTML = '<option value="">Charge library failed to load</option>';
-    setStatus("The charge library did not load. Make sure js/charges.js exists and is linked correctly.", "error");
+  var charges = getAvailableCharges();
+
+  if (!charges.length) {
+    select.innerHTML = '<option value="">No charges available</option>';
+    setStatus("No charges are available. The charge file or fallback list did not load.", "error");
     return;
   }
 
-  const sortedCharges = [...window.chargeLibrary].sort((a, b) =>
-    a.label.localeCompare(b.label)
-  );
+  var sortedCharges = charges.slice().sort(function (a, b) {
+    return a.label.localeCompare(b.label);
+  });
 
   select.innerHTML = '<option value="">Select offense type</option>';
 
-  sortedCharges.forEach((charge) => {
-    const option = document.createElement("option");
+  sortedCharges.forEach(function (charge) {
+    var option = document.createElement("option");
     option.value = charge.id;
     option.textContent = charge.label;
     select.appendChild(option);
   });
+
+  if (!(window.chargeLibrary && Array.isArray(window.chargeLibrary) && window.chargeLibrary.length)) {
+    setStatus("Using built-in fallback charge list for Step 1.", "success");
+  }
 }
 
 function prefillApplicantProfile() {
-  const profile = getApplicantProfile();
+  var profile = getApplicantProfile();
 
-  const fullName = document.getElementById("fullName");
-  const email = document.getElementById("email");
-  const mailingAddress = document.getElementById("mailingAddress");
-  const state = document.getElementById("state");
-  const offenseType = document.getElementById("offenseType");
+  var fullName = document.getElementById("fullName");
+  var email = document.getElementById("email");
+  var mailingAddress = document.getElementById("mailingAddress");
+  var state = document.getElementById("state");
+  var offenseType = document.getElementById("offenseType");
 
   if (fullName) fullName.value = profile.fullName || "";
   if (email) email.value = profile.email || "";
@@ -88,15 +106,15 @@ function validateIntake(profile) {
 }
 
 function handleNextStep() {
-  const profile = {
-    fullName: document.getElementById("fullName")?.value.trim() || "",
-    email: document.getElementById("email")?.value.trim() || "",
-    mailingAddress: document.getElementById("mailingAddress")?.value.trim() || "",
-    state: document.getElementById("state")?.value || "ohio",
-    intakeOffenseType: document.getElementById("offenseType")?.value || ""
+  var profile = {
+    fullName: document.getElementById("fullName").value.trim(),
+    email: document.getElementById("email").value.trim(),
+    mailingAddress: document.getElementById("mailingAddress").value.trim(),
+    state: document.getElementById("state").value,
+    intakeOffenseType: document.getElementById("offenseType").value
   };
 
-  const validationError = validateIntake(profile);
+  var validationError = validateIntake(profile);
   if (validationError) {
     setStatus(validationError, "error");
     return;
@@ -104,15 +122,14 @@ function handleNextStep() {
 
   saveApplicantProfile(profile);
   setStatus("Saved. Moving to record details...", "success");
-
   window.location.href = "record-details.html";
 }
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", function () {
   populateOffenseTypeOptions();
   prefillApplicantProfile();
 
-  const nextBtn = document.getElementById("nextBtn");
+  var nextBtn = document.getElementById("nextBtn");
   if (nextBtn) {
     nextBtn.addEventListener("click", handleNextStep);
   }
