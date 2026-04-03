@@ -1,4 +1,4 @@
-const chargeLibrary = [
+window.chargeLibrary = [
   {
     id: "petty_theft",
     label: "Petty Theft",
@@ -205,18 +205,18 @@ const chargeLibrary = [
   }
 ];
 
-function getChargeById(id) {
-  return chargeLibrary.find((charge) => charge.id === id) || null;
-}
+window.getChargeById = function (id) {
+  return window.chargeLibrary.find((charge) => charge.id === id) || null;
+};
 
-function chargeHasTag(chargeId, tag) {
-  const charge = getChargeById(chargeId);
-  return Boolean(charge?.tags?.includes(tag));
-}
+window.chargeHasTag = function (chargeId, tag) {
+  const charge = window.getChargeById(chargeId);
+  return Boolean(charge && charge.tags && charge.tags.includes(tag));
+};
 
-function isOhioChargeExcluded(chargeId, remedyType, offenseLevel) {
-  const charge = getChargeById(chargeId);
-  if (!charge?.ohio) {
+window.isOhioChargeExcluded = function (chargeId, remedyType, offenseLevel) {
+  const charge = window.getChargeById(chargeId);
+  if (!charge || !charge.ohio) {
     return { excluded: false, reason: "" };
   }
 
@@ -245,4 +245,4 @@ function isOhioChargeExcluded(chargeId, remedyType, offenseLevel) {
   }
 
   return { excluded: false, reason: "" };
-}
+};
