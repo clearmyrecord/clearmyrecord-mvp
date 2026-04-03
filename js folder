@@ -1,0 +1,73 @@
+function goToDetails() {
+
+const state = document.getElementById("state").value
+const offense = document.getElementById("offense").value
+
+localStorage.setItem("state", state)
+localStorage.setItem("offense", offense)
+
+window.location.href = "record-details.html"
+
+}
+
+function checkEligibility(){
+
+const felony = document.getElementById("felony").value
+const years = document.getElementById("years").value
+const fines = document.getElementById("fines").value
+
+localStorage.setItem("felony", felony)
+localStorage.setItem("years", years)
+localStorage.setItem("fines", fines)
+
+window.location.href = "results.html"
+
+}
+
+window.onload = function(){
+
+const resultBox = document.getElementById("result-box")
+
+if(!resultBox) return
+
+const felony = localStorage.getItem("felony")
+const years = localStorage.getItem("years")
+const fines = localStorage.getItem("fines")
+
+let result = ""
+
+if(felony == 3 && years >= 3 && fines == "yes"){
+
+result = `
+<h2 class="eligible">You May Be Eligible</h2>
+
+<p>Based on your answers you may qualify to seal your record.</p>
+
+<button class="primary-btn">Start Record Sealing</button>
+`
+
+}
+
+else if(fines == "no"){
+
+result = `
+<h2 class="warning">More Information Needed</h2>
+
+<p>Outstanding fines must be paid before record sealing.</p>
+`
+
+}
+
+else{
+
+result = `
+<h2 class="not-eligible">Not Eligible Yet</h2>
+
+<p>You may need to wait longer before applying.</p>
+`
+
+}
+
+resultBox.innerHTML = result
+
+}
