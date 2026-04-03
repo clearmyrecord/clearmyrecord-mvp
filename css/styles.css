@@ -339,3 +339,47 @@ body {
     width: 100%;
   }
 }
+.reminder-card {
+  margin-top: 20px;
+  background: #eef6ff;
+  border: 1px solid #cfe1fb;
+  border-radius: 16px;
+  padding: 22px;
+}
+
+.reminder-card h3 {
+  margin-top: 0;
+  margin-bottom: 10px;
+}
+
+.reminder-card label {
+  display: block;
+  margin-top: 14px;
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+.reminder-card input {
+  width: 100%;
+  padding: 13px 14px;
+  border-radius: 10px;
+  border: 1px solid #ced9ea;
+  background: #fbfdff;
+  font-size: 15px;
+}
+
+.reminder-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.reminder-success {
+  margin-top: 16px;
+  background: #eafaf0;
+  border: 1px solid #bfe7cc;
+  color: #146c3a;
+  border-radius: 12px;
+  padding: 14px;
+}
