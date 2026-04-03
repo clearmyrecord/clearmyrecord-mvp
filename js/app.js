@@ -254,10 +254,20 @@ function renderConfidence(confidence) {
   `;
 }
 
+function saveResultToStorage(result) {
+  try {
+    localStorage.setItem("cmrResults", JSON.stringify(result));
+  } catch (error) {
+    console.error("Could not save result:", error);
+  }
+}
+
 function checkAllEligibility() {
   const resultBox = document.getElementById("result");
   const offenses = collectOffenses();
   const result = evaluateAllOffenses(offenses);
+
+  saveResultToStorage(result);
 
   if (!result.eligible) {
     resultBox.className = "result-bad";
@@ -269,6 +279,9 @@ function checkAllEligibility() {
       ${result.expungementAvailable ? `<div><strong>Expungement date:</strong> ${result.expungementEligibilityDate}</div>` : ""}
       ${renderSummary(result.summary)}
       ${renderOffenseSummary(result.offenseResults || [])}
+      <div class="actions">
+        <a href="results.html" style="display:inline-block; margin-top:12px; font-weight:700; color:#123d8f;">Open full results page</a>
+      </div>
     `;
     return;
   }
@@ -281,6 +294,9 @@ function checkAllEligibility() {
     ${renderConfidence(result.confidence)}
     ${renderSummary(result.summary)}
     ${renderOffenseSummary(result.offenseResults || [])}
+    <div class="actions">
+      <a href="results.html" style="display:inline-block; margin-top:12px; font-weight:700; color:#123d8f;">Open full results page</a>
+    </div>
   `;
 }
 
