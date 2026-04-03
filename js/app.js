@@ -194,16 +194,34 @@ function renderOffenseSummary(offenseResults) {
 function renderConfidence(confidence) {
   if (!confidence) return "";
 
+  let badgeClass = "red";
+  let badgeText = "Low likelihood";
+
+  if (confidence.score >= 75) {
+    badgeClass = "green";
+    badgeText = "High likelihood";
+  } else if (confidence.score >= 50) {
+    badgeClass = "yellow";
+    badgeText = "Moderate likelihood";
+  }
+
   const reasons = confidence.reasons?.length
     ? `<ul class="offense-summary">${confidence.reasons.map(reason => `<li>${reason}</li>`).join("")}</ul>`
     : "";
 
   return `
-    <div style="margin-top:14px; padding:14px; background:#ffffff; border:1px solid #d9e2ec; border-radius:10px;">
-      <strong>Likelihood based on current information: ${confidence.score}%</strong><br>
-      ${confidence.label}
+    <div class="confidence-box">
+      <div class="confidence-badge ${badgeClass}">${badgeText}</div>
+      <div class="confidence-score">Likelihood based on current information: ${confidence.score}%</div>
+
+      <div class="confidence-bar">
+        <div class="confidence-bar-fill ${badgeClass}" style="width: ${confidence.score}%;"></div>
+      </div>
+
+      <div>${confidence.label}</div>
       ${reasons}
-      <div style="margin-top:8px; font-size:13px; color:#5b6b7f;">
+
+      <div class="confidence-note">
         This percentage is a confidence estimate based on the information entered and current rule matching. It is not legal advice or a guaranteed outcome.
       </div>
     </div>
