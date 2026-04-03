@@ -52,6 +52,7 @@ function checkEligibility() {
   });
 
   localStorage.setItem("eligibilityResult", JSON.stringify(result));
+  initializeChecklist();
   window.location.href = "results.html";
 }
 
@@ -178,7 +179,9 @@ function goToPacket() {
 window.onload = function () {
   renderResultPage();
   renderReminderBox();
+  renderChecklist("checklist-box");
   renderPacketPage();
+  renderChecklist("packet-checklist-box");
 };
 
 function renderResultPage() {
@@ -227,7 +230,6 @@ function renderReminderBox() {
 
   const result = JSON.parse(raw);
   const email = localStorage.getItem("email") || "";
-  const fullName = localStorage.getItem("fullName") || "";
 
   if (result.status !== "not-eligible" || !result.estimatedEligibleDate) {
     reminderBox.innerHTML = "";
@@ -253,8 +255,6 @@ function renderReminderBox() {
       <div id="reminder-success"></div>
     </div>
   `;
-
-  localStorage.setItem("reminderName", fullName);
 }
 
 function saveReminder() {
@@ -323,6 +323,116 @@ function downloadReminder() {
   a.download = "clearmyrecord-reminder.json";
   a.click();
   URL.revokeObjectURL(url);
+}
+
+function initializeChecklist() {
+  const stateRaw = localStorage.getItem("state") || "";
+  const county = localStorage.getItem("county") || "";
+  const resultRaw = localStorage.getItem("eligibilityResult");
+  const result = resultRaw ? JSON.parse(resultRaw) : null;
+
+  let court = {
+    courtName: "Correct court",
+    courtAddress: "",
+    filingFee: ""
+  };
+
+  if (typeof getCourtConfig === "function") {
+    court = getCourtConfig(stateRaw, county);
+  }
+
+  const checklistItems = [
+    `Confirm the exact court${court.courtName ? `: ${court.courtName}` : ""}`,
+    "Find and verify your case number",
+    "Confirm final discharge / disposition date",
+    "Confirm all fines and fees are paid",
+    "Review your generated packet",
+    "Print or save your packet as PDF",
+    "Sign the application and attachment letter",
+    "File the packet with the clerk",
+    "Keep a stamped or saved copy for your records"
+  ];
+
+  if (result && result.status === "not-eligible") {
+    checklistItems.unshift("Save a reminder for your estimated eligibility date");
+  }
+
+  localStorage.setItem("filingChecklistItems", JSON.stringify(checklistItems));
+
+  const existing = localStorage.getItem("filingChecklistState");
+  if (!existing) {
+    const initialState = checklistItems.map(() => false);
+    localStorage.setItem("filingChecklistState", JSON.stringify(initialState));
+  }
+}
+
+function renderChecklist(containerId) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+
+  const itemsRaw = localStorage.getItem("filingChecklistItems");
+  if (!itemsRaw) return;
+
+  const items = JSON.parse(itemsRaw);
+  let state = JSON.parse(localStorage.getItem("filingChecklistState") || "[]");
+
+  if (!Array.isArray(state) || state.length !== items.length) {
+    state = items.map(() => false);
+    localStorage.setItem("filingChecklistState", JSON.stringify(state));
+  }
+
+  const completed = state.filter(Boolean).length;
+  const percent = items.length ? Math.round((completed / items.length) * 100) : 0;
+
+  container.innerHTML = `
+    <div class="checklist-card">
+      <div class="checklist-header">
+        <div>
+          <h3>Your Filing Checklist</h3>
+          <p class="checklist-subtext">Track your progress from eligibility to filing.</p>
+        </div>
+        <div class="checklist-progress-badge">${percent}% Complete</div>
+      </div>
+
+      <div class="checklist-progress-bar">
+        <div class="checklist-progress-fill" style="width:${percent}%"></div>
+      </div>
+
+      <div class="checklist-items">
+        ${items
+          .map((item, index) => {
+            const checked = state[index] ? "checked" : "";
+            return `
+              <label class="checklist-item">
+                <input type="checkbox" ${checked} onchange="toggleChecklistItem(${index})" />
+                <span>${escapeHtml(item)}</span>
+              </label>
+            `;
+          })
+          .join("")}
+      </div>
+
+      <div class="checklist-footer">
+        <button class="secondary-btn" onclick="resetChecklist()">Reset Checklist</button>
+      </div>
+    </div>
+  `;
+}
+
+function toggleChecklistItem(index) {
+  let state = JSON.parse(localStorage.getItem("filingChecklistState") || "[]");
+  state[index] = !state[index];
+  localStorage.setItem("filingChecklistState", JSON.stringify(state));
+  renderChecklist("checklist-box");
+  renderChecklist("packet-checklist-box");
+}
+
+function resetChecklist() {
+  const items = JSON.parse(localStorage.getItem("filingChecklistItems") || "[]");
+  const resetState = items.map(() => false);
+  localStorage.setItem("filingChecklistState", JSON.stringify(resetState));
+  renderChecklist("checklist-box");
+  renderChecklist("packet-checklist-box");
 }
 
 function renderPacketPage() {
@@ -447,7 +557,7 @@ function renderPacketPage() {
         </table>
 
         <ul class="packet-list">
-          ${form.checklist.map(item => `<li>${escapeHtml(item)}</li>`).join("")}
+          ${(form.checklist || []).map(item => `<li>${escapeHtml(item)}</li>`).join("")}
         </ul>
       </div>
 
