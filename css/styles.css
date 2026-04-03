@@ -907,3 +907,138 @@ button {
     align-items: stretch;
   }
 }
+.form-field {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-field label {
+  font-size: 14px;
+  color: #203047;
+}
+
+.form-field input,
+.form-field select {
+  margin-top: 4px;
+}
+.form-card {
+  max-width: 760px;
+  margin: 0 auto;
+}
+/* How it works page */
+
+.info-hero-card {
+  padding: 34px 30px;
+}
+
+.info-hero-badge {
+  display: inline-block;
+  margin-bottom: 14px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: #eaf1fb;
+  color: #123d8f;
+  border: 1px solid #c9d8ef;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.info-hero-text {
+  max-width: 760px;
+}
+
+.info-section-card {
+  margin-top: 22px;
+}
+
+.steps-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.step-card {
+  background: #fbfdff;
+  border: 1px solid #dbe8f7;
+  border-radius: 16px;
+  padding: 22px;
+}
+
+.step-number {
+  width: 38px;
+  height: 38px;
+  border-radius: 999px;
+  background: #123d8f;
+  color: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  margin-bottom: 14px;
+}
+
+.step-card h3,
+.info-list-card h3 {
+  margin-top: 0;
+  margin-bottom: 8px;
+}
+
+.step-card p,
+.info-list-card p {
+  margin: 0;
+  color: #4f6076;
+}
+
+.info-list-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.info-list-card {
+  background: #fbfdff;
+  border: 1px solid #dbe8f7;
+  border-radius: 16px;
+  padding: 22px;
+}
+
+.notice-card {
+  background: #fff8e8;
+  border: 1px solid #ebd28f;
+  color: #6f5310;
+  border-radius: 14px;
+  padding: 18px;
+}
+
+.notice-card p {
+  margin: 0;
+}
+
+.cta-card {
+  text-align: left;
+}
+
+.secondary-btn-link-dark {
+  background: #eef4fc;
+  color: #123d8f;
+  border: 1px solid #c9d8ef;
+}
+
+@media (max-width: 900px) {
+  .info-list-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 700px) {
+  .steps-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .info-hero-card,
+  .info-section-card,
+  .step-card,
+  .info-list-card {
+    padding: 18px;
+  }
+}
