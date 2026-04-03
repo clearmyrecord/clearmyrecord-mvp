@@ -1,112 +1,212 @@
 <!DOCTYPE html>
 <html lang="en">
-<button onclick="fillFlatCourtForm()">
-  Auto-Fill Court Form
-</button>
 <head>
-<script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Official Form Packet - ClearMyRecord</title>
+  <title>Sealing Packet - ClearMyRecord</title>
 
   <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    :root {
+      --blue: #123d8f;
+      --blue-dark: #0d2f71;
+      --bg: #f3f7fc;
+      --card: #ffffff;
+      --line: #d9e2ec;
+      --text: #1b2430;
+      --muted: #5b6b7f;
+      --soft-blue: #eef4ff;
+      --green: #1f7a3e;
+      --yellow: #8a6d1f;
+      --red: #a12626;
+    }
+
     body {
       margin: 0;
       font-family: Arial, Helvetica, sans-serif;
-      background: #f3f7fc;
-      color: #1b2430;
+      background: var(--bg);
+      color: var(--text);
     }
 
-    /* HEADER (hidden in export) */
     .topbar {
-      background: #123d8f;
+      background: var(--blue);
       color: white;
-      padding: 16px;
+      padding: 18px 0;
+    }
+
+    .topbar-inner {
+      width: min(1100px, 92%);
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
     }
 
     .logo {
       font-size: 22px;
-      font-weight: 700;
+      font-weight: 800;
+    }
+
+    .nav {
+      display: flex;
+      gap: 18px;
+      flex-wrap: wrap;
     }
 
     .nav a {
       color: white;
       text-decoration: none;
-      margin-right: 16px;
+      font-weight: 700;
     }
 
-    /* LAYOUT */
-    .container {
-      width: min(900px, 92%);
-      margin: 30px auto;
+    .page {
+      width: min(1100px, 92%);
+      margin: 28px auto 60px;
     }
 
     .card {
-      background: white;
-      border-radius: 14px;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 16px;
       padding: 24px;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.06);
-      margin-bottom: 20px;
+      margin-bottom: 18px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05);
     }
 
-    h1 {
-      margin-top: 0;
+    .title {
+      margin: 0 0 10px;
+      font-size: 30px;
+      color: var(--blue-dark);
     }
 
-    .badge {
-      display: inline-block;
-      background: #e6f4ea;
-      color: #1e7e34;
-      padding: 8px 14px;
-      border-radius: 999px;
-      font-weight: 600;
-      margin-bottom: 16px;
+    .subtitle {
+      margin: 0 0 14px;
+      color: var(--muted);
+      line-height: 1.6;
     }
 
-    .info-box {
-      background: #f1f5f9;
-      padding: 16px;
+    .section-title {
+      font-size: 20px;
+      margin-bottom: 10px;
+      color: var(--blue-dark);
+    }
+
+    .highlight-box {
+      background: var(--soft-blue);
+      border: 1px solid var(--line);
+      border-left: 5px solid var(--blue);
+      padding: 14px;
       border-radius: 10px;
-      margin-top: 18px;
+      line-height: 1.6;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .stat {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 14px;
+      background: #fafcff;
+    }
+
+    .stat-label {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    .stat-value {
+      font-size: 22px;
+      font-weight: 800;
+    }
+
+    ul {
+      padding-left: 18px;
+      line-height: 1.6;
+    }
+
+    li {
+      margin-bottom: 6px;
     }
 
     table {
       width: 100%;
       border-collapse: collapse;
-      margin-top: 16px;
+      margin-top: 12px;
     }
 
     th, td {
-      border: 1px solid #ddd;
+      border: 1px solid var(--line);
       padding: 10px;
       text-align: left;
+      font-size: 14px;
     }
 
     th {
-      background: #f8fafc;
-    }
-
-    ul {
-      margin-top: 10px;
+      background: #f4f8ff;
+      font-weight: 800;
     }
 
     .actions {
-      margin-top: 20px;
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 14px;
     }
 
-    button {
-      padding: 12px 18px;
+    .btn {
       border: none;
-      border-radius: 8px;
-      background: #123d8f;
-      color: white;
-      font-weight: 600;
+      border-radius: 10px;
+      padding: 12px 16px;
+      font-size: 15px;
+      font-weight: 800;
       cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
     }
 
-    /* EXPORT SYSTEM */
-    .no-export {
-      display: block;
+    .btn-primary {
+      background: var(--blue);
+      color: white;
+    }
+
+    .btn-secondary {
+      background: #e8eef7;
+      color: var(--text);
+    }
+
+    .status {
+      font-weight: 800;
+    }
+
+    .status.green { color: var(--green); }
+    .status.yellow { color: var(--yellow); }
+    .status.red { color: var(--red); }
+
+    @media (max-width: 760px) {
+      .grid-2 {
+        grid-template-columns: 1fr;
+      }
+
+      .actions {
+        flex-direction: column;
+      }
+
+      .btn {
+        width: 100%;
+        text-align: center;
+      }
     }
 
     @media print {
@@ -116,131 +216,182 @@
 
       body {
         background: white !important;
-        color: black !important;
       }
 
-      .no-export {
+      .topbar,
+      .actions {
         display: none !important;
+      }
+
+      .page {
+        width: 100% !important;
+        margin: 0 !important;
       }
 
       .card {
         box-shadow: none !important;
         border-radius: 0 !important;
-        padding: 0 !important;
-      }
-
-      .container {
-        width: 100% !important;
-        margin: 0 !important;
-      }
-
-      h1, h2 {
-        page-break-after: avoid;
-      }
-
-      table {
-        font-size: 11pt;
-      }
-
-      .page-break {
-        page-break-before: always;
+        page-break-inside: avoid;
       }
     }
   </style>
 </head>
-
 <body>
 
-  <!-- HEADER (UI ONLY) -->
-  <div class="topbar no-export">
-    <div class="logo">ClearMyRecord</div>
-    <div class="nav">
-      <a href="#">Home</a>
-      <a href="#">How It Works</a>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="logo">ClearMyRecord</div>
+      <nav class="nav">
+        <a href="index.html">Home</a>
+        <a href="record-details.html">Record Details</a>
+        <a href="results.html">Results</a>
+      </nav>
     </div>
-  </div>
+  </header>
 
-  <div class="container">
+  <main class="page">
 
-    <!-- RESULT -->
-    <div class="card">
-      <h1>Eligibility Result</h1>
-
-      <div class="badge">You May Be Eligible</div>
-
-      <p><strong>Hello, Matt Tunstall</strong></p>
-
-      <p>
-        Based on this simplified Ohio rule set, you may be eligible to seal this third-degree felony now.
+    <section class="card">
+      <h1 class="title">Your Filing Packet</h1>
+      <p class="subtitle">
+        This page turns your results into a real-world action plan: what to file, when to file, and what documents to prepare.
       </p>
+    </section>
 
-      <p><strong>County entered:</strong> Wood County</p>
-      <p><strong>State:</strong> Ohio</p>
-      <p><strong>Where to file:</strong> File in the court where the case was handled.</p>
-
-      <!-- THIS WILL NOT EXPORT -->
-      <div class="info-box no-export">
-        <strong>Suggested next step:</strong>
-        <p>Next, gather your case number, court name, and filing documents.</p>
+    <section class="card">
+      <h2 class="section-title">Eligibility Overview</h2>
+      <div class="grid-2">
+        <div class="stat">
+          <div class="stat-label">Sealing</div>
+          <div class="stat-value" id="sealDate">—</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Expungement</div>
+          <div class="stat-value" id="expDate">—</div>
+        </div>
       </div>
-    </div>
 
-    <!-- CASE SUMMARY -->
-    <div class="card">
-      <h2>Case Summary</h2>
+      <div id="statusText" style="margin-top:12px;"></div>
+    </section>
 
-      <table>
-        <tr><th>Offense Type</th><td>Drug possession</td></tr>
-        <tr><th>Offense Level</th><td>3rd Degree Felony</td></tr>
-        <tr><th>Violent Offense</th><td>No</td></tr>
-        <tr><th>Years Since Final Discharge</th><td>13</td></tr>
-        <tr><th>Fines Paid</th><td>Yes</td></tr>
-        <tr><th>Open Cases</th><td>No</td></tr>
-        <tr><th>Convictions</th><td>1</td></tr>
-        <tr><th>Case Number</th><td>2006CR0387</td></tr>
-        <tr><th>Date of Final Discharge</th><td>12/10/2010</td></tr>
-      </table>
-    </div>
+    <section class="card">
+      <h2 class="section-title">Filing Instructions</h2>
+      <div id="instructions"></div>
+    </section>
 
-    <!-- COURT NOTES -->
-    <div class="card">
-      <h2>Court Filing Information</h2>
+    <section class="card">
+      <h2 class="section-title">Documents You Need</h2>
+      <ul id="documents"></ul>
+    </section>
 
-      <table>
-        <tr><th>Court</th><td>Wood County Court of Common Pleas</td></tr>
-        <tr><th>Address</th><td>One Courthouse Square, Bowling Green, OH 43402</td></tr>
-        <tr><th>Filing Fee</th><td>$100 (may vary)</td></tr>
-        <tr><th>Lookup Source</th><td>Wood County Clerk of Courts</td></tr>
-      </table>
-    </div>
+    <section class="card">
+      <h2 class="section-title">Offense Breakdown</h2>
+      <div id="offenseTable"></div>
+    </section>
 
-    <!-- CHECKLIST -->
-    <div class="card">
-      <h2>Filing Checklist</h2>
+    <section class="card">
+      <h2 class="section-title">Next Steps</h2>
+      <ul id="nextSteps"></ul>
 
-      <ul>
-        <li>Confirm exact case number</li>
-        <li>Insert final discharge date</li>
-        <li>Complete mailing address</li>
-        <li>Review all statements before signing</li>
-        <li>File with Clerk of Courts</li>
-      </ul>
-    </div>
+      <div class="actions">
+        <button class="btn btn-primary" onclick="window.print()">Print Packet</button>
+        <a class="btn btn-secondary" href="results.html">Back to Results</a>
+        <a class="btn btn-secondary" href="record-details.html">Edit Record</a>
+      </div>
+    </section>
 
-    <!-- SIGNATURE -->
-    <div class="card">
-      <h2>Applicant Signature</h2>
-      <p>Signature: ____________________________</p>
-      <p>Date: _________________________________</p>
-    </div>
+  </main>
 
-    <!-- BUTTON -->
-   <div class="actions no-export">
-  <button onclick="fillCourtForm()">Auto-Fill Court Form</button>
-  <button onclick="window.print()">Download / Print Packet</button>
-</div>
+  <script>
+    function getResult() {
+      try {
+        return JSON.parse(localStorage.getItem("cmrResults")) || null;
+      } catch {
+        return null;
+      }
+    }
 
-  </div>
+    function renderPacket() {
+      const result = getResult();
+      if (!result) return;
+
+      document.getElementById("sealDate").textContent =
+        result.sealingAvailable ? result.sealingEligibilityDate : "Blocked";
+
+      document.getElementById("expDate").textContent =
+        result.expungementAvailable ? result.expungementEligibilityDate : "Blocked";
+
+      let status = "";
+      if (result.eligible) {
+        status = `<div class="status green">${result.statusText}</div>`;
+      } else if (result.sealingAvailable || result.expungementAvailable) {
+        status = `<div class="status yellow">${result.statusText}</div>`;
+      } else {
+        status = `<div class="status red">${result.reason}</div>`;
+      }
+
+      document.getElementById("statusText").innerHTML = status;
+
+      // Instructions
+      let instructions = "";
+      if (result.sealingAvailable) {
+        instructions += `<p><strong>Sealing:</strong> File an Application for Sealing of Record in the court where the case was handled after ${result.sealingEligibilityDate}.</p>`;
+      }
+      if (result.expungementAvailable) {
+        instructions += `<p><strong>Expungement:</strong> File an Application for Expungement after ${result.expungementEligibilityDate}.</p>`;
+      }
+      if (!instructions) {
+        instructions = "<p>No filing path available based on current data.</p>";
+      }
+
+      document.getElementById("instructions").innerHTML = instructions;
+
+      // Documents
+      document.getElementById("documents").innerHTML = `
+        <li>Case numbers for each offense</li>
+        <li>Discharge documentation (proof sentence completed)</li>
+        <li>Payment receipts (fines/fees)</li>
+        <li>Identification</li>
+      `;
+
+      // Offense table
+      if (result.offenseResults?.length) {
+        const rows = result.offenseResults.map((o, i) => `
+          <tr>
+            <td>${i + 1}</td>
+            <td>${o.chargeLabel}</td>
+            <td>${o.level}</td>
+            <td>${o.sealingDate}</td>
+            <td>${o.expungementDate}</td>
+          </tr>
+        `).join("");
+
+        document.getElementById("offenseTable").innerHTML = `
+          <table>
+            <tr>
+              <th>#</th>
+              <th>Charge</th>
+              <th>Level</th>
+              <th>Sealing</th>
+              <th>Expungement</th>
+            </tr>
+            ${rows}
+          </table>
+        `;
+      }
+
+      // Next steps
+      document.getElementById("nextSteps").innerHTML = `
+        <li>Confirm all case details are accurate</li>
+        <li>Verify discharge completion dates</li>
+        <li>Double-check exclusions (DV, violent, sex offenses)</li>
+        <li>File in correct court</li>
+        <li>Prepare for possible hearing</li>
+      `;
+    }
+
+    renderPacket();
+  </script>
 
 </body>
 </html>
