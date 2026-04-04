@@ -3,201 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ClearMyRecord - Eligibility Check</title>
-
-  <script src="js/charges.js"></script>
-  <script src="js/intake.js" defer></script>
-
-  <style>
-    * {
-      box-sizing: border-box;
-    }
-
-    :root {
-      --blue: #123d8f;
-      --blue-dark: #0d2f71;
-      --bg: #f3f7fc;
-      --card: #ffffff;
-      --line: #d9e2ec;
-      --text: #1b2430;
-      --muted: #5b6b7f;
-    }
-
-    body {
-      margin: 0;
-      font-family: Arial, Helvetica, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-    }
-
-    .topbar {
-      background: var(--blue);
-      color: white;
-      padding: 18px 0;
-    }
-
-    .topbar-inner {
-      width: min(1100px, 92%);
-      margin: 0 auto;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 16px;
-      flex-wrap: wrap;
-    }
-
-    .logo {
-      font-size: 22px;
-      font-weight: 800;
-    }
-
-    .nav {
-      display: flex;
-      gap: 18px;
-      flex-wrap: wrap;
-    }
-
-    .nav a {
-      color: white;
-      text-decoration: none;
-      font-weight: 700;
-    }
-
-    .page {
-      width: min(1100px, 92%);
-      margin: 28px auto 60px;
-    }
-
-    .step-label {
-      font-size: 18px;
-      margin-bottom: 12px;
-      color: var(--text);
-    }
-
-    .card {
-      background: var(--card);
-      border: 1px solid var(--line);
-      border-radius: 20px;
-      padding: 28px;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05);
-    }
-
-    h1 {
-      margin: 0 0 10px;
-      font-size: 48px;
-      line-height: 1.1;
-      color: #111827;
-    }
-
-    .subtitle {
-      margin: 0 0 26px;
-      color: var(--muted);
-      font-size: 18px;
-      line-height: 1.6;
-    }
-
-    .form-grid {
-      display: grid;
-      gap: 18px;
-    }
-
-    .form-field label {
-      display: block;
-      margin-bottom: 8px;
-      font-weight: 700;
-      font-size: 14px;
-    }
-
-    .form-field input,
-    .form-field select {
-      width: 100%;
-      padding: 14px 16px;
-      border: 1px solid #cfd8e3;
-      border-radius: 14px;
-      font-size: 16px;
-      background: #fff;
-      color: var(--text);
-    }
-
-    .helper {
-      margin-top: 8px;
-      font-size: 13px;
-      color: var(--muted);
-      line-height: 1.5;
-    }
-
-    .actions {
-      display: flex;
-      gap: 12px;
-      flex-wrap: wrap;
-      margin-top: 24px;
-    }
-
-    .btn {
-      appearance: none;
-      border: none;
-      border-radius: 12px;
-      padding: 14px 18px;
-      font-size: 15px;
-      font-weight: 800;
-      cursor: pointer;
-      text-decoration: none;
-      display: inline-block;
-    }
-
-    .btn-primary {
-      background: var(--blue);
-      color: white;
-    }
-
-    .btn-secondary {
-      background: #e8eef7;
-      color: var(--text);
-    }
-
-    .status {
-      margin-top: 16px;
-      padding: 12px 14px;
-      border-radius: 12px;
-      border: 1px solid var(--line);
-      background: #f8fbff;
-      color: var(--muted);
-      display: none;
-    }
-
-    .status.error {
-      display: block;
-      background: #fff3f3;
-      border-color: #efc2c2;
-      color: #a12626;
-    }
-
-    .status.success {
-      display: block;
-      background: #eefaf1;
-      border-color: #b7e4c7;
-      color: #1f7a3e;
-    }
-
-    @media (max-width: 760px) {
-      h1 {
-        font-size: 34px;
-      }
-
-      .card {
-        padding: 22px;
-      }
-
-      .actions {
-        flex-direction: column;
-      }
-
-      .btn {
-        width: 100%;
-        text-align: center;
-      }
-    }
-  </style>
+  <title>ClearMyRecord</title>
+  <link rel="stylesheet" href="css/styles.css" />
 </head>
 <body>
   <header class="topbar">
@@ -206,57 +13,145 @@
       <nav class="nav">
         <a href="index.html">Home</a>
         <a href="how-it-works.html">How It Works</a>
+        <a href="eligibility.html">Eligibility Check</a>
+        <a href="packet.html">Packet Builder</a>
       </nav>
     </div>
   </header>
 
-  <main class="page">
-    <div class="step-label">Step 1 of 3</div>
+  <main>
+    <section class="hero">
+      <div class="hero-inner">
+        <div class="hero-copy">
+          <span class="eyebrow">Fast. Affordable. Court-ready.</span>
+          <h1>Clear your record with confidence.</h1>
+          <p class="hero-text">
+            ClearMyRecord helps people check eligibility, organize case details,
+            prepare court-ready packets, and stay on top of deadlines for sealing
+            and expungement.
+          </p>
 
-    <section class="card">
-      <h1>Start your free eligibility check</h1>
-      <p class="subtitle">Enter your details below to begin.</p>
+          <div class="hero-actions">
+            <a class="btn btn-primary" href="eligibility.html">Start Free Eligibility Check</a>
+            <a class="btn btn-secondary" href="how-it-works.html">See How It Works</a>
+          </div>
 
-      <div class="form-grid">
-        <div class="form-field">
-          <label for="fullName">Full name</label>
-          <input type="text" id="fullName" placeholder="Your full name" />
+          <div class="hero-points">
+            <div class="hero-point">Eligibility screening</div>
+            <div class="hero-point">Court packet generation</div>
+            <div class="hero-point">Step-by-step filing guidance</div>
+          </div>
         </div>
 
-        <div class="form-field">
-          <label for="email">Email</label>
-          <input type="email" id="email" placeholder="you@example.com" />
-        </div>
-
-        <div class="form-field">
-          <label for="mailingAddress">Mailing address</label>
-          <input type="text" id="mailingAddress" placeholder="Street, city, state ZIP" />
-          <div class="helper">This is stored so it can be used later in court-ready PDF forms.</div>
-        </div>
-
-        <div class="form-field">
-          <label for="state">State</label>
-          <select id="state">
-            <option value="ohio">Ohio</option>
-          </select>
-        </div>
-
-        <div class="form-field">
-          <label for="offenseType">Offense type</label>
-          <select id="offenseType">
-            <option value="">Select offense type</option>
-          </select>
-          <div class="helper">This is a quick starting charge selection. You can add all offenses in the next step.</div>
+        <div class="hero-card">
+          <h2>What ClearMyRecord Helps With</h2>
+          <ul class="feature-list">
+            <li>Check whether a charge may qualify for sealing or expungement</li>
+            <li>Store your intake information in one place</li>
+            <li>Build packets using mapped court templates</li>
+            <li>Track mailing address, charge details, and filing data</li>
+            <li>Prepare for future reminders and court-finder tools</li>
+          </ul>
         </div>
       </div>
+    </section>
 
-      <div class="actions">
-        <button type="button" class="btn btn-primary" id="nextBtn">Continue to Record Details</button>
-        <a class="btn btn-secondary" href="how-it-works.html">How It Works</a>
+    <section class="section">
+      <div class="section-inner">
+        <div class="section-header">
+          <h2>How it works</h2>
+          <p>Simple workflow. Real progress. No guessing.</p>
+        </div>
+
+        <div class="cards-grid">
+          <article class="info-card">
+            <div class="card-step">1</div>
+            <h3>Answer a few questions</h3>
+            <p>
+              Enter your contact details, mailing address, and charge information
+              to start building your case profile.
+            </p>
+          </article>
+
+          <article class="info-card">
+            <div class="card-step">2</div>
+            <h3>Review eligibility</h3>
+            <p>
+              ClearMyRecord uses charge rules and waiting periods to estimate
+              whether you may qualify.
+            </p>
+          </article>
+
+          <article class="info-card">
+            <div class="card-step">3</div>
+            <h3>Generate your packet</h3>
+            <p>
+              Your saved information can be connected to court form templates
+              and packet-building tools.
+            </p>
+          </article>
+        </div>
       </div>
+    </section>
 
-      <div id="statusBox" class="status"></div>
+    <section class="section section-alt">
+      <div class="section-inner">
+        <div class="section-header">
+          <h2>Built to solve a real problem</h2>
+          <p>
+            Millions of people may qualify for relief and never file because the
+            process is confusing, expensive, or easy to miss.
+          </p>
+        </div>
+
+        <div class="two-column">
+          <div class="content-card">
+            <h3>Why people don’t file</h3>
+            <ul class="feature-list">
+              <li>They do not know when they become eligible</li>
+              <li>Attorney fees are too expensive</li>
+              <li>Court procedures vary by location</li>
+              <li>Forms are hard to find and fill out correctly</li>
+            </ul>
+          </div>
+
+          <div class="content-card">
+            <h3>What ClearMyRecord is building</h3>
+            <ul class="feature-list">
+              <li>Eligibility calculator</li>
+              <li>Charge and wait-time library</li>
+              <li>Admin template mapper</li>
+              <li>Official form and packet generation</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="cta-band">
+      <div class="section-inner cta-band-inner">
+        <div>
+          <h2>Start your free eligibility check</h2>
+          <p>
+            Enter your details, save your data, and move into the next step of
+            the ClearMyRecord process.
+          </p>
+        </div>
+        <a class="btn btn-primary" href="eligibility.html">Start Now</a>
+      </div>
     </section>
   </main>
+
+  <footer class="footer">
+    <div class="section-inner footer-inner">
+      <div>© 2026 ClearMyRecord</div>
+      <div class="footer-links">
+        <a href="index.html">Home</a>
+        <a href="how-it-works.html">How It Works</a>
+        <a href="eligibility.html">Eligibility Check</a>
+        <a href="packet.html">Packet Builder</a>
+      </div>
+    </div>
+  </footer>
 </body>
 </html>
