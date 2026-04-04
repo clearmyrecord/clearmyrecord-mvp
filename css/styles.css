@@ -1056,3 +1056,20 @@ pre {
     font-size: 34px;
   }
 }
+.hero-button-wrap {
+  margin-top: 8px;
+}
+
+.hero-main-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 280px;
+  padding: 18px 28px;
+  border-radius: 16px;
+  background: linear-gradient(180deg, #86b7fb 0%, #5d91e6 100%);
+  color: #ffffff;
+  font-size: 20px;
+  font-weight: 700;
+  box-shadow: var(--shadow);
+}
