@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="css/styles.css" />
   <style>
     .record-details-wrap {
-      width: min(760px, 92%);
+      width: min(820px, 92%);
       margin: 32px auto 60px;
       background: #ffffff;
       border: 1px solid #e2e9f5;
@@ -17,9 +17,9 @@
     }
 
     .record-details-wrap h1 {
-      margin: 0 0 18px;
+      margin: 0 0 14px;
       color: #1f4aa8;
-      font-size: clamp(38px, 5vw, 64px);
+      font-size: clamp(38px, 5vw, 60px);
       line-height: 1.05;
       letter-spacing: -0.03em;
     }
@@ -49,10 +49,6 @@
       cursor: pointer;
       -webkit-appearance: none;
       appearance: none;
-    }
-
-    .record-action-btn:active {
-      transform: translateY(1px);
     }
 
     .record-warning {
@@ -120,6 +116,7 @@
 
     .offense-field {
       display: block;
+      position: relative;
     }
 
     .offense-field-full {
@@ -145,6 +142,64 @@
       font: inherit;
       -webkit-appearance: none;
       appearance: none;
+    }
+
+    .charge-suggestions {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: calc(100% + 6px);
+      z-index: 20;
+      background: #ffffff;
+      border: 1px solid #d7e1ef;
+      border-radius: 14px;
+      box-shadow: 0 10px 24px rgba(47, 68, 103, 0.12);
+      overflow: hidden;
+      display: none;
+    }
+
+    .charge-suggestions.open {
+      display: block;
+    }
+
+    .charge-suggestion-btn {
+      width: 100%;
+      border: none;
+      background: #ffffff;
+      text-align: left;
+      padding: 12px 14px;
+      cursor: pointer;
+      border-bottom: 1px solid #eef3fa;
+      font: inherit;
+    }
+
+    .charge-suggestion-btn:last-child {
+      border-bottom: none;
+    }
+
+    .charge-suggestion-btn strong {
+      display: block;
+      color: #243755;
+      font-size: 15px;
+      margin-bottom: 3px;
+    }
+
+    .charge-suggestion-btn span {
+      color: #6a7894;
+      font-size: 13px;
+    }
+
+    .matched-charge-pill {
+      margin-top: 10px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: #e8f1ff;
+      color: #1f4aa8;
+      font-size: 13px;
+      font-weight: 700;
     }
 
     .empty-offense-state {
@@ -198,9 +253,7 @@
       <h1>Record Details</h1>
 
       <p class="record-details-intro">
-        Add the offense details you want reviewed. This step helps organize the
-        record information needed for your eligibility estimate and the rest of
-        the application flow.
+        Add each offense you want reviewed. Start typing the charge name and choose a matching option when it appears.
       </p>
 
       <div id="offenseList" class="offense-list"></div>
@@ -215,17 +268,16 @@
       </div>
 
       <div class="record-warning">
-        Add at least one offense, then click Check Eligibility.
+        Add at least one offense, then fill in as many details as you can. The better the offense match and case details, the stronger the estimate.
       </div>
 
       <p class="record-footer-note">
-        This screen provides a rule-based estimate. Filing requirements can vary
-        by court and state, and some courts may require additional documents or
-        fingerprints with the application.
+        Filing requirements can vary by state and court, and some courts may require additional documents or fingerprints with the application.
       </p>
     </section>
   </main>
 
+  <script src="js/charge-library.js"></script>
   <script>
     const offenseListEl = document.getElementById("offenseList");
     const emptyStateEl = document.getElementById("emptyState");
@@ -247,6 +299,9 @@
     function createOffenseObject() {
       return {
         chargeName: "",
+        matchedChargeId: "",
+        matchedChargeName: "",
+        matchedChargeCategory: "",
         state: "",
         county: "",
         offenseLevel: "",
@@ -270,6 +325,10 @@
       emptyStateEl.style.display = "none";
 
       offenses.forEach((offense, index) => {
+        const matchedPill = offense.matchedChargeName
+          ? `<div class="matched-charge-pill">Matched: ${escapeHtml(offense.matchedChargeName)}${offense.matchedChargeCategory ? ` · ${escapeHtml(offense.matchedChargeCategory)}` : ""}</div>`
+          : "";
+
         const card = document.createElement("div");
         card.className = "offense-card";
         card.innerHTML = `
@@ -281,7 +340,17 @@
           <div class="offense-grid">
             <div class="offense-field offense-field-full">
               <label for="chargeName-${index}">Charge Name</label>
-              <input type="text" id="chargeName-${index}" data-index="${index}" data-field="chargeName" value="${escapeHtml(offense.chargeName || "")}" placeholder="Example: Theft, Assault, Drug Possession" />
+              <input
+                type="text"
+                id="chargeName-${index}"
+                data-index="${index}"
+                data-field="chargeName"
+                value="${escapeHtml(offense.chargeName || "")}"
+                placeholder="Start typing a charge name"
+                autocomplete="off"
+              />
+              <div class="charge-suggestions" id="chargeSuggestions-${index}"></div>
+              ${matchedPill}
             </div>
 
             <div class="offense-field">
@@ -298,9 +367,9 @@
               <label for="offenseLevel-${index}">Offense Level</label>
               <select id="offenseLevel-${index}" data-index="${index}" data-field="offenseLevel">
                 <option value="">Select level</option>
+                <option value="minor-misdemeanor" ${offense.offenseLevel === "minor-misdemeanor" ? "selected" : ""}>Minor Misdemeanor</option>
                 <option value="misdemeanor" ${offense.offenseLevel === "misdemeanor" ? "selected" : ""}>Misdemeanor</option>
                 <option value="felony" ${offense.offenseLevel === "felony" ? "selected" : ""}>Felony</option>
-                <option value="minor-misdemeanor" ${offense.offenseLevel === "minor-misdemeanor" ? "selected" : ""}>Minor Misdemeanor</option>
                 <option value="unknown" ${offense.offenseLevel === "unknown" ? "selected" : ""}>Not Sure</option>
               </select>
             </div>
@@ -344,12 +413,14 @@
 
       bindOffenseInputs();
       bindRemoveButtons();
+      bindChargeAutocomplete();
     }
 
     function bindOffenseInputs() {
       const inputs = offenseListEl.querySelectorAll("input, select, textarea");
 
       inputs.forEach((input) => {
+        if (input.dataset.field === "chargeName") return;
         input.addEventListener("input", handleFieldUpdate);
         input.addEventListener("change", handleFieldUpdate);
       });
@@ -367,6 +438,86 @@
           renderOffenses();
         });
       });
+    }
+
+    function bindChargeAutocomplete() {
+      const chargeInputs = offenseListEl.querySelectorAll('input[data-field="chargeName"]');
+
+      chargeInputs.forEach((input) => {
+        input.addEventListener("input", () => {
+          const index = Number(input.dataset.index);
+          const offenses = getSavedOffenses();
+
+          if (!offenses[index]) return;
+
+          offenses[index].chargeName = input.value;
+          offenses[index].matchedChargeId = "";
+          offenses[index].matchedChargeName = "";
+          offenses[index].matchedChargeCategory = "";
+          saveOffenses(offenses);
+
+          renderSuggestions(index, input.value);
+        });
+
+        input.addEventListener("focus", () => {
+          renderSuggestions(Number(input.dataset.index), input.value);
+        });
+
+        input.addEventListener("blur", () => {
+          const index = Number(input.dataset.index);
+          setTimeout(() => closeSuggestions(index), 150);
+        });
+      });
+    }
+
+    function renderSuggestions(index, query) {
+      const suggestionsEl = document.getElementById(`chargeSuggestions-${index}`);
+      if (!suggestionsEl) return;
+
+      const matches = window.searchChargeLibrary ? window.searchChargeLibrary(query) : [];
+
+      if (!query.trim() || !matches.length) {
+        suggestionsEl.innerHTML = "";
+        suggestionsEl.classList.remove("open");
+        return;
+      }
+
+      suggestionsEl.innerHTML = matches.map((charge) => `
+        <button type="button" class="charge-suggestion-btn" data-index="${index}" data-charge-id="${escapeHtml(charge.id)}">
+          <strong>${escapeHtml(charge.name)}</strong>
+          <span>${escapeHtml(charge.category)}</span>
+        </button>
+      `).join("");
+
+      suggestionsEl.classList.add("open");
+
+      const buttons = suggestionsEl.querySelectorAll(".charge-suggestion-btn");
+      buttons.forEach((button) => {
+        button.addEventListener("click", () => {
+          const chargeId = button.dataset.chargeId;
+          const selected = (window.chargeLibrary || []).find((item) => item.id === chargeId);
+          if (!selected) return;
+
+          const offenses = getSavedOffenses();
+          if (!offenses[index]) return;
+
+          offenses[index].chargeName = selected.name;
+          offenses[index].matchedChargeId = selected.id;
+          offenses[index].matchedChargeName = selected.name;
+          offenses[index].matchedChargeCategory = selected.category || "";
+          saveOffenses(offenses);
+          renderOffenses();
+
+          const input = document.getElementById(`chargeName-${index}`);
+          if (input) input.focus();
+        });
+      });
+    }
+
+    function closeSuggestions(index) {
+      const suggestionsEl = document.getElementById(`chargeSuggestions-${index}`);
+      if (!suggestionsEl) return;
+      suggestionsEl.classList.remove("open");
     }
 
     function handleFieldUpdate(event) {
@@ -404,8 +555,13 @@
         return;
       }
 
-      localStorage.setItem("cmr_record_details_complete", "true");
+      const hasNamedOffense = offenses.some((offense) => String(offense.chargeName || "").trim() !== "");
+      if (!hasNamedOffense) {
+        alert("Please enter at least one charge name before continuing.");
+        return;
+      }
 
+      localStorage.setItem("cmr_record_details_complete", "true");
       window.location.href = "results.html";
     }
 
@@ -419,10 +575,10 @@
     }
 
     addOffenseBtn.addEventListener("click", addOffense);
-    addOffenseBtn.addEventListener("touchstart", function() {}, { passive: true });
+    addOffenseBtn.addEventListener("touchstart", function () {}, { passive: true });
 
     checkEligibilityBtn.addEventListener("click", checkEligibility);
-    checkEligibilityBtn.addEventListener("touchstart", function() {}, { passive: true });
+    checkEligibilityBtn.addEventListener("touchstart", function () {}, { passive: true });
 
     renderOffenses();
   </script>
