@@ -8,195 +8,36 @@
 </head>
 <body>
   <header class="site-header">
-    <div class="site-shell header-inner">
-      <a href="index.html" class="brand">ClearMyRecord</a>
-      <nav class="main-nav">
+    <div class="container header-inner">
+      <a href="index.html" class="logo">ClearMyRecord</a>
+      <nav class="site-nav">
         <a href="index.html">Home</a>
         <a href="how-it-works.html">How It Works</a>
+        <a href="eligibility.html">Check Eligibility</a>
         <a href="faq.html">FAQ</a>
+        <a href="about.html">About Us</a>
+        <a href="contact.html">Contact</a>
       </nav>
     </div>
   </header>
 
-  <main class="site-shell page-wrap">
-    <section class="form-card">
-      <div class="form-head">
+  <main class="page-shell">
+    <section class="form-shell">
+      <div class="form-card">
         <h1>Record Details</h1>
-        <p>Enter the details for this record. Start typing in any field to see suggestions.</p>
+        <p class="form-intro">
+          Enter the details for each record. Start typing in any field to see matching suggestions.
+        </p>
+
+        <form id="recordDetailsForm" novalidate>
+          <div id="casesWrap"></div>
+
+          <div class="form-actions">
+            <button type="button" class="secondary-btn" id="addCaseBtn">+ Add Another Case</button>
+            <button type="submit" class="primary-btn">Continue</button>
+          </div>
+        </form>
       </div>
-
-      <form id="recordDetailsForm" novalidate>
-        <div class="case-card">
-          <div class="case-card-top">
-            <button type="button" class="case-remove-btn" id="removeCaseBtn">Remove</button>
-          </div>
-
-          <div class="field-stack">
-
-            <div class="autosuggest-field" data-field="chargeName">
-              <label for="chargeName">Charge Name</label>
-              <input
-                type="text"
-                id="chargeName"
-                name="chargeName"
-                class="autosuggest-input"
-                placeholder="Start typing charge name"
-                autocomplete="off"
-              />
-              <div class="autosuggest-panel" id="chargeNamePanel"></div>
-            </div>
-
-            <div class="autosuggest-field" data-field="chargeLevel">
-              <label for="chargeLevel">Charge Level</label>
-              <input
-                type="text"
-                id="chargeLevel"
-                name="chargeLevel"
-                class="autosuggest-input"
-                placeholder="Start typing charge level"
-                autocomplete="off"
-              />
-              <div class="autosuggest-panel" id="chargeLevelPanel"></div>
-            </div>
-
-            <div class="autosuggest-field" data-field="caseStatus">
-              <label for="caseStatus">Case Status</label>
-              <input
-                type="text"
-                id="caseStatus"
-                name="caseStatus"
-                class="autosuggest-input"
-                placeholder="Start typing case status"
-                autocomplete="off"
-              />
-              <div class="autosuggest-panel" id="caseStatusPanel"></div>
-            </div>
-
-            <div class="autosuggest-field" data-field="disposition">
-              <label for="disposition">Disposition</label>
-              <input
-                type="text"
-                id="disposition"
-                name="disposition"
-                class="autosuggest-input"
-                placeholder="Start typing disposition"
-                autocomplete="off"
-              />
-              <div class="autosuggest-panel" id="dispositionPanel"></div>
-            </div>
-
-            <div class="autosuggest-field" data-field="plea">
-              <label for="plea">Plea</label>
-              <input
-                type="text"
-                id="plea"
-                name="plea"
-                class="autosuggest-input"
-                placeholder="Start typing plea"
-                autocomplete="off"
-              />
-              <div class="autosuggest-panel" id="pleaPanel"></div>
-            </div>
-
-            <div class="autosuggest-field" data-field="sentenceType">
-              <label for="sentenceType">Sentence Type</label>
-              <input
-                type="text"
-                id="sentenceType"
-                name="sentenceType"
-                class="autosuggest-input"
-                placeholder="Start typing sentence type"
-                autocomplete="off"
-              />
-              <div class="autosuggest-panel" id="sentenceTypePanel"></div>
-            </div>
-
-            <div class="autosuggest-field" data-field="courtType">
-              <label for="courtType">Court Type</label>
-              <input
-                type="text"
-                id="courtType"
-                name="courtType"
-                class="autosuggest-input"
-                placeholder="Start typing court type"
-                autocomplete="off"
-              />
-              <div class="autosuggest-panel" id="courtTypePanel"></div>
-            </div>
-
-            <div class="autosuggest-field" data-field="state">
-              <label for="state">State</label>
-              <input
-                type="text"
-                id="state"
-                name="state"
-                class="autosuggest-input"
-                placeholder="Start typing state"
-                autocomplete="off"
-              />
-              <div class="autosuggest-panel" id="statePanel"></div>
-            </div>
-
-            <div class="autosuggest-field" data-field="county">
-              <label for="county">County</label>
-              <input
-                type="text"
-                id="county"
-                name="county"
-                class="autosuggest-input"
-                placeholder="Start typing county"
-                autocomplete="off"
-              />
-              <div class="autosuggest-panel" id="countyPanel"></div>
-            </div>
-
-            <div class="autosuggest-field" data-field="arrestingAgency">
-              <label for="arrestingAgency">Arresting Agency</label>
-              <input
-                type="text"
-                id="arrestingAgency"
-                name="arrestingAgency"
-                class="autosuggest-input"
-                placeholder="Start typing arresting agency"
-                autocomplete="off"
-              />
-              <div class="autosuggest-panel" id="arrestingAgencyPanel"></div>
-            </div>
-
-            <div class="standard-field">
-              <label for="filingDate">Filing Date</label>
-              <input type="date" id="filingDate" name="filingDate" class="standard-input" />
-            </div>
-
-            <div class="standard-field">
-              <label for="dispositionDate">Disposition Date</label>
-              <input type="date" id="dispositionDate" name="dispositionDate" class="standard-input" />
-            </div>
-
-            <div class="standard-field">
-              <label for="sentenceCompletionDate">Sentence Completion Date</label>
-              <input type="date" id="sentenceCompletionDate" name="sentenceCompletionDate" class="standard-input" />
-            </div>
-
-            <div class="standard-field">
-              <label for="notes">Notes</label>
-              <textarea
-                id="notes"
-                name="notes"
-                class="standard-input standard-textarea"
-                rows="5"
-                placeholder="Anything else the court should know?"
-              ></textarea>
-            </div>
-
-          </div>
-        </div>
-
-        <div class="form-actions">
-          <button type="button" class="btn btn-secondary" id="addAnotherCaseBtn">+ Add Another Case</button>
-          <button type="submit" class="btn btn-primary">Continue</button>
-        </div>
-      </form>
     </section>
   </main>
 
