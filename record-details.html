@@ -3,584 +3,142 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Record Details | ClearMyRecord</title>
+  <title>Record Details - ClearMyRecord</title>
   <link rel="stylesheet" href="css/styles.css" />
-  <style>
-    .record-details-wrap {
-      width: min(820px, 92%);
-      margin: 32px auto 60px;
-      background: #ffffff;
-      border: 1px solid #e2e9f5;
-      border-radius: 20px;
-      box-shadow: 0 10px 30px rgba(78, 110, 167, 0.12);
-      padding: 32px;
-    }
-
-    .record-details-wrap h1 {
-      margin: 0 0 14px;
-      color: #1f4aa8;
-      font-size: clamp(38px, 5vw, 60px);
-      line-height: 1.05;
-      letter-spacing: -0.03em;
-    }
-
-    .record-details-intro {
-      margin: 0 0 28px;
-      color: #5f6f8e;
-      font-size: 17px;
-      line-height: 1.7;
-    }
-
-    .record-actions {
-      display: grid;
-      gap: 16px;
-      margin-bottom: 24px;
-    }
-
-    .record-action-btn {
-      width: 100%;
-      border: none;
-      border-radius: 18px;
-      padding: 22px 24px;
-      background: #1f4aa8;
-      color: #ffffff;
-      font-size: 20px;
-      font-weight: 700;
-      cursor: pointer;
-      -webkit-appearance: none;
-      appearance: none;
-    }
-
-    .record-warning {
-      margin: 0 0 24px;
-      padding: 24px;
-      border: 2px solid #eadb98;
-      border-radius: 20px;
-      background: #f7f2df;
-      color: #243755;
-      font-size: 18px;
-      line-height: 1.6;
-    }
-
-    .record-footer-note {
-      margin: 0;
-      color: #6a7894;
-      font-size: 17px;
-      line-height: 1.6;
-    }
-
-    .offense-list {
-      display: grid;
-      gap: 18px;
-      margin: 0 0 24px;
-    }
-
-    .offense-card {
-      border: 1px solid #dbe4f2;
-      border-radius: 18px;
-      background: #f9fbff;
-      padding: 20px;
-    }
-
-    .offense-card-head {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      margin-bottom: 16px;
-    }
-
-    .offense-card-title {
-      font-size: 20px;
-      font-weight: 700;
-      color: #2f4467;
-    }
-
-    .offense-remove-btn {
-      border: none;
-      background: #d64545;
-      color: #ffffff;
-      border-radius: 12px;
-      padding: 10px 14px;
-      font-weight: 700;
-      cursor: pointer;
-      -webkit-appearance: none;
-      appearance: none;
-    }
-
-    .offense-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 16px;
-    }
-
-    .offense-field {
-      display: block;
-      position: relative;
-    }
-
-    .offense-field-full {
-      grid-column: 1 / -1;
-    }
-
-    .offense-field label {
-      display: block;
-      margin-bottom: 8px;
-      font-weight: 700;
-      color: #3d567d;
-    }
-
-    .offense-field input,
-    .offense-field select,
-    .offense-field textarea {
-      width: 100%;
-      padding: 14px;
-      border: 1px solid #d7e1ef;
-      border-radius: 12px;
-      background: #ffffff;
-      color: #243755;
-      font: inherit;
-      -webkit-appearance: none;
-      appearance: none;
-    }
-
-    .charge-suggestions {
-      position: absolute;
-      left: 0;
-      right: 0;
-      top: calc(100% + 6px);
-      z-index: 20;
-      background: #ffffff;
-      border: 1px solid #d7e1ef;
-      border-radius: 14px;
-      box-shadow: 0 10px 24px rgba(47, 68, 103, 0.12);
-      overflow: hidden;
-      display: none;
-    }
-
-    .charge-suggestions.open {
-      display: block;
-    }
-
-    .charge-suggestion-btn {
-      width: 100%;
-      border: none;
-      background: #ffffff;
-      text-align: left;
-      padding: 12px 14px;
-      cursor: pointer;
-      border-bottom: 1px solid #eef3fa;
-      font: inherit;
-    }
-
-    .charge-suggestion-btn:last-child {
-      border-bottom: none;
-    }
-
-    .charge-suggestion-btn strong {
-      display: block;
-      color: #243755;
-      font-size: 15px;
-      margin-bottom: 3px;
-    }
-
-    .charge-suggestion-btn span {
-      color: #6a7894;
-      font-size: 13px;
-    }
-
-    .matched-charge-pill {
-      margin-top: 10px;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px 12px;
-      border-radius: 999px;
-      background: #e8f1ff;
-      color: #1f4aa8;
-      font-size: 13px;
-      font-weight: 700;
-    }
-
-    .empty-offense-state {
-      margin: 0 0 24px;
-      padding: 18px 20px;
-      border: 1px dashed #c8d5ea;
-      border-radius: 16px;
-      background: #f8fbff;
-      color: #6a7894;
-      font-size: 16px;
-    }
-
-    @media (max-width: 700px) {
-      .record-details-wrap {
-        padding: 24px;
-      }
-
-      .offense-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .offense-card-head {
-        flex-direction: column;
-        align-items: flex-start;
-      }
-
-      .offense-remove-btn {
-        width: 100%;
-      }
-    }
-  </style>
 </head>
+
 <body>
-  <header class="site-header">
-    <div class="container nav-wrap">
-      <a href="index.html" class="brand">
-        <span class="brand-icon">📄</span>
-        <span class="brand-text">ClearMyRecord</span>
-      </a>
 
-      <nav class="main-nav">
-        <a href="how-it-works.html">How It Works</a>
-        <a href="eligibility.html">Eligibility</a>
-        <a href="eligibility.html" class="nav-btn nav-btn-light">Check Eligibility</a>
-      </nav>
-    </div>
-  </header>
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="logo">ClearMyRecord</div>
+    <nav class="nav">
+      <a href="index.html">Home</a>
+      <a href="how-it-works.html">How It Works</a>
+      <a href="faq.html">FAQ</a>
+    </nav>
+  </div>
+</header>
 
-  <main>
-    <section class="record-details-wrap">
+<main class="container">
+
+  <section class="form-section">
+    <div class="form-card">
+
       <h1>Record Details</h1>
-
-      <p class="record-details-intro">
-        Add each offense you want reviewed. Start typing the charge name and choose a matching option when it appears.
+      <p class="section-intro">
+        Enter your case details. Start typing — we’ll suggest the correct options.
       </p>
 
-      <div id="offenseList" class="offense-list"></div>
+      <form id="recordForm" class="form-grid">
 
-      <div id="emptyState" class="empty-offense-state">
-        No offenses added yet.
-      </div>
+        <!-- Charge -->
+        <div class="form-field">
+          <label>Charge Name</label>
+          <input type="text" id="chargeName" list="chargeList" placeholder="Start typing..." />
+          <datalist id="chargeList"></datalist>
+        </div>
 
-      <div class="record-actions">
-        <button type="button" id="addOffenseBtn" class="record-action-btn">+ Add Offense</button>
-        <button type="button" id="checkEligibilityBtn" class="record-action-btn">Check Eligibility</button>
-      </div>
+        <!-- Level -->
+        <div class="form-field">
+          <label>Charge Level</label>
+          <input type="text" id="chargeLevel" list="levelList" placeholder="Start typing..." />
+          <datalist id="levelList"></datalist>
+        </div>
 
-      <div class="record-warning">
-        Add at least one offense, then fill in as many details as you can. The better the offense match and case details, the stronger the estimate.
-      </div>
+        <!-- Status -->
+        <div class="form-field">
+          <label>Case Status</label>
+          <input type="text" id="caseStatus" list="statusList" placeholder="Start typing..." />
+          <datalist id="statusList"></datalist>
+        </div>
 
-      <p class="record-footer-note">
-        Filing requirements can vary by state and court, and some courts may require additional documents or fingerprints with the application.
-      </p>
-    </section>
-  </main>
+        <!-- Disposition -->
+        <div class="form-field">
+          <label>Disposition</label>
+          <input type="text" id="disposition" list="dispositionList" placeholder="Start typing..." />
+          <datalist id="dispositionList"></datalist>
+        </div>
 
-  <script src="js/charge-library.js"></script>
-  <script>
-    const offenseListEl = document.getElementById("offenseList");
-    const emptyStateEl = document.getElementById("emptyState");
-    const addOffenseBtn = document.getElementById("addOffenseBtn");
-    const checkEligibilityBtn = document.getElementById("checkEligibilityBtn");
+        <!-- Plea -->
+        <div class="form-field">
+          <label>Plea</label>
+          <input type="text" id="plea" list="pleaList" placeholder="Start typing..." />
+          <datalist id="pleaList"></datalist>
+        </div>
 
-    function getSavedOffenses() {
-      try {
-        return JSON.parse(localStorage.getItem("cmr_offenses") || "[]");
-      } catch (error) {
-        return [];
-      }
-    }
+        <!-- Sentence -->
+        <div class="form-field">
+          <label>Sentence Type</label>
+          <input type="text" id="sentenceType" list="sentenceList" placeholder="Start typing..." />
+          <datalist id="sentenceList"></datalist>
+        </div>
 
-    function saveOffenses(offenses) {
-      localStorage.setItem("cmr_offenses", JSON.stringify(offenses));
-    }
+        <!-- Court -->
+        <div class="form-field">
+          <label>Court Type</label>
+          <input type="text" id="courtType" list="courtList" placeholder="Start typing..." />
+          <datalist id="courtList"></datalist>
+        </div>
 
-    function createOffenseObject() {
-      return {
-        chargeName: "",
-        matchedChargeId: "",
-        matchedChargeName: "",
-        matchedChargeCategory: "",
-        state: "",
-        county: "",
-        offenseLevel: "",
-        disposition: "",
-        offenseDate: "",
-        convictionDate: "",
-        dischargeDate: "",
-        notes: ""
-      };
-    }
+        <!-- State -->
+        <div class="form-field">
+          <label>State</label>
+          <input type="text" id="state" list="stateList" placeholder="Start typing..." />
+          <datalist id="stateList"></datalist>
+        </div>
 
-    function renderOffenses() {
-      const offenses = getSavedOffenses();
-      offenseListEl.innerHTML = "";
+        <!-- County -->
+        <div class="form-field">
+          <label>County</label>
+          <input type="text" id="county" list="countyList" placeholder="Start typing..." />
+          <datalist id="countyList"></datalist>
+        </div>
 
-      if (!offenses.length) {
-        emptyStateEl.style.display = "block";
-        return;
-      }
+        <!-- Agency -->
+        <div class="form-field">
+          <label>Arresting Agency</label>
+          <input type="text" id="agency" list="agencyList" placeholder="Start typing..." />
+          <datalist id="agencyList"></datalist>
+        </div>
 
-      emptyStateEl.style.display = "none";
+        <!-- Dates -->
+        <div class="form-field">
+          <label>Filing Date</label>
+          <input type="date" id="filingDate" />
+        </div>
 
-      offenses.forEach((offense, index) => {
-        const matchedPill = offense.matchedChargeName
-          ? `<div class="matched-charge-pill">Matched: ${escapeHtml(offense.matchedChargeName)}${offense.matchedChargeCategory ? ` · ${escapeHtml(offense.matchedChargeCategory)}` : ""}</div>`
-          : "";
+        <div class="form-field">
+          <label>Disposition Date</label>
+          <input type="date" id="dispositionDate" />
+        </div>
 
-        const card = document.createElement("div");
-        card.className = "offense-card";
-        card.innerHTML = `
-          <div class="offense-card-head">
-            <div class="offense-card-title">Offense ${index + 1}</div>
-            <button type="button" class="offense-remove-btn" data-index="${index}">Remove</button>
-          </div>
+        <div class="form-field">
+          <label>Sentence Completion</label>
+          <input type="date" id="completionDate" />
+        </div>
 
-          <div class="offense-grid">
-            <div class="offense-field offense-field-full">
-              <label for="chargeName-${index}">Charge Name</label>
-              <input
-                type="text"
-                id="chargeName-${index}"
-                data-index="${index}"
-                data-field="chargeName"
-                value="${escapeHtml(offense.chargeName || "")}"
-                placeholder="Start typing a charge name"
-                autocomplete="off"
-              />
-              <div class="charge-suggestions" id="chargeSuggestions-${index}"></div>
-              ${matchedPill}
-            </div>
+        <!-- Notes -->
+        <div class="form-field full">
+          <label>Notes</label>
+          <textarea id="notes" rows="4"></textarea>
+        </div>
 
-            <div class="offense-field">
-              <label for="state-${index}">State</label>
-              <input type="text" id="state-${index}" data-index="${index}" data-field="state" value="${escapeHtml(offense.state || "")}" placeholder="State" />
-            </div>
+        <!-- Buttons -->
+        <div class="form-actions full">
+          <button type="button" class="btn-secondary" id="addCase">+ Add Another Case</button>
+          <button type="submit" class="btn-primary">Continue</button>
+        </div>
 
-            <div class="offense-field">
-              <label for="county-${index}">County / Court Area</label>
-              <input type="text" id="county-${index}" data-index="${index}" data-field="county" value="${escapeHtml(offense.county || "")}" placeholder="County or court area" />
-            </div>
+      </form>
 
-            <div class="offense-field">
-              <label for="offenseLevel-${index}">Offense Level</label>
-              <select id="offenseLevel-${index}" data-index="${index}" data-field="offenseLevel">
-                <option value="">Select level</option>
-                <option value="minor-misdemeanor" ${offense.offenseLevel === "minor-misdemeanor" ? "selected" : ""}>Minor Misdemeanor</option>
-                <option value="misdemeanor" ${offense.offenseLevel === "misdemeanor" ? "selected" : ""}>Misdemeanor</option>
-                <option value="felony" ${offense.offenseLevel === "felony" ? "selected" : ""}>Felony</option>
-                <option value="unknown" ${offense.offenseLevel === "unknown" ? "selected" : ""}>Not Sure</option>
-              </select>
-            </div>
+    </div>
+  </section>
 
-            <div class="offense-field">
-              <label for="disposition-${index}">Disposition</label>
-              <select id="disposition-${index}" data-index="${index}" data-field="disposition">
-                <option value="">Select disposition</option>
-                <option value="convicted" ${offense.disposition === "convicted" ? "selected" : ""}>Convicted</option>
-                <option value="dismissed" ${offense.disposition === "dismissed" ? "selected" : ""}>Dismissed</option>
-                <option value="not-guilty" ${offense.disposition === "not-guilty" ? "selected" : ""}>Not Guilty</option>
-                <option value="no-bill" ${offense.disposition === "no-bill" ? "selected" : ""}>No Bill</option>
-                <option value="unknown" ${offense.disposition === "unknown" ? "selected" : ""}>Not Sure</option>
-              </select>
-            </div>
+</main>
 
-            <div class="offense-field">
-              <label for="offenseDate-${index}">Offense Date</label>
-              <input type="date" id="offenseDate-${index}" data-index="${index}" data-field="offenseDate" value="${escapeHtml(offense.offenseDate || "")}" />
-            </div>
+<script src="js/charges.js"></script>
+<script src="js/record-details.js"></script>
 
-            <div class="offense-field">
-              <label for="convictionDate-${index}">Conviction / Case Resolution Date</label>
-              <input type="date" id="convictionDate-${index}" data-index="${index}" data-field="convictionDate" value="${escapeHtml(offense.convictionDate || "")}" />
-            </div>
-
-            <div class="offense-field offense-field-full">
-              <label for="dischargeDate-${index}">Discharge / Sentence Completion Date</label>
-              <input type="date" id="dischargeDate-${index}" data-index="${index}" data-field="dischargeDate" value="${escapeHtml(offense.dischargeDate || "")}" />
-            </div>
-
-            <div class="offense-field offense-field-full">
-              <label for="notes-${index}">Notes</label>
-              <textarea id="notes-${index}" data-index="${index}" data-field="notes" rows="3" placeholder="Anything important about this offense">${escapeHtml(offense.notes || "")}</textarea>
-            </div>
-          </div>
-        `;
-
-        offenseListEl.appendChild(card);
-      });
-
-      bindOffenseInputs();
-      bindRemoveButtons();
-      bindChargeAutocomplete();
-    }
-
-    function bindOffenseInputs() {
-      const inputs = offenseListEl.querySelectorAll("input, select, textarea");
-
-      inputs.forEach((input) => {
-        if (input.dataset.field === "chargeName") return;
-        input.addEventListener("input", handleFieldUpdate);
-        input.addEventListener("change", handleFieldUpdate);
-      });
-    }
-
-    function bindRemoveButtons() {
-      const buttons = offenseListEl.querySelectorAll(".offense-remove-btn");
-
-      buttons.forEach((button) => {
-        button.addEventListener("click", () => {
-          const index = Number(button.dataset.index);
-          const offenses = getSavedOffenses();
-          offenses.splice(index, 1);
-          saveOffenses(offenses);
-          renderOffenses();
-        });
-      });
-    }
-
-    function bindChargeAutocomplete() {
-      const chargeInputs = offenseListEl.querySelectorAll('input[data-field="chargeName"]');
-
-      chargeInputs.forEach((input) => {
-        input.addEventListener("input", () => {
-          const index = Number(input.dataset.index);
-          const offenses = getSavedOffenses();
-
-          if (!offenses[index]) return;
-
-          offenses[index].chargeName = input.value;
-          offenses[index].matchedChargeId = "";
-          offenses[index].matchedChargeName = "";
-          offenses[index].matchedChargeCategory = "";
-          saveOffenses(offenses);
-
-          renderSuggestions(index, input.value);
-        });
-
-        input.addEventListener("focus", () => {
-          renderSuggestions(Number(input.dataset.index), input.value);
-        });
-
-        input.addEventListener("blur", () => {
-          const index = Number(input.dataset.index);
-          setTimeout(() => closeSuggestions(index), 150);
-        });
-      });
-    }
-
-    function renderSuggestions(index, query) {
-      const suggestionsEl = document.getElementById(`chargeSuggestions-${index}`);
-      if (!suggestionsEl) return;
-
-      const matches = window.searchChargeLibrary ? window.searchChargeLibrary(query) : [];
-
-      if (!query.trim() || !matches.length) {
-        suggestionsEl.innerHTML = "";
-        suggestionsEl.classList.remove("open");
-        return;
-      }
-
-      suggestionsEl.innerHTML = matches.map((charge) => `
-        <button type="button" class="charge-suggestion-btn" data-index="${index}" data-charge-id="${escapeHtml(charge.id)}">
-          <strong>${escapeHtml(charge.name)}</strong>
-          <span>${escapeHtml(charge.category)}</span>
-        </button>
-      `).join("");
-
-      suggestionsEl.classList.add("open");
-
-      const buttons = suggestionsEl.querySelectorAll(".charge-suggestion-btn");
-      buttons.forEach((button) => {
-        button.addEventListener("click", () => {
-          const chargeId = button.dataset.chargeId;
-          const selected = (window.chargeLibrary || []).find((item) => item.id === chargeId);
-          if (!selected) return;
-
-          const offenses = getSavedOffenses();
-          if (!offenses[index]) return;
-
-          offenses[index].chargeName = selected.name;
-          offenses[index].matchedChargeId = selected.id;
-          offenses[index].matchedChargeName = selected.name;
-          offenses[index].matchedChargeCategory = selected.category || "";
-          saveOffenses(offenses);
-          renderOffenses();
-
-          const input = document.getElementById(`chargeName-${index}`);
-          if (input) input.focus();
-        });
-      });
-    }
-
-    function closeSuggestions(index) {
-      const suggestionsEl = document.getElementById(`chargeSuggestions-${index}`);
-      if (!suggestionsEl) return;
-      suggestionsEl.classList.remove("open");
-    }
-
-    function handleFieldUpdate(event) {
-      const input = event.target;
-      const index = Number(input.dataset.index);
-      const field = input.dataset.field;
-      const offenses = getSavedOffenses();
-
-      if (!offenses[index]) return;
-
-      offenses[index][field] = input.value;
-      saveOffenses(offenses);
-    }
-
-    function addOffense() {
-      const offenses = getSavedOffenses();
-      offenses.push(createOffenseObject());
-      saveOffenses(offenses);
-      renderOffenses();
-
-      setTimeout(() => {
-        const lastInput = document.getElementById(`chargeName-${offenses.length - 1}`);
-        if (lastInput) {
-          lastInput.scrollIntoView({ behavior: "smooth", block: "center" });
-          lastInput.focus();
-        }
-      }, 50);
-    }
-
-    function checkEligibility() {
-      const offenses = getSavedOffenses();
-
-      if (!offenses.length) {
-        alert("Please add at least one offense before continuing.");
-        return;
-      }
-
-      const hasNamedOffense = offenses.some((offense) => String(offense.chargeName || "").trim() !== "");
-      if (!hasNamedOffense) {
-        alert("Please enter at least one charge name before continuing.");
-        return;
-      }
-
-      localStorage.setItem("cmr_record_details_complete", "true");
-      window.location.href = "results.html";
-    }
-
-    function escapeHtml(value) {
-      return String(value)
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#39;");
-    }
-
-    addOffenseBtn.addEventListener("click", addOffense);
-    addOffenseBtn.addEventListener("touchstart", function () {}, { passive: true });
-
-    checkEligibilityBtn.addEventListener("click", checkEligibility);
-    checkEligibilityBtn.addEventListener("touchstart", function () {}, { passive: true });
-
-    renderOffenses();
-  </script>
 </body>
 </html>
