@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ClearMyRecord - Admin Template Mapper</title>
+  <link rel="stylesheet" href="./template-mapper.css" />
+</head>
+<body>
+  <div class="page-shell">
+    <header class="topbar">
+      <div class="topbar-inner">
+        <div>
+          <div class="eyebrow">Admin Tool</div>
+          <h1>Template Mapper</h1>
+          <p class="subtext">
+            Create packet templates and field maps without hardcoding every PDF.
+          </p>
+        </div>
+      </div>
+    </header>
+
+    <main class="main-content">
+      <section class="panel">
+        <div class="panel-head">
+          <h2>Template Details</h2>
+          <p>Define the packet record that will be saved into your template registry.</p>
+        </div>
+
+        <div class="form-grid two-col">
+          <label class="field">
+            <span>Template ID</span>
+            <input id="templateId" type="text" placeholder="oh-wood-sealing-conviction" />
+          </label>
+
+          <label class="field">
+            <span>Field Map ID</span>
+            <input id="fieldMapId" type="text" placeholder="oh-wood-sealing-conviction-v1" />
+          </label>
+
+          <label class="field">
+            <span>State</span>
+            <select id="state">
+              <option value="">Select state</option>
+              <option value="OH">Ohio</option>
+              <option value="NV">Nevada</option>
+            </select>
+          </label>
+
+          <label class="field">
+            <span>County</span>
+            <input id="county" type="text" placeholder="Wood" />
+          </label>
+
+          <label class="field">
+            <span>Court</span>
+            <input id="court" type="text" placeholder="Wood County Court of Common Pleas" />
+          </label>
+
+          <label class="field">
+            <span>Filing Type</span>
+            <select id="filingType">
+              <option value="sealing">Sealing</option>
+              <option value="expungement">Expungement</option>
+            </select>
+          </label>
+
+          <label class="field">
+            <span>PDF Path</span>
+            <input id="pdfPath" type="text" placeholder="/assets/oh/wood/sealing-conviction.pdf" />
+          </label>
+
+          <label class="field">
+            <span>Version</span>
+            <input id="version" type="text" value="1.0" />
+          </label>
+
+          <label class="field">
+            <span>Priority</span>
+            <input id="priority" type="number" value="100" />
+          </label>
+
+          <label class="field">
+            <span>Match Mode</span>
+            <select id="matchMode">
+              <option value="all">all</option>
+              <option value="state_filing">state_filing</option>
+            </select>
+          </label>
+
+          <label class="field checkbox-field">
+            <input id="active" type="checkbox" checked />
+            <span>Active Template</span>
+          </label>
+        </div>
+
+        <div class="button-row">
+          <button id="autoGenerateIdsBtn" class="btn btn-secondary" type="button">
+            Auto Generate IDs
+          </button>
+          <button id="buildTemplateBtn" class="btn btn-primary" type="button">
+            Build Template Record
+          </button>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <h2>Sample Case JSON</h2>
+          <p>Paste a normalized case object so the mapper can discover available paths.</p>
+        </div>
+
+        <label class="field">
+          <span>Sample Case JSON</span>
+          <textarea id="sampleCaseJson" rows="16" spellcheck="false"></textarea>
+        </label>
+
+        <div class="button-row">
+          <button id="loadSampleBtn" class="btn btn-primary" type="button">Load Sample Case</button>
+          <button id="loadDemoBtn" class="btn btn-secondary" type="button">Load Demo Case</button>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <h2>Discovered Case Paths</h2>
+          <p>These are the available paths from your sample case object.</p>
+        </div>
+
+        <div id="casePathList" class="path-list empty-state">
+          Load a sample case to see available mapping paths.
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <h2>PDF Field Mapping</h2>
+          <p>
+            Enter the PDF field names on the left and select the source case path on the right.
+          </p>
+        </div>
+
+        <div class="button-row">
+          <button id="addMappingRowBtn" class="btn btn-secondary" type="button">
+            Add Mapping Row
+          </button>
+          <button id="buildFieldMapBtn" class="btn btn-primary" type="button">
+            Build Field Map
+          </button>
+        </div>
+
+        <div class="mapping-table-wrap">
+          <table class="mapping-table">
+            <thead>
+              <tr>
+                <th>PDF Field Name</th>
+                <th>Source Case Path</th>
+                <th>Preview Value</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="mappingTableBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <h2>Output</h2>
+          <p>Copy these directly into your registry and field-map files.</p>
+        </div>
+
+        <div class="output-grid">
+          <label class="field">
+            <span>Template Record JSON</span>
+            <textarea id="templateOutput" rows="14" spellcheck="false" readonly></textarea>
+          </label>
+
+          <label class="field">
+            <span>Field Map JSON</span>
+            <textarea id="fieldMapOutput" rows="14" spellcheck="false" readonly></textarea>
+          </label>
+        </div>
+
+        <div class="button-row">
+          <button id="copyTemplateBtn" class="btn btn-secondary" type="button">
+            Copy Template Record
+          </button>
+          <button id="copyFieldMapBtn" class="btn btn-secondary" type="button">
+            Copy Field Map
+          </button>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="./template-mapper.js"></script>
+</body>
+</html>
