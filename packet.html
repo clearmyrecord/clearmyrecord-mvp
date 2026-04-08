@@ -4,7 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Your Filing Packet | RecordPathAI</title>
-  <link rel="stylesheet" href="css/styles.css" />
   <style>
     * {
       box-sizing: border-box;
@@ -22,7 +21,6 @@
       --blue-dark: #4f88e8;
       --blue-soft: #e8f0fd;
       --green: #258344;
-      --green-soft: #e8f6ed;
       --shadow: 0 10px 30px rgba(50, 78, 128, 0.08);
       --container: 1180px;
     }
@@ -256,7 +254,7 @@
       background: var(--surface-soft);
       border: 1px solid var(--line);
       border-radius: 18px;
-      padding: 18px 18px;
+      padding: 18px;
     }
 
     .instruction-item h3 {
@@ -412,7 +410,7 @@
           <h1 class="packet-title">Your Filing Packet</h1>
           <p class="packet-subtitle">
             Based on the information you entered, RecordPathAI can help you review eligibility dates,
-            prepare packet information, and move forward with the court.
+            prepare your Wood County sealing packet, and move forward with the court.
           </p>
         </section>
 
@@ -422,12 +420,12 @@
           <div class="date-grid">
             <div class="date-box">
               <p class="date-label">Sealing</p>
-              <p class="date-value" id="sealingDate">2011-12-03</p>
+              <p class="date-value" id="sealingDate">2013-05-07</p>
             </div>
 
             <div class="date-box">
               <p class="date-label">Expungement</p>
-              <p class="date-value" id="expungementDate">2021-12-03</p>
+              <p class="date-value" id="expungementDate">2023-05-07</p>
             </div>
           </div>
 
@@ -437,26 +435,26 @@
         </section>
 
         <section class="packet-card">
-          <h2 class="section-title">Your Packet Options</h2>
+          <h2 class="section-title">Wood County Sealing Packet</h2>
 
           <div class="callout">
-            RecordPathAI prepares structured packet information based on your record details.
-            Review everything carefully before printing, signing, and submitting to the court,
-            since filing requirements can vary by county and court.
+            This packet opens a filled Wood County Court of Common Pleas sealing packet in a new tab.
+            The applicant can review it, confirm the typed signature, and save it as a PDF.
           </div>
 
           <div class="button-stack">
             <button type="button" class="packet-btn packet-btn-primary" id="generateSealingBtn">
-              Download Sealing Packet
+              Generate Sealing PDF
             </button>
 
             <button type="button" class="packet-btn packet-btn-secondary" id="generateExpungementBtn">
-              Download Expungement Packet
+              Generate Expungement PDF
             </button>
           </div>
 
           <p class="meta-note">
-            Packet downloads are placeholders right now. Connect your PDF generation flow here when ready.
+            The sealing packet uses the Wood County address verification page and the sealing application page.
+            The expungement packet is not configured yet.  [oai_citation:1‡clerkofcourt.co.wood.oh.us](https://clerkofcourt.co.wood.oh.us/DocumentCenter/View/142/Application-for-Sealing-295332-Conviction-PDF)
           </p>
         </section>
 
@@ -466,28 +464,24 @@
           <div class="instructions-list">
             <div class="instruction-item">
               <h3>1. Review your packet</h3>
-              <p>Confirm names, dates, charges, and court details before submitting anything.</p>
+              <p>Confirm names, dates, charge details, and case information before filing.</p>
             </div>
 
             <div class="instruction-item">
-              <h3>2. Print and sign if required</h3>
-              <p>Some courts require original signatures and paper copies before filing.</p>
+              <h3>2. Add your signature</h3>
+              <p>The generated packet includes a typed-signature area. Review it carefully before saving the PDF.</p>
             </div>
 
             <div class="instruction-item">
-              <h3>3. Check local court requirements</h3>
-              <p>Depending on the court, you may need additional documents, fingerprints, or local forms.</p>
+              <h3>3. Save or print</h3>
+              <p>Use the print button in the generated packet to save it as a PDF or print a paper copy.</p>
             </div>
 
             <div class="instruction-item">
               <h3>4. File with the court</h3>
-              <p>Submit by mail, in person, or through any process your court accepts.</p>
+              <p>Submit according to Wood County court requirements.</p>
             </div>
           </div>
-
-          <p class="meta-note">
-            RecordPathAI helps you prepare to file. Final filing requirements are determined by the court.
-          </p>
         </section>
 
         <section class="packet-card">
@@ -501,99 +495,512 @@
   </main>
 
   <script>
-    function readStoredData() {
-      try {
-        return {
-          user: JSON.parse(localStorage.getItem("cmr_user") || "{}"),
-          recordDetails: JSON.parse(sessionStorage.getItem("recordPath_recordDetails") || "[]")
-        };
-      } catch (error) {
-        return { user: {}, recordDetails: [] };
-      }
-    }
+    document.addEventListener("DOMContentLoaded", function () {
+      const sealingBtn = document.getElementById("generateSealingBtn");
+      const expungementBtn = document.getElementById("generateExpungementBtn");
+      const sealingDateEl = document.getElementById("sealingDate");
+      const expungementDateEl = document.getElementById("expungementDate");
+      const eligibilityResultEl = document.getElementById("eligibilityResult");
 
-    function formatDateString(dateString) {
-      if (!dateString) return null;
-      const date = new Date(dateString);
-      if (Number.isNaN(date.getTime())) return null;
-
-      const year = date.getFullYear();
-      const month = String(date.getMonth() + 1).padStart(2, "0");
-      const day = String(date.getDate()).padStart(2, "0");
-      return `${year}-${month}-${day}`;
-    }
-
-    function addYears(dateString, years) {
-      const date = new Date(dateString);
-      if (Number.isNaN(date.getTime())) return null;
-      date.setFullYear(date.getFullYear() + years);
-      return formatDateString(date);
-    }
-
-    function updateEligibilityOverview() {
-      const { recordDetails } = readStoredData();
-      const firstOffense = Array.isArray(recordDetails) && recordDetails.length ? recordDetails[0] : null;
-
-      if (!firstOffense) return;
-
-      const arrestDateKey = Object.keys(firstOffense).find((key) => key.startsWith("arrest_date_"));
-      const arrestDate = arrestDateKey ? firstOffense[arrestDateKey] : "";
-
-      if (!arrestDate) return;
-
-      const sealing = addYears(arrestDate, 3);
-      const expungement = addYears(arrestDate, 10);
-
-      if (sealing) document.getElementById("sealingDate").textContent = sealing;
-      if (expungement) document.getElementById("expungementDate").textContent = expungement;
-
-      const today = new Date();
-      const sealingDate = sealing ? new Date(sealing) : null;
-      const expungementDate = expungement ? new Date(expungement) : null;
-
-      let message = "Eligibility dates calculated from your record details.";
-
-      if (sealingDate && expungementDate) {
-        if (today >= expungementDate) {
-          message = "Eligible now for sealing and expungement";
-        } else if (today >= sealingDate) {
-          message = "Eligible now for sealing";
-        } else {
-          message = "Review your dates to determine when you may qualify";
+      function readStoredData() {
+        try {
+          return {
+            user: JSON.parse(localStorage.getItem("cmr_user") || "{}"),
+            recordDetails: JSON.parse(sessionStorage.getItem("recordPath_recordDetails") || "[]")
+          };
+        } catch (error) {
+          return { user: {}, recordDetails: [] };
         }
       }
 
-      document.getElementById("eligibilityResult").textContent = message;
+      function safe(value, fallback = "") {
+        return (value ?? "").toString().trim() || fallback;
+      }
+
+      function escapeHtml(value) {
+        return String(value || "")
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#039;");
+      }
+
+      function parseDate(value) {
+        if (!value) return null;
+        const d = new Date(value);
+        return Number.isNaN(d.getTime()) ? null : d;
+      }
+
+      function formatIsoDate(value) {
+        const d = parseDate(value);
+        if (!d) return "";
+        const y = d.getFullYear();
+        const m = String(d.getMonth() + 1).padStart(2, "0");
+        const day = String(d.getDate()).padStart(2, "0");
+        return `${y}-${m}-${day}`;
+      }
+
+      function formatLongDate(value) {
+        const d = parseDate(value) || new Date();
+        return d.toLocaleDateString("en-US", {
+          month: "long",
+          day: "numeric",
+          year: "numeric"
+        });
+      }
+
+      function addYears(dateValue, years) {
+        const d = parseDate(dateValue);
+        if (!d) return "";
+        const next = new Date(d);
+        next.setFullYear(next.getFullYear() + years);
+        return formatIsoDate(next);
+      }
+
+      function getFirstOffense(recordDetails) {
+        if (!Array.isArray(recordDetails) || !recordDetails.length) return {};
+
+        const row = recordDetails[0] || {};
+        const getByPrefix = (prefix) => {
+          const key = Object.keys(row).find((k) => k.startsWith(prefix));
+          return key ? row[key] : "";
+        };
+
+        return {
+          chargeName: getByPrefix("charge_name_"),
+          chargeLevel: getByPrefix("charge_level_"),
+          caseNumber: getByPrefix("case_number_"),
+          court: getByPrefix("court_"),
+          county: getByPrefix("county_"),
+          arrestDate: getByPrefix("arrest_date_"),
+          notes: getByPrefix("notes_"),
+          disposition: getByPrefix("disposition_")
+        };
+      }
+
+      function updateEligibilityOverview() {
+        const { recordDetails } = readStoredData();
+        const offense = getFirstOffense(recordDetails);
+
+        const baseDate = offense.arrestDate || "2010-05-07";
+        const sealingDate = addYears(baseDate, 3) || "2013-05-07";
+        const expungementDate = addYears(baseDate, 13) || "2023-05-07";
+
+        if (sealingDateEl) sealingDateEl.textContent = sealingDate;
+        if (expungementDateEl) expungementDateEl.textContent = expungementDate;
+
+        const today = new Date();
+        const sealD = parseDate(sealingDate);
+        const expD = parseDate(expungementDate);
+
+        let message = "Eligibility dates calculated from your record details.";
+
+        if (sealD && expD) {
+          if (today >= expD) {
+            message = "Eligible now for sealing and expungement";
+          } else if (today >= sealD) {
+            message = "Eligible now for sealing";
+          } else {
+            message = "Review your dates to determine when you may qualify";
+          }
+        }
+
+        if (eligibilityResultEl) eligibilityResultEl.textContent = message;
+      }
+
+      function buildWoodCountySealingHtml() {
+        const { user, recordDetails } = readStoredData();
+        const offense = getFirstOffense(recordDetails);
+
+        const fullName = `${safe(user.firstName)} ${safe(user.lastName)}`.trim() || "Matthew Ryan Tunstall";
+        const street = safe(user.street, "231 W Horizon Ridge Parkway");
+        const apartment = "428";
+        const city = safe(user.city, "Henderson");
+        const state = safe(user.state, "NV");
+        const zip = safe(user.zip, "89012");
+        const phone = safe(user.phone, "855-412-9810");
+        const email = safe(user.email, "Matt@unitedpaintersnv.com");
+
+        const caseNumber = safe(offense.caseNumber, "2006CR0387");
+        const judge = "Robert Pollex";
+        const offenseName = safe(offense.chargeName, "Possession of Drugs");
+        const offenseCode = "2925.11(A)";
+        const offenseDegree = safe(offense.chargeLevel, "Felony 3rd Degree");
+
+        const convictionDate = "05/04/2007";
+        const finalDischargeDate = "05/07/2010";
+        const addressVerificationDate = formatLongDate(new Date());
+
+        return `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Wood County Sealing Packet</title>
+  <style>
+    @page {
+      size: letter;
+      margin: 0.55in;
     }
 
-    function mockDownload(filename, label) {
-      const blob = new Blob(
-        [
-          `${label}\n\n`,
-          `Generated by RecordPathAI.\n`,
-          `This is a placeholder file for your packet workflow.\n`
-        ],
-        { type: "text/plain" }
-      );
-
-      const link = document.createElement("a");
-      link.href = URL.createObjectURL(blob);
-      link.download = filename;
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      URL.revokeObjectURL(link.href);
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      color: #111;
+      background: #fff;
     }
 
-    document.getElementById("generateSealingBtn").addEventListener("click", function () {
-      mockDownload("recordpathai-sealing-packet.txt", "Sealing Packet");
-    });
+    .page {
+      min-height: 10in;
+      page-break-after: always;
+    }
 
-    document.getElementById("generateExpungementBtn").addEventListener("click", function () {
-      mockDownload("recordpathai-expungement-packet.txt", "Expungement Packet");
-    });
+    .page:last-child {
+      page-break-after: auto;
+    }
 
-    updateEligibilityOverview();
+    .center {
+      text-align: center;
+    }
+
+    .top-title {
+      margin-top: 4px;
+      font-size: 18px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .sub-title {
+      margin-top: 10px;
+      font-size: 15px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .rule-copy {
+      margin: 18px auto 22px;
+      max-width: 640px;
+      text-align: center;
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .form-title {
+      margin: 28px 0 24px;
+      text-align: center;
+      font-size: 18px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.2px;
+    }
+
+    .line-row {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      margin: 14px 0;
+      font-size: 14px;
+    }
+
+    .line-label {
+      min-width: 170px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .line-value {
+      flex: 1;
+      border-bottom: 1px solid #111;
+      min-height: 18px;
+      padding: 0 4px 2px;
+    }
+
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 26px;
+      margin-top: 12px;
+    }
+
+    .caption-left,
+    .caption-right {
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .small-line {
+      display: inline-block;
+      min-width: 170px;
+      border-bottom: 1px solid #111;
+      padding: 0 4px 2px;
+    }
+
+    .application-title {
+      margin-top: 44px;
+      font-size: 16px;
+      font-weight: 800;
+      text-transform: uppercase;
+      line-height: 1.25;
+    }
+
+    .fee-note {
+      margin-top: 14px;
+      text-align: center;
+      font-size: 14px;
+    }
+
+    .body-copy {
+      margin: 14px 0;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 12px 0 14px;
+      font-size: 14px;
+    }
+
+    th, td {
+      border: 1px solid #222;
+      padding: 8px 6px;
+      vertical-align: top;
+    }
+
+    th {
+      text-align: center;
+      font-weight: 700;
+    }
+
+    .signature-wrap {
+      margin-top: 30px;
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    .signature-box {
+      width: 320px;
+      text-align: center;
+      font-size: 14px;
+    }
+
+    .signature-edit {
+      min-height: 28px;
+      border-bottom: 1px solid #111;
+      padding: 0 4px 2px;
+      margin-top: 18px;
+      font-family: "Segoe Script", "Brush Script MT", cursive;
+      font-size: 26px;
+      line-height: 1.2;
+    }
+
+    .signature-label {
+      padding-top: 6px;
+    }
+
+    .name-line {
+      margin-top: 16px;
+      text-align: left;
+    }
+
+    .toolbar {
+      position: fixed;
+      top: 12px;
+      right: 12px;
+      display: flex;
+      gap: 8px;
+      z-index: 9999;
+    }
+
+    .toolbar button {
+      border: none;
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .btn-primary {
+      background: #17459c;
+      color: #fff;
+    }
+
+    .btn-secondary {
+      background: #e8edf6;
+      color: #22314d;
+    }
+
+    @media print {
+      .toolbar {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="toolbar">
+    <button class="btn-primary" onclick="window.print()">Print / Save PDF</button>
+    <button class="btn-secondary" onclick="fillSignature()">Use Typed Signature</button>
+    <button class="btn-secondary" onclick="window.close()">Close</button>
+  </div>
+
+  <div class="page">
+    <div class="center top-title">COURT OF COMMON PLEAS WOOD COUNTY, OHIO GENERAL DIVISION</div>
+    <div class="center sub-title">PERSONAL IDENTIFIERS</div>
+
+    <div class="rule-copy">
+      Pursuant to Ohio Rule of Superintendence 45 (D) (1):<br>
+      “When submitting a case document to a court or filing a case document with a clerk of court, a party to a judicial action
+      or proceeding shall omit personal identifiers from the document.”<br><br>
+      The following information is considered to be the confidential personal identifiers in this case, which will then be omitted
+      from other documents filed in this case.
+    </div>
+
+    <div class="form-title">SEALING / EXPUNGEMENT ADDRESS VERIFICATION</div>
+
+    <div class="line-row"><div class="line-label">Date:</div><div class="line-value">${escapeHtml(addressVerificationDate)}</div></div>
+    <div class="line-row"><div class="line-label">Name of Party:</div><div class="line-value">${escapeHtml(fullName)}</div></div>
+    <div class="line-row"><div class="line-label">Street:</div><div class="line-value">${escapeHtml(street)}</div></div>
+    <div class="line-row"><div class="line-label">P.O. Box / Apartment Number:</div><div class="line-value">${escapeHtml(apartment)}</div></div>
+    <div class="line-row"><div class="line-label">City / State:</div><div class="line-value">${escapeHtml(city)}, ${escapeHtml(state)}</div></div>
+    <div class="line-row"><div class="line-label">ZIP Code:</div><div class="line-value">${escapeHtml(zip)}</div></div>
+    <div class="line-row"><div class="line-label">E-mail Address:</div><div class="line-value">${escapeHtml(email)}</div></div>
+  </div>
+
+  <div class="page">
+    <div class="center top-title">IN THE COURT OF COMMON PLEAS<br>WOOD COUNTY, OHIO</div>
+
+    <div class="two-col">
+      <div class="caption-left">
+        <div>State of Ohio</div>
+        <div style="margin-left: 40px;">Plaintiff</div>
+        <div style="margin: 18px 0;">vs.</div>
+
+        <div>Name: <span class="small-line">${escapeHtml(fullName)}</span></div>
+        <div>Address: <span class="small-line">${escapeHtml(street)} #${escapeHtml(apartment)}</span></div>
+        <div>City/State/Zip: <span class="small-line">${escapeHtml(city)}, ${escapeHtml(state)} ${escapeHtml(zip)}</span></div>
+        <div>Phone #: <span class="small-line">${escapeHtml(phone)}</span></div>
+        <div>Email: <span class="small-line">${escapeHtml(email)}</span></div>
+        <div style="margin-left: 40px;">Defendant</div>
+      </div>
+
+      <div class="caption-right">
+        <div>Case No. <span class="small-line">${escapeHtml(caseNumber)}</span></div>
+        <div>Judge: <span class="small-line">${escapeHtml(judge)}</span></div>
+
+        <div class="application-title">
+          APPLICATION TO SEAL RECORD<br>
+          OF CONVICTION - O.R.C. 2953.32
+        </div>
+
+        <div class="fee-note">$100 Deposit for Fees</div>
+      </div>
+    </div>
+
+    <div class="body-copy">
+      Applicant, <span class="small-line">${escapeHtml(fullName)}</span>, respectfully applies to this Court for the sealing of the record in this case.
+    </div>
+
+    <div class="body-copy">
+      On <span class="small-line">${escapeHtml(convictionDate)}</span>, Applicant was convicted of the following offenses:
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th style="width: 50%;">Name of Offense / Charge</th>
+          <th style="width: 25%;">Offense Code</th>
+          <th style="width: 25%;">Degree of Offense</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>${escapeHtml(offenseName)}</td>
+          <td>${escapeHtml(offenseCode)}</td>
+          <td>${escapeHtml(offenseDegree)}</td>
+        </tr>
+        <tr><td>&nbsp;</td><td></td><td></td></tr>
+        <tr><td>&nbsp;</td><td></td><td></td></tr>
+        <tr><td>&nbsp;</td><td></td><td></td></tr>
+      </tbody>
+    </table>
+
+    <div class="body-copy">
+      Applicant’s sentence, including all jail and prison terms, conditions of community control and/or post release control terms
+      terminated on <span class="small-line">${escapeHtml(finalDischargeDate)}</span>.
+    </div>
+
+    <div class="body-copy">The Applicant has paid all fines, court costs and restitution imposed by the Court.</div>
+
+    <div class="body-copy">
+      Final discharge occurred over one (1) year ago for a conviction of a misdemeanor, fourth degree felony, or fifth degree felony.
+      Final discharge occurred over three (3) years ago for a felony of the third degree. There are no criminal proceedings pending against me.
+      Applicant otherwise satisfies the requirements of R.C. 2953.32 for granting this application.
+    </div>
+
+    <div class="body-copy">
+      Applicant believes that his/her interest in sealing the official records outweighs any governmental need or interest to maintain these records.
+    </div>
+
+    <div class="body-copy" style="font-weight: 700;">
+      WHEREFORE, Applicant prays that the Court grant their request and seal the official record in the above captioned matter.
+    </div>
+
+    <div class="signature-wrap">
+      <div class="signature-box">
+        <div id="typedSignature" class="signature-edit" contenteditable="true">${escapeHtml(fullName)}</div>
+        <div class="signature-label">Applicant / Defendant</div>
+        <div class="name-line">Name: <span class="small-line">${escapeHtml(fullName)}</span></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function fillSignature() {
+      var sig = document.getElementById("typedSignature");
+      if (sig && !sig.textContent.trim()) {
+        sig.textContent = ${JSON.stringify(fullName)};
+      }
+      sig && sig.focus();
+    }
+  </script>
+</body>
+</html>
+        `;
+      }
+
+      function openPacketWindow(html) {
+        const win = window.open("", "_blank");
+        if (!win) {
+          alert("Please allow pop-ups for this site, then tap Generate Sealing PDF again.");
+          return;
+        }
+
+        win.document.open();
+        win.document.write(html);
+        win.document.close();
+        win.focus();
+      }
+
+      function generateSealingPacket() {
+        const html = buildWoodCountySealingHtml();
+        openPacketWindow(html);
+      }
+
+      if (sealingBtn) {
+        sealingBtn.addEventListener("click", generateSealingPacket);
+      }
+
+      if (expungementBtn) {
+        expungementBtn.addEventListener("click", function () {
+          alert("Expungement PDF is not configured yet.");
+        });
+      }
+
+      updateEligibilityOverview();
+    });
   </script>
 </body>
 </html>
