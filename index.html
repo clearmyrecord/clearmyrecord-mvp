@@ -6,20 +6,20 @@
   <title>RecordPathAI</title>
 
   <style>
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     :root {
       --bg: #eef2f8;
+      --surface: #ffffff;
       --text: #233d70;
       --muted: #667796;
+      --line: #dbe3f0;
       --blue: #6da7ff;
       --blue-dark: #4f88e8;
       --blue-soft: #dfe9fb;
-      --line: #dbe3f0;
-      --radius: 20px;
-      --container: 1100px;
+      --shadow: 0 10px 30px rgba(50, 78, 128, 0.08);
+      --radius: 24px;
+      --container: 1180px;
     }
 
     body {
@@ -35,174 +35,177 @@
     }
 
     .container {
-      width: min(var(--container), calc(100% - 24px));
+      width: min(var(--container), calc(100% - 32px));
       margin: 0 auto;
     }
 
     /* HEADER */
-
-    .header {
-      padding: 18px 0;
+    .site-header {
+      padding: 20px 0 12px;
     }
 
     .header-inner {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      gap: 16px;
-      flex-wrap: wrap;
+      gap: 20px;
     }
 
-    .logo {
-      font-weight: 800;
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 700;
       font-size: 18px;
       color: #3b6db4;
     }
 
+    .brand-icon {
+      width: 26px;
+      height: 32px;
+      border: 2px solid #222;
+      border-radius: 2px;
+      background: #fff;
+      position: relative;
+    }
+
+    .brand-icon::before {
+      content: "";
+      position: absolute;
+      left: 4px;
+      right: 4px;
+      top: 8px;
+      height: 2px;
+      background: #999;
+      box-shadow: 0 6px 0 #999, 0 12px 0 #999;
+    }
+
     .nav {
       display: flex;
-      gap: 10px;
+      gap: 14px;
       flex-wrap: wrap;
     }
 
     .nav a {
-      padding: 10px 14px;
-      border-radius: 12px;
-      font-size: 14px;
+      padding: 10px 12px;
+      border-radius: 14px;
     }
 
-    .nav .cta {
+    .nav-cta {
       background: #e8f0fd;
       font-weight: 700;
     }
 
-    .nav .login {
-      border: 1px solid #d6dfed;
-      font-weight: 700;
-    }
-
     /* HERO */
-
     .hero {
       padding: 30px 0 40px;
-    }
-
-    .hero-grid {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 24px;
+      text-align: center;
     }
 
     .hero h1 {
-      font-size: clamp(34px, 10vw, 52px);
+      font-size: clamp(38px, 6vw, 72px);
       line-height: 1;
-      margin-bottom: 14px;
+      margin-bottom: 18px;
       font-weight: 800;
     }
 
     .hero p {
-      font-size: 17px;
-      line-height: 1.5;
+      font-size: 20px;
       color: var(--muted);
-      margin-bottom: 20px;
+      margin-bottom: 28px;
     }
 
-    .button {
+    .hero-button {
       display: inline-block;
-      width: 100%;
-      text-align: center;
-      padding: 16px;
-      border-radius: 16px;
+      padding: 20px 34px;
+      border-radius: 20px;
       background: linear-gradient(180deg, #7fb2ff 0%, #5b93eb 100%);
-      color: white;
+      color: #fff;
       font-weight: 800;
-      font-size: 16px;
+      font-size: 20px;
     }
 
-    .note {
-      margin-top: 12px;
-      font-size: 14px;
-    }
-
-    /* SECTION */
-
+    /* STEPS */
     .section {
       padding: 30px 0;
     }
 
-    .section h2 {
+    .section-title {
       text-align: center;
-      font-size: clamp(28px, 7vw, 40px);
+      font-size: 42px;
+      font-weight: 800;
+      margin-bottom: 30px;
+    }
+
+    .steps-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+
+    .step-card {
+      background: rgba(255,255,255,0.6);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 30px;
+      text-align: center;
+    }
+
+    .step-icon {
+      font-size: 48px;
       margin-bottom: 20px;
     }
 
-    /* STEPS */
-
-    .grid {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 16px;
-    }
-
-    .card {
-      background: rgba(255,255,255,0.7);
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
-      padding: 20px;
-      text-align: center;
-    }
-
-    .card h3 {
+    .step-card h3 {
+      font-size: 20px;
       margin-bottom: 10px;
     }
 
-    .card p {
+    .step-card p {
       color: var(--muted);
-      font-size: 15px;
     }
 
     /* FEATURES */
-
-    .feature {
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
       text-align: center;
-      padding: 10px;
     }
 
-    .feature h4 {
+    .feature-icon {
+      font-size: 34px;
+      margin-bottom: 10px;
+    }
+
+    .feature-item h4 {
       margin-bottom: 6px;
     }
 
-    .feature p {
-      font-size: 14px;
-      color: var(--muted);
-    }
-
     /* CTA */
-
-    .cta-section {
-      padding: 30px 0 50px;
+    .bottom-cta {
       text-align: center;
+      padding: 50px 0;
     }
 
-    /* DESKTOP */
-
-    @media (min-width: 768px) {
-      .hero-grid {
-        grid-template-columns: 1fr 1fr;
-        align-items: center;
+    /* MOBILE */
+    @media (max-width: 900px) {
+      .steps-grid,
+      .features-grid {
+        grid-template-columns: 1fr;
       }
 
-      .grid-3 {
-        grid-template-columns: repeat(3, 1fr);
+      .header-inner {
+        flex-direction: column;
+        align-items: flex-start;
       }
 
-      .grid-4 {
-        grid-template-columns: repeat(4, 1fr);
+      .hero h1 {
+        font-size: 44px;
       }
 
-      .button {
-        width: auto;
-        padding: 18px 28px;
+      .hero-button {
+        width: 100%;
       }
     }
   </style>
@@ -210,100 +213,98 @@
 
 <body>
 
-  <!-- HEADER -->
-  <header class="header">
-    <div class="container header-inner">
-      <div class="logo">RecordPathAI</div>
+<header class="site-header">
+  <div class="container header-inner">
+    <a href="index.html" class="brand">
+      <span class="brand-icon"></span>
+      <span>RecordPathAI</span>
+    </a>
 
-      <nav class="nav">
-        <a href="how-it-works.html">How It Works</a>
-        <a href="eligibility.html">Eligibility</a>
-        <a href="eligibility.html" class="cta">Check Eligibility</a>
-        <a href="login.html" class="login">Log In</a>
-      </nav>
-    </div>
-  </header>
+    <nav class="nav">
+      <a href="how-it-works.html">How It Works</a>
+      <a href="eligibility.html">Eligibility</a>
+      <a href="eligibility.html" class="nav-cta">Check Eligibility</a>
+    </nav>
+  </div>
+</header>
 
-  <!-- HERO -->
-  <section class="hero">
-    <div class="container hero-grid">
-      <div>
-        <h1>Clear Your Record with Confidence</h1>
-        <p>
-          RecordPathAI helps you find out if you qualify for record sealing or expungement in minutes — and prepares you to move forward with the court.
-        </p>
+<main>
 
-        <a href="eligibility.html" class="button">Check Eligibility</a>
-        <div class="note">100% Free & Confidential</div>
+<section class="hero">
+  <div class="container">
+    <h1>Clear Your Record with Confidence</h1>
+    <p>Find out if you qualify in under 60 seconds.</p>
+    <a href="eligibility.html" class="hero-button">Check Eligibility</a>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <h2 class="section-title">How It Works</h2>
+
+    <div class="steps-grid">
+      <div class="step-card">
+        <div class="step-icon">🔎</div>
+        <h3>Check Eligibility</h3>
+        <p>Answer a few quick questions.</p>
       </div>
 
-      <div>
-        <!-- keep your illustration here if needed -->
+      <div class="step-card">
+        <div class="step-icon">📝</div>
+        <h3>Build Your Record</h3>
+        <p>Enter your charges and case details.</p>
+      </div>
+
+      <div class="step-card">
+        <div class="step-icon">📄</div>
+        <h3>Generate Packet</h3>
+        <p>Prepare your filing documents.</p>
       </div>
     </div>
-  </section>
+  </div>
+</section>
 
-  <!-- STEPS -->
-  <section class="section">
-    <div class="container">
-      <h2>Simple steps to get started</h2>
+<section class="section">
+  <div class="container">
+    <h2 class="section-title">Why RecordPathAI</h2>
 
-      <div class="grid grid-3">
-        <div class="card">
-          <h3>1. Check Eligibility</h3>
-          <p>Answer a few questions about your record and timing.</p>
-        </div>
+    <div class="features-grid">
+      <div class="feature-item">
+        <div class="feature-icon">⚡</div>
+        <h4>Fast</h4>
+        <p>Minutes, not weeks.</p>
+      </div>
 
-        <div class="card">
-          <h3>2. Build Your Record Profile</h3>
-          <p>Enter your case details so everything is structured correctly.</p>
-        </div>
+      <div class="feature-item">
+        <div class="feature-icon">🔒</div>
+        <h4>Private</h4>
+        <p>Your data stays secure.</p>
+      </div>
 
-        <div class="card">
-          <h3>3. Prepare Your Filing Packet</h3>
-          <p>Get the documents and guidance you need to move forward.</p>
-        </div>
+      <div class="feature-item">
+        <div class="feature-icon">📑</div>
+        <h4>Organized</h4>
+        <p>Structured for courts.</p>
+      </div>
+
+      <div class="feature-item">
+        <div class="feature-icon">⚖️</div>
+        <h4>Court Ready</h4>
+        <p>Aligned with requirements.</p>
       </div>
     </div>
-  </section>
+  </div>
+</section>
 
-  <!-- FEATURES -->
-  <section class="section">
-    <div class="container">
-      <h2>What RecordPathAI Helps With</h2>
+<section class="bottom-cta">
+  <div class="container">
+    <a href="eligibility.html" class="hero-button">
+      Start Your Free Eligibility Check
+    </a>
+  </div>
+</section>
 
-      <div class="grid grid-4">
-        <div class="feature">
-          <h4>Fast Screening</h4>
-          <p>Check eligibility in minutes.</p>
-        </div>
-
-        <div class="feature">
-          <h4>Private & Secure</h4>
-          <p>Your information stays confidential.</p>
-        </div>
-
-        <div class="feature">
-          <h4>Structured Packets</h4>
-          <p>Organize everything needed for filing.</p>
-        </div>
-
-        <div class="feature">
-          <h4>Court Awareness</h4>
-          <p>Understand requirements that vary by court.</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- CTA -->
-  <section class="cta-section">
-    <div class="container">
-      <a href="eligibility.html" class="button">
-        Start Your Free Eligibility Check
-      </a>
-    </div>
-  </section>
+</main>
 
 </body>
 </html>
