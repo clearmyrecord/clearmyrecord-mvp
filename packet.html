@@ -585,6 +585,7 @@
               <h3>Case</h3>
               <div class="summary-list">
                 <div class="summary-row"><strong>Charge</strong><span id="summaryCharge">—</span></div>
+                <div class="summary-row"><strong>Offense Code</strong><span id="summaryOffenseCode">—</span></div>
                 <div class="summary-row"><strong>Level</strong><span id="summaryLevel">—</span></div>
                 <div class="summary-row"><strong>Case Number</strong><span id="summaryCaseNumber">—</span></div>
                 <div class="summary-row"><strong>Court</strong><span id="summaryCourt">—</span></div>
@@ -725,6 +726,7 @@
 
         return {
           chargeName: byPrefix("charge_name_"),
+          offenseCode: byPrefix("offense_code_"),
           chargeLevel: byPrefix("charge_level_"),
           caseNumber: byPrefix("case_number_"),
           arrestDate: byPrefix("arrest_date_"),
@@ -752,6 +754,7 @@
           phone: safe(user.phone, WOOD_DEFAULTS.phone),
           caseNumber: safe(offense.caseNumber, WOOD_DEFAULTS.caseNumber),
           chargeName: safe(offense.chargeName, WOOD_DEFAULTS.offenseName),
+          offenseCode: safe(offense.offenseCode, WOOD_DEFAULTS.offenseCode),
           chargeLevel: safe(offense.chargeLevel, WOOD_DEFAULTS.offenseDegree),
           arrestDate: safe(offense.arrestDate, WOOD_DEFAULTS.finalDischargeDate),
           disposition: safe(offense.disposition, ""),
@@ -767,6 +770,7 @@
         document.getElementById("summaryPhone").textContent = data.phone;
         document.getElementById("summaryAddress").textContent = `${data.street}, ${data.city}, ${data.state} ${data.zip}`;
         document.getElementById("summaryCharge").textContent = data.chargeName;
+        document.getElementById("summaryOffenseCode").textContent = data.offenseCode;
         document.getElementById("summaryLevel").textContent = data.chargeLevel;
         document.getElementById("summaryCaseNumber").textContent = data.caseNumber;
         document.getElementById("summaryCourt").textContent = data.court;
@@ -1007,7 +1011,7 @@
           draw(applicationPage, formatDateForCourt(WOOD_DEFAULTS.convictionDate), 72, 386, 12, helveticaBold);
 
           drawFit(applicationPage, data.chargeName, 52, 346, 185, 12, helvetica);
-          drawFit(applicationPage, WOOD_DEFAULTS.offenseCode, 265, 346, 110, 12, helvetica);
+          drawFit(applicationPage, data.offenseCode, 265, 346, 110, 12, helvetica);
           drawFit(applicationPage, data.chargeLevel, 425, 346, 130, 12, helvetica);
 
           draw(applicationPage, formatDateForCourt(WOOD_DEFAULTS.finalDischargeDate), 262, 241, 12, helveticaBold);
