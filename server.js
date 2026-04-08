@@ -5,82 +5,70 @@ app.use(express.json());
 app.use(express.static("."));
 
 const OFFICIAL_PACKET_HINTS = [
-  "application",
-  "petition",
-  "sealing",
+  "application for sealing",
+  "2953.32",
+  "conviction",
+  "dismissal",
   "expungement",
-  "expunction",
-  "nondisclosure",
-  "record",
   "pdf",
-  "form",
-  "forms",
-  "packet"
+  "forms"
 ];
 
 const OFFICIAL_DOMAIN_HINTS = [
   ".gov",
   ".us",
-  "court",
-  "courts",
   "clerk",
-  "judiciary",
-  "judicial",
+  "court",
+  "municipal",
   "county",
-  "state"
+  "commonpleas",
+  "common-pleas",
+  "co."
 ];
 
-function normalize(value) {
-  return String(value || "").trim().replace(/\s+/g, " ");
-}
-
-function scoreResult(result, courtQuery, stateQuery) {
+function scoreResult(result, courtQuery) {
   const title = (result.title || "").toLowerCase();
   const url = (result.url || "").toLowerCase();
-  const snippet = (result.snippet || "").toLowerCase();
-  const court = (courtQuery || "").toLowerCase();
-  const state = (stateQuery || "").toLowerCase();
+  const query = (courtQuery || "").toLowerCase();
 
   let score = 0;
 
   for (const hint of OFFICIAL_PACKET_HINTS) {
-    if (title.includes(hint)) score += 2;
-    if (url.includes(hint)) score += 2;
-    if (snippet.includes(hint)) score += 1;
+    if (title.includes(hint) || url.includes(hint.replace(/\./g, ""))) score += 2;
   }
 
   for (const hint of OFFICIAL_DOMAIN_HINTS) {
     if (url.includes(hint)) score += 2;
   }
 
-  if (url.endsWith(".pdf")) score += 6;
-  if (url.includes("/view/")) score += 3;
-  if (title.includes("application")) score += 2;
-  if (title.includes("petition")) score += 2;
-  if (title.includes("local forms")) score += 2;
+  if (url.endsWith(".pdf") || url.includes("/view/")) score += 4;
+  if (title.includes("application for sealing")) score += 5;
+  if (title.includes("conviction")) score += 2;
+  if (query && (title.includes(query) || url.includes(query.replace(/\s+/g, "-")))) score += 4;
 
-  if (court && (title.includes(court) || snippet.includes(court))) score += 5;
-  if (state && (title.includes(state) || snippet.includes(state) || url.includes(state.replace(/\s+/g, "")))) score += 3;
-
-  if (url.includes("lawyer") || url.includes("attorney") || url.includes("blog")) score -= 6;
-  if (url.includes("youtube") || url.includes("facebook")) score -= 10;
+  if (url.includes("law") && !url.includes("clerk") && !url.includes("court")) score -= 4;
+  if (url.includes("blog")) score -= 4;
 
   return score;
 }
 
-function buildQueries({ court, county, state, type }) {
-  const parts = [court, county, state].filter(Boolean).join(" ");
+function normalizeCourtName(input) {
+  return String(input || "").trim().replace(/\s+/g, " ");
+}
+
+function buildSearchQueries(court, state, type) {
   return [
-    `${parts} ${type} packet pdf`,
-    `${parts} ${type} forms pdf`,
-    `${parts} application petition ${type} pdf`,
-    `${parts} clerk court forms ${type}`
+    `${court} ${state} ${type} packet pdf`,
+    `${court} clerk forms application for sealing pdf`,
+    `${court} 2953.32 conviction pdf`
   ];
 }
 
 async function searchWeb(query) {
   const apiKey = process.env.SERPAPI_KEY;
-  if (!apiKey) throw new Error("Missing SERPAPI_KEY");
+  if (!apiKey) {
+    throw new Error("Missing SERPAPI_KEY");
+  }
 
   const url = new URL("https://serpapi.com/search.json");
   url.searchParams.set("engine", "google");
@@ -89,7 +77,9 @@ async function searchWeb(query) {
   url.searchParams.set("num", "10");
 
   const res = await fetch(url);
-  if (!res.ok) throw new Error(`Search failed: ${res.status}`);
+  if (!res.ok) {
+    throw new Error(`Search failed: ${res.status}`);
+  }
 
   const json = await res.json();
   const results = Array.isArray(json.organic_results) ? json.organic_results : [];
@@ -101,66 +91,53 @@ async function searchWeb(query) {
   }));
 }
 
-function getHardcodedMapping({ court, county, state, type }) {
-  const c = `${court} ${county} ${state}`.toLowerCase();
+function woodCountyShortcut(court) {
+  const c = court.toLowerCase();
+  if (!c.includes("wood")) return null;
 
-  if (
-    type === "sealing" &&
-    c.includes("wood") &&
-    c.includes("common pleas") &&
-    c.includes("ohio")
-  ) {
-    return {
-      court: "Wood County Court of Common Pleas",
-      county: "Wood County",
-      state: "Ohio",
-      packetTitle: "Application for Sealing 2953.32 (Conviction)",
-      packetUrl: "https://clerkofcourt.co.wood.oh.us/DocumentCenter/View/142/Application-for-Sealing-295332-Conviction-PDF",
-      source: "Wood County Clerk of Courts",
-      confidence: 0.99,
-      mappingKey: "wood-county-common-pleas-conviction-sealing"
-    };
-  }
-
-  return null;
+  return {
+    court: "Wood County Court of Common Pleas",
+    packetTitle: "Application for Sealing 2953.32 (Conviction)",
+    packetUrl: "https://clerkofcourt.co.wood.oh.us/DocumentCenter/View/142/Application-for-Sealing-295332-Conviction-PDF",
+    source: "Wood County Clerk of Courts",
+    confidence: 0.99
+  };
 }
 
 app.get("/api/find-packet", async (req, res) => {
   try {
-    const court = normalize(req.query.court);
-    const county = normalize(req.query.county);
-    const state = normalize(req.query.state);
-    const type = normalize(req.query.type || "sealing");
+    const court = normalizeCourtName(req.query.court);
+    const state = normalizeCourtName(req.query.state || "Ohio");
+    const type = normalizeCourtName(req.query.type || "sealing");
 
-    if (!court || !state) {
-      return res.status(400).json({ error: "court and state are required" });
+    if (!court) {
+      return res.status(400).json({ error: "Missing court" });
     }
 
-    const hardcoded = getHardcodedMapping({ court, county, state, type });
-    if (hardcoded) return res.json(hardcoded);
+    const shortcut = woodCountyShortcut(court);
+    if (shortcut) {
+      return res.json(shortcut);
+    }
 
-    const queries = buildQueries({ court, county, state, type });
-    const all = [];
+    const queries = buildSearchQueries(court, state, type);
+    const allResults = [];
 
     for (const q of queries) {
       const results = await searchWeb(q);
-      all.push(...results);
+      allResults.push(...results);
     }
 
     const deduped = [];
     const seen = new Set();
 
-    for (const item of all) {
-      if (!item.url || seen.has(item.url)) continue;
-      seen.add(item.url);
-      deduped.push(item);
+    for (const r of allResults) {
+      if (!r.url || seen.has(r.url)) continue;
+      seen.add(r.url);
+      deduped.push(r);
     }
 
     const ranked = deduped
-      .map((r) => ({
-        ...r,
-        _score: scoreResult(r, `${court} ${county}`.trim(), state)
-      }))
+      .map((r) => ({ ...r, _score: scoreResult(r, court) }))
       .sort((a, b) => b._score - a._score);
 
     const best = ranked[0];
@@ -168,13 +145,10 @@ app.get("/api/find-packet", async (req, res) => {
     if (!best || best._score < 4) {
       return res.json({
         court,
-        county,
-        state,
         packetTitle: "",
         packetUrl: "",
         source: "",
-        confidence: 0,
-        mappingKey: ""
+        confidence: 0
       });
     }
 
@@ -185,17 +159,14 @@ app.get("/api/find-packet", async (req, res) => {
 
     return res.json({
       court,
-      county,
-      state,
       packetTitle: best.title,
       packetUrl: best.url,
       source,
-      confidence: Math.min(0.98, 0.5 + best._score / 20),
-      mappingKey: ""
+      confidence: Math.min(0.98, 0.5 + best._score / 20)
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "Could not search for packet" });
+    return res.status(500).json({ error: "Could not search for packet" });
   }
 });
 
@@ -206,12 +177,12 @@ app.get("/api/fetch-pdf", async (req, res) => {
       return res.status(400).send("Invalid URL");
     }
 
-    const host = new URL(url).hostname.toLowerCase();
+    const parsed = new URL(url);
+    const host = parsed.hostname.toLowerCase();
+
     const allowed =
       host.includes("court") ||
-      host.includes("courts") ||
       host.includes("clerk") ||
-      host.includes("judiciary") ||
       host.endsWith(".gov") ||
       host.endsWith(".us");
 
