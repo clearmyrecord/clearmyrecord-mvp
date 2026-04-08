@@ -213,7 +213,7 @@
 
     .date-grid {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(4, 1fr);
       gap: 18px;
       margin-top: 20px;
     }
@@ -236,7 +236,7 @@
 
     .date-value {
       margin: 0;
-      font-size: clamp(24px, 3vw, 38px);
+      font-size: clamp(20px, 2.5vw, 30px);
       line-height: 1.08;
       font-weight: 800;
       color: #1f2f4d;
@@ -269,7 +269,7 @@
 
     .summary-row {
       display: grid;
-      grid-template-columns: 150px 1fr;
+      grid-template-columns: 160px 1fr;
       gap: 10px;
       align-items: start;
       font-size: 15px;
@@ -556,12 +556,17 @@
           <div class="date-grid">
             <div class="date-box">
               <p class="date-label">State</p>
-              <p class="date-value" id="stateValue">Ohio</p>
+              <p class="date-value" id="stateValue">—</p>
             </div>
 
             <div class="date-box">
-              <p class="date-label">Case Date Used</p>
-              <p class="date-value" id="baseDateValue">—</p>
+              <p class="date-label">Conviction Date</p>
+              <p class="date-value" id="convictionDateValue">—</p>
+            </div>
+
+            <div class="date-box">
+              <p class="date-label">Probation Completed</p>
+              <p class="date-value" id="probationCompletedValue">—</p>
             </div>
 
             <div class="date-box">
@@ -649,7 +654,7 @@
           <div class="status-text" id="statusText">Ready.</div>
 
           <p class="meta-note">
-            If generation still fails, click <strong>Test PDF Access</strong> first. It will show the real problem instead of failing silently.
+            If generation fails, click <strong>Test PDF Access</strong> first. It will show the real issue.
           </p>
         </section>
 
@@ -672,7 +677,7 @@
         caseNumber: "2006CR0387",
         judge: "Robert Pollex",
         convictionDate: "2007-05-04",
-        finalDischargeDate: "2010-05-07",
+        probationCompletedDate: "2010-05-07",
         offenseCode: "2925.11(A)",
         offenseName: "Possession of Drugs",
         offenseDegree: "Felony 3rd Degree",
@@ -743,7 +748,8 @@
           offenseCode: byPrefix("offense_code_"),
           chargeLevel: byPrefix("charge_level_"),
           caseNumber: byPrefix("case_number_"),
-          arrestDate: byPrefix("arrest_date_"),
+          convictionDate: byPrefix("conviction_date_"),
+          probationCompletedDate: byPrefix("probation_completed_date_"),
           disposition: byPrefix("disposition_"),
           stateFromRecord: byPrefix("state_"),
           court: byPrefix("court_"),
@@ -770,7 +776,8 @@
           chargeName: safe(offense.chargeName, WOOD_DEFAULTS.offenseName),
           offenseCode: safe(offense.offenseCode, WOOD_DEFAULTS.offenseCode),
           chargeLevel: safe(offense.chargeLevel, WOOD_DEFAULTS.offenseDegree),
-          arrestDate: safe(offense.arrestDate, WOOD_DEFAULTS.finalDischargeDate),
+          convictionDate: safe(offense.convictionDate, WOOD_DEFAULTS.convictionDate),
+          probationCompletedDate: safe(offense.probationCompletedDate, WOOD_DEFAULTS.probationCompletedDate),
           disposition: safe(offense.disposition, ""),
           court: safe(offense.court, "Wood County Court of Common Pleas"),
           county: safe(offense.county, "Wood County")
@@ -795,28 +802,31 @@
       function updateEligibilitySection() {
         const data = getPacketData();
         const state = data.state;
-        const baseDate = data.arrestDate;
-        const baseDateObj = new Date(baseDate);
+        const convictionDate = data.convictionDate;
+        const probationCompletedDate = data.probationCompletedDate;
 
         document.getElementById("stateValue").textContent = state || "—";
-        document.getElementById("baseDateValue").textContent = baseDate || "—";
+        document.getElementById("convictionDateValue").textContent = convictionDate || "—";
+        document.getElementById("probationCompletedValue").textContent = probationCompletedDate || "—";
 
         const pill = document.getElementById("statusPill");
         const headline = document.getElementById("eligibilityHeadline");
         const summary = document.getElementById("eligibilitySummary");
         const eligibleDateEl = document.getElementById("eligibleDateValue");
 
-        if (Number.isNaN(baseDateObj.getTime())) {
+        const probationDateObj = new Date(probationCompletedDate);
+
+        if (Number.isNaN(probationDateObj.getTime())) {
           pill.className = "status-pill pending";
           pill.textContent = "Eligibility Needs Review";
-          headline.textContent = "We need a valid date to estimate eligibility.";
-          summary.textContent = "Go back and make sure the case date is filled in on the record details page.";
+          headline.textContent = "We need a valid probation completion date.";
+          summary.textContent = "Go back and make sure the date probation completed is filled in on the record details page.";
           eligibleDateEl.textContent = "—";
           return;
         }
 
         if (state === "Ohio") {
-          const eligibleDate = addYears(baseDate, 3);
+          const eligibleDate = addYears(probationCompletedDate, 3);
           const eligibleDateObj = new Date(eligibleDate);
           const isEligible = new Date() >= eligibleDateObj;
 
@@ -826,12 +836,12 @@
             pill.className = "status-pill eligible";
             pill.textContent = "Eligible to Seal";
             headline.textContent = "You appear eligible to seal your record.";
-            summary.textContent = `Based on the date entered for this case, the estimated waiting period has passed as of ${eligibleDate}.`;
+            summary.textContent = `Based on the probation completion date entered for this case, the estimated waiting period has passed as of ${eligibleDate}.`;
           } else {
             pill.className = "status-pill pending";
             pill.textContent = "Not Yet Eligible";
             headline.textContent = "You do not appear eligible to seal your record yet.";
-            summary.textContent = `Based on the date entered for this case, the estimated waiting period appears to end on ${eligibleDate}.`;
+            summary.textContent = `Based on the probation completion date entered for this case, the estimated waiting period appears to end on ${eligibleDate}.`;
           }
           return;
         }
@@ -1051,13 +1061,13 @@
           drawFit(applicationPage, data.email, 165, 458, 260, 12, helvetica);
 
           drawFit(applicationPage, data.fullName, 145, 421, 185, 12, helvetica);
-          draw(applicationPage, formatDateForCourt(WOOD_DEFAULTS.convictionDate), 72, 386, 12, helveticaBold);
+          draw(applicationPage, formatDateForCourt(data.convictionDate), 72, 386, 12, helveticaBold);
 
           drawFit(applicationPage, data.chargeName, 52, 346, 185, 12, helvetica);
           drawFit(applicationPage, data.offenseCode, 265, 346, 110, 12, helvetica);
           drawFit(applicationPage, data.chargeLevel, 425, 346, 130, 12, helvetica);
 
-          draw(applicationPage, formatDateForCourt(WOOD_DEFAULTS.finalDischargeDate), 262, 241, 12, helveticaBold);
+          draw(applicationPage, formatDateForCourt(data.probationCompletedDate), 262, 241, 12, helveticaBold);
 
           const sigDims = sigImage.scale(0.32);
           applicationPage.drawImage(sigImage, {
