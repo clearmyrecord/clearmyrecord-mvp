@@ -1,998 +1,493 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Your Filing Packet | RecordPathAI</title>
-  <script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
-  <style>
-    * { box-sizing: border-box; }
+<script>
+  const TEMPLATE_URL = "./assets/wood-county-application-for-sealing-295332-conviction.pdf";
 
-    :root {
-      --bg: #eef2f8;
-      --surface: #ffffff;
-      --surface-soft: #f6f9ff;
-      --text: #233d70;
-      --muted: #667796;
-      --line: #dbe3f0;
-      --shadow: 0 10px 30px rgba(50, 78, 128, 0.08);
-      --container: 1180px;
-      --green: #258344;
-      --green-soft: #eaf7ef;
-      --amber: #9a6700;
-      --amber-soft: #fff5dc;
-      --red: #b42318;
-      --red-soft: #fef0f0;
-      --blue: #17459c;
+  const DEFAULTS = {
+    woodCountyCaseNumber: "2006CR0387",
+    woodCountyJudge: "Robert Pollex",
+    woodCountyConvictionDate: "2007-05-04",
+    woodCountyFinalDischargeDate: "2010-05-07",
+    woodCountyOffenseCode: "2925.11(A)",
+    woodCountyOffenseName: "Possession of Drugs",
+    woodCountyOffenseDegree: "Felony 3rd Degree",
+    apartment: "428",
+    phone: "855-412-9810"
+  };
+
+  let signatureImageBytes = null;
+
+  function setStatus(message) {
+    const el = document.getElementById("statusText");
+    if (el) el.textContent = message;
+  }
+
+  function readStoredData() {
+    try {
+      return {
+        user: JSON.parse(localStorage.getItem("cmr_user") || "{}"),
+        recordDetails: JSON.parse(sessionStorage.getItem("recordPath_recordDetails") || "[]")
+      };
+    } catch (error) {
+      return { user: {}, recordDetails: [] };
     }
-
-    body {
-      margin: 0;
-      font-family: Arial, Helvetica, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-    }
-
-    a {
-      color: inherit;
-      text-decoration: none;
-    }
-
-    .container {
-      width: min(var(--container), calc(100% - 32px));
-      margin: 0 auto;
-    }
-
-    .site-header {
-      padding: 20px 0 12px;
-    }
-
-    .header-inner {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 20px;
-    }
-
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      font-weight: 700;
-      font-size: 18px;
-      color: #3b6db4;
-    }
-
-    .brand-icon {
-      width: 26px;
-      height: 32px;
-      border: 2px solid #222;
-      border-radius: 2px;
-      background: #fff;
-      position: relative;
-      flex: 0 0 auto;
-    }
-
-    .brand-icon::before {
-      content: "";
-      position: absolute;
-      left: 4px;
-      right: 4px;
-      top: 8px;
-      height: 2px;
-      background: #999;
-      box-shadow: 0 6px 0 #999, 0 12px 0 #999;
-    }
-
-    .nav {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      flex-wrap: wrap;
-    }
-
-    .nav a {
-      font-size: 16px;
-      color: var(--text);
-      padding: 10px 12px;
-      border-radius: 14px;
-    }
-
-    .nav .nav-cta {
-      background: #e8f0fd;
-      font-weight: 700;
-      padding: 12px 18px;
-    }
-
-    .nav .nav-login {
-      background: #fff;
-      border: 1px solid #d6dfed;
-      font-weight: 700;
-      padding: 12px 18px;
-    }
-
-    .packet-shell {
-      width: min(980px, 100%);
-      margin: 24px auto 64px;
-    }
-
-    .packet-stack {
-      display: grid;
-      gap: 22px;
-    }
-
-    .packet-card {
-      background: var(--surface);
-      border: 1px solid var(--line);
-      border-radius: 28px;
-      box-shadow: var(--shadow);
-      padding: 30px;
-    }
-
-    .packet-title {
-      margin: 0 0 12px;
-      font-size: clamp(40px, 5vw, 64px);
-      line-height: 1.02;
-      letter-spacing: -0.04em;
-      font-weight: 800;
-      color: #26457a;
-    }
-
-    .packet-subtitle {
-      margin: 0;
-      color: #60708d;
-      font-size: 18px;
-      line-height: 1.6;
-      max-width: 760px;
-    }
-
-    .section-title {
-      margin: 0 0 18px;
-      color: #26457a;
-      font-size: clamp(28px, 3vw, 44px);
-      line-height: 1.08;
-      letter-spacing: -0.03em;
-      font-weight: 800;
-    }
-
-    .eligibility-hero {
-      display: grid;
-      gap: 18px;
-    }
-
-    .status-pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      width: fit-content;
-      padding: 12px 18px;
-      border-radius: 999px;
-      font-size: 15px;
-      font-weight: 800;
-      letter-spacing: 0.01em;
-    }
-
-    .status-pill.eligible {
-      background: var(--green-soft);
-      color: var(--green);
-    }
-
-    .status-pill.pending {
-      background: var(--amber-soft);
-      color: var(--amber);
-    }
-
-    .status-pill.ineligible {
-      background: var(--red-soft);
-      color: var(--red);
-    }
-
-    .eligibility-headline {
-      margin: 0;
-      font-size: clamp(28px, 4vw, 50px);
-      line-height: 1.08;
-      font-weight: 800;
-      color: #1f2f4d;
-    }
-
-    .eligibility-summary {
-      margin: 0;
-      color: #60708d;
-      font-size: 18px;
-      line-height: 1.65;
-      max-width: 800px;
-    }
-
-    .date-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
-      gap: 18px;
-      margin-top: 4px;
-    }
-
-    .date-box {
-      border: 2px solid #d7e2f1;
-      border-radius: 22px;
-      background: #fbfdff;
-      padding: 24px 24px 22px;
-    }
-
-    .date-label {
-      margin: 0 0 10px;
-      color: #5c6f8f;
-      font-size: 16px;
-      font-weight: 800;
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
-    }
-
-    .date-value {
-      margin: 0;
-      font-size: clamp(26px, 3vw, 40px);
-      line-height: 1.08;
-      font-weight: 800;
-      color: #1f2f4d;
-    }
-
-    .callout {
-      background: #eef4ff;
-      border: 1px solid #d8e3f4;
-      border-left: 8px solid #1f4ca5;
-      border-radius: 22px;
-      padding: 24px;
-      color: #23344f;
-      font-size: 17px;
-      line-height: 1.7;
-      margin: 10px 0 22px;
-    }
-
-    .button-stack {
-      display: grid;
-      gap: 16px;
-    }
-
-    .packet-btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 76px;
-      padding: 18px 26px;
-      border-radius: 20px;
-      border: none;
-      cursor: pointer;
-      font-size: clamp(20px, 2.2vw, 26px);
-      font-weight: 800;
-      text-align: center;
-    }
-
-    .packet-btn-primary {
-      background: #17459c;
-      color: #fff;
-      box-shadow: 0 10px 24px rgba(23,69,156,0.18);
-    }
-
-    .packet-btn-secondary {
-      background: #e8edf6;
-      color: #22314d;
-    }
-
-    .sig-row {
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 12px;
-      align-items: center;
-      margin-bottom: 14px;
-    }
-
-    .sig-input {
-      width: 100%;
-      min-height: 54px;
-      padding: 14px 16px;
-      border: 1px solid #d5e0ef;
-      border-radius: 14px;
-      font-size: 16px;
-      outline: none;
-    }
-
-    .sig-actions {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-
-    .sig-small-btn {
-      min-height: 48px;
-      padding: 12px 16px;
-      border-radius: 12px;
-      border: 1px solid #d5e0ef;
-      background: #fff;
-      color: #3c557d;
-      font-weight: 700;
-      cursor: pointer;
-    }
-
-    .sig-pad-wrap {
-      background: #fbfdff;
-      border: 1px solid #dbe3f0;
-      border-radius: 18px;
-      padding: 14px;
-    }
-
-    .sig-pad-label {
-      margin: 0 0 10px;
-      font-size: 14px;
-      color: #60708d;
-      font-weight: 700;
-    }
-
-    #signaturePad {
-      width: 100%;
-      height: 180px;
-      border: 1px solid #cfd9ea;
-      border-radius: 12px;
-      background: #fff;
-      touch-action: none;
-      display: block;
-    }
-
-    .instructions-list {
-      display: grid;
-      gap: 14px;
-      margin-top: 18px;
-    }
-
-    .instruction-item {
-      background: var(--surface-soft);
-      border: 1px solid var(--line);
-      border-radius: 18px;
-      padding: 18px;
-    }
-
-    .instruction-item h3 {
-      margin: 0 0 8px;
-      font-size: 18px;
-      font-weight: 800;
-      color: #294578;
-    }
-
-    .instruction-item p {
-      margin: 0;
-      color: var(--muted);
-      font-size: 16px;
-      line-height: 1.6;
-    }
-
-    .meta-note {
-      margin-top: 18px;
-      color: #6a7894;
-      font-size: 14px;
-      line-height: 1.6;
-    }
-
-    .status-text {
-      font-size: 14px;
-      color: #60708d;
-      margin-top: 12px;
-      line-height: 1.5;
-    }
-
-    .bottom-actions {
-      display: flex;
-      gap: 14px;
-      flex-wrap: wrap;
-      margin-top: 4px;
-    }
-
-    .nav-button {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 58px;
-      padding: 16px 24px;
-      border-radius: 16px;
-      font-size: 17px;
-      font-weight: 700;
-      border: none;
-      cursor: pointer;
-      text-decoration: none;
-    }
-
-    .nav-button-secondary {
-      background: #ffffff;
-      color: #3c557d;
-      border: 1px solid #d5e0ef;
-      flex: 0 0 auto;
-    }
-
-    .nav-button-primary {
-      background: linear-gradient(180deg, #86b7fb 0%, #5d91e6 100%);
-      color: #ffffff;
-      box-shadow: 0 10px 30px rgba(78,110,167,0.12);
-      flex: 1 1 220px;
-    }
-
-    @media (max-width: 900px) {
-      .date-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .sig-row {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    @media (max-width: 700px) {
-      .container {
-        width: min(var(--container), calc(100% - 24px));
-      }
-
-      .site-header {
-        padding-top: 14px;
-        padding-bottom: 8px;
-      }
-
-      .header-inner {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 14px;
-      }
-
-      .nav {
-        width: 100%;
-        gap: 10px;
-      }
-
-      .nav a {
-        padding: 10px 12px;
-        font-size: 14px;
-      }
-
-      .packet-shell {
-        margin-top: 18px;
-        margin-bottom: 44px;
-      }
-
-      .packet-card {
-        padding: 24px 18px;
-        border-radius: 22px;
-      }
-
-      .packet-title {
-        font-size: 34px;
-        line-height: 1.04;
-      }
-
-      .packet-subtitle,
-      .callout,
-      .instruction-item p,
-      .eligibility-summary {
-        font-size: 15px;
-      }
-
-      .date-box {
-        padding: 20px 18px;
-      }
-
-      .packet-btn {
-        min-height: 68px;
-        font-size: 18px;
-        border-radius: 18px;
-      }
-
-      .bottom-actions {
-        flex-direction: column;
-      }
-
-      .nav-button {
-        width: 100%;
-      }
-    }
-  </style>
-</head>
-<body>
-  <header class="site-header">
-    <div class="container header-inner">
-      <a href="index.html" class="brand">
-        <span class="brand-icon" aria-hidden="true"></span>
-        <span>RecordPathAI</span>
-      </a>
-
-      <nav class="nav">
-        <a href="how-it-works.html">How It Works</a>
-        <a href="eligibility.html">Eligibility</a>
-        <a href="eligibility.html" class="nav-cta">Check Eligibility</a>
-        <a href="login.html" class="nav-login">Log In</a>
-      </nav>
-    </div>
-  </header>
-
-  <main>
-    <section class="packet-shell">
-      <div class="packet-stack">
-        <section class="packet-card">
-          <h1 class="packet-title">Your Filing Packet</h1>
-          <p class="packet-subtitle">
-            Review your sealing eligibility first, then generate your Wood County filing packet.
-          </p>
-        </section>
-
-        <section class="packet-card">
-          <h2 class="section-title">Eligibility to Seal Your Record</h2>
-
-          <div class="eligibility-hero">
-            <div id="statusPill" class="status-pill eligible">Eligible to Seal</div>
-            <h3 id="eligibilityHeadline" class="eligibility-headline">You appear eligible to seal your record.</h3>
-            <p id="eligibilitySummary" class="eligibility-summary">
-              Based on the dates in your record, the waiting period for sealing appears to have passed.
-            </p>
-          </div>
-
-          <div class="date-grid">
-            <div class="date-box">
-              <p class="date-label">Final Discharge</p>
-              <p class="date-value" id="finalDischargeDate">2010-05-07</p>
-            </div>
-
-            <div class="date-box">
-              <p class="date-label">Seal Eligible On</p>
-              <p class="date-value" id="sealingDate">2013-05-07</p>
-            </div>
-
-            <div class="date-box">
-              <p class="date-label">Today</p>
-              <p class="date-value" id="todayDate">2026-04-08</p>
-            </div>
-          </div>
-
-          <p class="meta-note">
-            This is a timing check based on the information entered in your flow. Courts may still review offense type, case history, and local requirements.
-          </p>
-        </section>
-
-        <section class="packet-card">
-          <h2 class="section-title">Generate Your Wood County Packet</h2>
-
-          <div class="callout">
-            If you are eligible to seal your record, you can generate the Wood County Court of Common Pleas packet stored in your project and download the completed PDF.
-          </div>
-
-          <div class="sig-row">
-            <input id="typedSignature" class="sig-input" type="text" placeholder="Typed signature name" />
-            <div class="sig-actions">
-              <button type="button" class="sig-small-btn" id="useTypedSigBtn">Use Typed Signature</button>
-              <button type="button" class="sig-small-btn" id="clearSigBtn">Clear Signature</button>
-            </div>
-          </div>
-
-          <div class="sig-pad-wrap">
-            <p class="sig-pad-label">Or draw your signature below</p>
-            <canvas id="signaturePad"></canvas>
-            <div class="sig-actions" style="margin-top: 10px;">
-              <button type="button" class="sig-small-btn" id="useDrawnSigBtn">Use Drawn Signature</button>
-              <button type="button" class="sig-small-btn" id="clearPadBtn">Clear Pad</button>
-            </div>
-          </div>
-
-          <div class="button-stack" style="margin-top: 22px;">
-            <button type="button" class="packet-btn packet-btn-primary" id="generateSealingBtn">
-              Generate Sealing PDF
-            </button>
-
-            <button type="button" class="packet-btn packet-btn-secondary" id="openSourceBtn">
-              Open Source PDF
-            </button>
-          </div>
-
-          <div class="status-text" id="statusText">Ready.</div>
-
-          <p class="meta-note">
-            Required file path: <code>/assets/wood-county-application-for-sealing-295332-conviction.pdf</code>
-          </p>
-        </section>
-
-        <section class="packet-card">
-          <h2 class="section-title">Filing Instructions</h2>
-
-          <div class="instructions-list">
-            <div class="instruction-item">
-              <h3>1. Confirm eligibility</h3>
-              <p>Review the eligibility section above before generating the packet.</p>
-            </div>
-
-            <div class="instruction-item">
-              <h3>2. Add your signature</h3>
-              <p>Use a typed or drawn signature before generating the PDF.</p>
-            </div>
-
-            <div class="instruction-item">
-              <h3>3. Download the completed PDF</h3>
-              <p>Click Generate Sealing PDF and save the finished packet.</p>
-            </div>
-
-            <div class="instruction-item">
-              <h3>4. File with the court</h3>
-              <p>Submit according to the court’s filing instructions.</p>
-            </div>
-          </div>
-        </section>
-
-        <section class="packet-card">
-          <div class="bottom-actions">
-            <a href="record-details.html" class="nav-button nav-button-secondary">Back</a>
-            <a href="index.html" class="nav-button nav-button-primary">Finish</a>
-          </div>
-        </section>
-      </div>
-    </section>
-  </main>
-
-  <script>
-    const TEMPLATE_URL = "./assets/wood-county-application-for-sealing-295332-conviction.pdf";
-
-    const WOOD_DEFAULTS = {
-      caseNumber: "2006CR0387",
-      judge: "Robert Pollex",
-      convictionDate: "2007-05-04",
-      finalDischargeDate: "2010-05-07",
-      offenseCode: "2925.11(A)",
-      offenseName: "Possession of Drugs",
-      offenseDegree: "Felony 3rd Degree",
-      apartment: "428",
-      phone: "855-412-9810"
+  }
+
+  function safe(value, fallback = "") {
+    return (value ?? "").toString().trim() || fallback;
+  }
+
+  function isoDate(date) {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, "0");
+    const d = String(date.getDate()).padStart(2, "0");
+    return `${y}-${m}-${d}`;
+  }
+
+  function formatDateForCourt(dateString) {
+    if (!dateString) return "";
+    const date = new Date(dateString);
+    if (Number.isNaN(date.getTime())) return dateString;
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    const year = date.getFullYear();
+    return `${month}/${day}/${year}`;
+  }
+
+  function addYears(dateString, years) {
+    const date = new Date(dateString);
+    if (Number.isNaN(date.getTime())) return "";
+    date.setFullYear(date.getFullYear() + years);
+    return isoDate(date);
+  }
+
+  function getFirstOffense(recordDetails) {
+    if (!Array.isArray(recordDetails) || !recordDetails.length) return {};
+    const row = recordDetails[0] || {};
+
+    const byPrefix = (prefix) => {
+      const key = Object.keys(row).find((k) => k.startsWith(prefix));
+      return key ? row[key] : "";
     };
 
-    let signatureImageBytes = null;
+    return {
+      chargeName: byPrefix("charge_name_"),
+      chargeLevel: byPrefix("charge_level_"),
+      caseNumber: byPrefix("case_number_"),
+      arrestDate: byPrefix("arrest_date_"),
+      disposition: byPrefix("disposition_"),
+      stateFromRecord: byPrefix("state_"),
+      court: byPrefix("court_"),
+      county: byPrefix("county_")
+    };
+  }
 
-    function setStatus(message) {
-      document.getElementById("statusText").textContent = message;
-    }
+  function getPacketData() {
+    const { user, recordDetails } = readStoredData();
+    const offense = getFirstOffense(recordDetails);
 
-    function readStoredData() {
-      try {
-        return {
-          user: JSON.parse(localStorage.getItem("cmr_user") || "{}"),
-          recordDetails: JSON.parse(sessionStorage.getItem("recordPath_recordDetails") || "[]")
-        };
-      } catch (error) {
-        return { user: {}, recordDetails: [] };
+    const fullName = `${safe(user.firstName)} ${safe(user.lastName)}`.trim() || "Matthew Tunstall";
+
+    return {
+      fullName,
+      street: safe(user.street, "231 W Horizon Ridge Parkway"),
+      apartment: DEFAULTS.apartment,
+      city: safe(user.city, "Henderson"),
+      state: safe(offense.stateFromRecord || user.state, "Ohio"),
+      zip: safe(user.zip, "89012"),
+      email: safe(user.email, "Matt@unitedpaintersnv.com"),
+      phone: safe(user.phone, DEFAULTS.phone),
+      caseNumber: safe(offense.caseNumber, DEFAULTS.woodCountyCaseNumber),
+      chargeName: safe(offense.chargeName, DEFAULTS.woodCountyOffenseName),
+      chargeLevel: safe(offense.chargeLevel, DEFAULTS.woodCountyOffenseDegree),
+      arrestDate: safe(offense.arrestDate, DEFAULTS.woodCountyFinalDischargeDate),
+      disposition: safe(offense.disposition, ""),
+      court: safe(offense.court, ""),
+      county: safe(offense.county, "")
+    };
+  }
+
+  // State rules engine
+  // This is product logic, not legal advice. It gives a smarter state-aware UX layer.
+  const STATE_RULES = {
+    Ohio: {
+      label: "Record Sealing",
+      basis: "final_discharge",
+      defaultWaitYears: 3,
+      getWaitYears(data) {
+        const level = (data.chargeLevel || "").toLowerCase();
+
+        if (level.includes("felony 3") || level.includes("3rd degree")) return 3;
+        if (level.includes("felony")) return 1;
+        if (level.includes("misdemeanor")) return 1;
+
+        return 3;
+      },
+      summary(data, eligibleDate, isEligible) {
+        if (isEligible) {
+          return `Ohio timing check passed. Based on the entered offense level and final discharge timeline, the record appears eligible for sealing as of ${eligibleDate}.`;
+        }
+        return `Ohio timing check is not met yet. Based on the entered offense level and final discharge timeline, the earliest seal date appears to be ${eligibleDate}.`;
+      }
+    },
+
+    California: {
+      label: "Clean Your Record",
+      basis: "conviction_or_case_outcome",
+      defaultWaitYears: 0,
+      getWaitYears() {
+        return 0;
+      },
+      summary(data) {
+        return "California uses different clean-record paths and can require statewide forms and sometimes local court forms. This result should be treated as a screening flag, not a final eligibility determination.";
+      }
+    },
+
+    Texas: {
+      label: "Nondisclosure / Sealing",
+      basis: "varies_by_statute",
+      defaultWaitYears: 0,
+      getWaitYears() {
+        return 0;
+      },
+      summary() {
+        return "Texas uses multiple nondisclosure paths instead of one single statewide sealing rule. This result should be treated as a screening flag, not a final eligibility determination.";
       }
     }
+  };
 
-    function safe(value, fallback = "") {
-      return (value ?? "").toString().trim() || fallback;
+  function getStateRule(stateName) {
+    return STATE_RULES[stateName] || {
+      label: "Record Clearing",
+      basis: "manual_review",
+      defaultWaitYears: 0,
+      getWaitYears() {
+        return 0;
+      },
+      summary() {
+        return "This state is not fully mapped yet. RecordPathAI can still collect case data and packet information, but eligibility should be reviewed manually.";
+      }
+    };
+  }
+
+  function setEligibilityUI(type, title, summary) {
+    const pill = document.getElementById("statusPill");
+    const headline = document.getElementById("eligibilityHeadline");
+    const body = document.getElementById("eligibilitySummary");
+
+    if (!pill || !headline || !body) return;
+
+    pill.className = "status-pill " + type;
+    pill.textContent = title;
+    headline.textContent = title;
+    body.textContent = summary;
+  }
+
+  function updateEligibilitySection() {
+    const data = getPacketData();
+    const rule = getStateRule(data.state);
+    const today = new Date();
+    const todayString = isoDate(today);
+
+    const finalDischargeEl = document.getElementById("finalDischargeDate");
+    const sealingDateEl = document.getElementById("sealingDate");
+    const todayDateEl = document.getElementById("todayDate");
+
+    if (todayDateEl) todayDateEl.textContent = todayString;
+
+    // Default date source:
+    // Ohio -> use final discharge style timeline
+    // Other states -> use arrest/conviction date as rough placeholder for screening only
+    const baseDate =
+      data.state === "Ohio"
+        ? DEFAULTS.woodCountyFinalDischargeDate
+        : data.arrestDate;
+
+    const baseDateObj = new Date(baseDate);
+
+    if (finalDischargeEl) finalDischargeEl.textContent = baseDate || "—";
+
+    if (Number.isNaN(baseDateObj.getTime())) {
+      if (sealingDateEl) sealingDateEl.textContent = "—";
+      setEligibilityUI(
+        "pending",
+        "Eligibility Needs Review",
+        `We need a valid case date to estimate eligibility for ${data.state || "this state"}.`
+      );
+      return;
     }
 
-    function formatDateForCourt(dateString) {
-      if (!dateString) return "";
-      const date = new Date(dateString);
-      if (Number.isNaN(date.getTime())) return dateString;
-      const month = String(date.getMonth() + 1).padStart(2, "0");
-      const day = String(date.getDate()).padStart(2, "0");
-      const year = date.getFullYear();
-      return `${month}/${day}/${year}`;
-    }
+    const waitYears = rule.getWaitYears(data);
+    const eligibleDate = waitYears > 0 ? addYears(baseDate, waitYears) : "Manual Review";
+    const eligibleDateObj = eligibleDate !== "Manual Review" ? new Date(eligibleDate) : null;
 
-    function isoDate(date) {
-      const y = date.getFullYear();
-      const m = String(date.getMonth() + 1).padStart(2, "0");
-      const d = String(date.getDate()).padStart(2, "0");
-      return `${y}-${m}-${d}`;
-    }
+    if (sealingDateEl) sealingDateEl.textContent = eligibleDate;
 
-    function addYears(dateString, years) {
-      const date = new Date(dateString);
-      if (Number.isNaN(date.getTime())) return "";
-      date.setFullYear(date.getFullYear() + years);
-      return isoDate(date);
-    }
+    if (data.state === "Ohio") {
+      if (eligibleDateObj && !Number.isNaN(eligibleDateObj.getTime())) {
+        const isEligible = today >= eligibleDateObj;
 
-    function getFirstOffense(recordDetails) {
-      if (!Array.isArray(recordDetails) || !recordDetails.length) return {};
-      const row = recordDetails[0] || {};
-      const byPrefix = (prefix) => {
-        const key = Object.keys(row).find((k) => k.startsWith(prefix));
-        return key ? row[key] : "";
-      };
-      return {
-        chargeName: byPrefix("charge_name_"),
-        chargeLevel: byPrefix("charge_level_"),
-        caseNumber: byPrefix("case_number_"),
-        arrestDate: byPrefix("arrest_date_")
-      };
-    }
-
-    function getPacketData() {
-      const { user, recordDetails } = readStoredData();
-      const offense = getFirstOffense(recordDetails);
-
-      const fullName = `${safe(user.firstName)} ${safe(user.lastName)}`.trim() || "Matthew Tunstall";
-
-      return {
-        fullName,
-        street: safe(user.street, "231 W Horizon Ridge Parkway"),
-        apartment: WOOD_DEFAULTS.apartment,
-        city: safe(user.city, "Henderson"),
-        state: safe(user.state, "NV"),
-        zip: safe(user.zip, "89012"),
-        email: safe(user.email, "Matt@unitedpaintersnv.com"),
-        phone: safe(user.phone, WOOD_DEFAULTS.phone),
-        caseNumber: safe(offense.caseNumber, WOOD_DEFAULTS.caseNumber),
-        chargeName: safe(offense.chargeName, WOOD_DEFAULTS.offenseName),
-        chargeLevel: safe(offense.chargeLevel, WOOD_DEFAULTS.offenseDegree),
-        finalDischargeDate: WOOD_DEFAULTS.finalDischargeDate
-      };
-    }
-
-    function updateEligibilitySection() {
-      const data = getPacketData();
-      const finalDischarge = data.finalDischargeDate;
-      const sealingDate = addYears(finalDischarge, 3);
-      const today = new Date();
-      const todayString = isoDate(today);
-
-      const finalDischargeObj = new Date(finalDischarge);
-      const sealingDateObj = new Date(sealingDate);
-
-      const statusPill = document.getElementById("statusPill");
-      const headline = document.getElementById("eligibilityHeadline");
-      const summary = document.getElementById("eligibilitySummary");
-
-      document.getElementById("finalDischargeDate").textContent = finalDischarge || "—";
-      document.getElementById("sealingDate").textContent = sealingDate || "—";
-      document.getElementById("todayDate").textContent = todayString;
-
-      if (Number.isNaN(finalDischargeObj.getTime()) || Number.isNaN(sealingDateObj.getTime())) {
-        statusPill.className = "status-pill pending";
-        statusPill.textContent = "Eligibility Needs Review";
-        headline.textContent = "We need more information to determine sealing eligibility.";
-        summary.textContent = "The final discharge date is missing or invalid, so the sealing timeline could not be calculated.";
+        setEligibilityUI(
+          isEligible ? "eligible" : "pending",
+          isEligible ? "Eligible to Seal" : "Not Yet Eligible to Seal",
+          rule.summary(data, eligibleDate, isEligible)
+        );
         return;
       }
-
-      if (today >= sealingDateObj) {
-        statusPill.className = "status-pill eligible";
-        statusPill.textContent = "Eligible to Seal";
-        headline.textContent = "You appear eligible to seal your record.";
-        summary.textContent = `Your final discharge date appears to be ${finalDischarge}, and the sealing waiting period appears to have passed as of ${sealingDate}.`;
-      } else {
-        statusPill.className = "status-pill pending";
-        statusPill.textContent = "Not Yet Eligible";
-        headline.textContent = "You do not appear eligible to seal your record yet.";
-        summary.textContent = `Based on the current timeline, the waiting period appears to end on ${sealingDate}.`;
-      }
     }
 
-    function setupSignaturePad() {
-      const canvas = document.getElementById("signaturePad");
-      const ctx = canvas.getContext("2d");
-
-      function resizeCanvas() {
-        const ratio = Math.max(window.devicePixelRatio || 1, 1);
-        const rect = canvas.getBoundingClientRect();
-        canvas.width = rect.width * ratio;
-        canvas.height = rect.height * ratio;
-        ctx.setTransform(1, 0, 0, 1, 0, 0);
-        ctx.scale(ratio, ratio);
-        ctx.lineWidth = 2;
-        ctx.lineCap = "round";
-        ctx.strokeStyle = "#111";
-      }
-
-      let drawing = false;
-
-      function pointFromEvent(event) {
-        const rect = canvas.getBoundingClientRect();
-        const touch = event.touches && event.touches[0];
-        const clientX = touch ? touch.clientX : event.clientX;
-        const clientY = touch ? touch.clientY : event.clientY;
-        return { x: clientX - rect.left, y: clientY - rect.top };
-      }
-
-      function start(event) {
-        drawing = true;
-        const p = pointFromEvent(event);
-        ctx.beginPath();
-        ctx.moveTo(p.x, p.y);
-        event.preventDefault();
-      }
-
-      function move(event) {
-        if (!drawing) return;
-        const p = pointFromEvent(event);
-        ctx.lineTo(p.x, p.y);
-        ctx.stroke();
-        event.preventDefault();
-      }
-
-      function end() {
-        drawing = false;
-      }
-
-      function clearPad() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-      }
-
-      window.clearSignaturePadCanvas = clearPad;
-      window.getSignaturePadDataUrl = () => canvas.toDataURL("image/png");
-
-      resizeCanvas();
-      window.addEventListener("resize", resizeCanvas);
-      canvas.addEventListener("mousedown", start);
-      canvas.addEventListener("mousemove", move);
-      window.addEventListener("mouseup", end);
-      canvas.addEventListener("touchstart", start, { passive: false });
-      canvas.addEventListener("touchmove", move, { passive: false });
-      window.addEventListener("touchend", end);
+    if (data.state === "California") {
+      setEligibilityUI(
+        "pending",
+        "California Eligibility Needs Review",
+        rule.summary(data)
+      );
+      return;
     }
 
-    function dataUrlToBytes(dataUrl) {
-      const base64 = dataUrl.split(",")[1];
-      const binary = atob(base64);
-      const bytes = new Uint8Array(binary.length);
-      for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-      return bytes;
+    if (data.state === "Texas") {
+      setEligibilityUI(
+        "pending",
+        "Texas Eligibility Needs Review",
+        rule.summary(data)
+      );
+      return;
     }
 
-    function buildTypedSignatureImage(name) {
-      const canvas = document.createElement("canvas");
-      canvas.width = 700;
-      canvas.height = 180;
-      const ctx = canvas.getContext("2d");
+    setEligibilityUI(
+      "pending",
+      `${data.state || "State"} Eligibility Needs Review`,
+      rule.summary(data)
+    );
+  }
+
+  function setupSignaturePad() {
+    const canvas = document.getElementById("signaturePad");
+    const ctx = canvas.getContext("2d");
+
+    function resizeCanvas() {
+      const ratio = Math.max(window.devicePixelRatio || 1, 1);
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = rect.width * ratio;
+      canvas.height = rect.height * ratio;
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.scale(ratio, ratio);
+      ctx.lineWidth = 2;
+      ctx.lineCap = "round";
+      ctx.strokeStyle = "#111";
+    }
+
+    let drawing = false;
+
+    function pointFromEvent(event) {
+      const rect = canvas.getBoundingClientRect();
+      const touch = event.touches && event.touches[0];
+      const clientX = touch ? touch.clientX : event.clientX;
+      const clientY = touch ? touch.clientY : event.clientY;
+      return { x: clientX - rect.left, y: clientY - rect.top };
+    }
+
+    function start(event) {
+      drawing = true;
+      const p = pointFromEvent(event);
+      ctx.beginPath();
+      ctx.moveTo(p.x, p.y);
+      event.preventDefault();
+    }
+
+    function move(event) {
+      if (!drawing) return;
+      const p = pointFromEvent(event);
+      ctx.lineTo(p.x, p.y);
+      ctx.stroke();
+      event.preventDefault();
+    }
+
+    function end() {
+      drawing = false;
+    }
+
+    function clearPad() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.font = "italic 64px Georgia";
-      ctx.fillStyle = "#111";
-      ctx.fillText(name, 18, 110);
-      return dataUrlToBytes(canvas.toDataURL("image/png"));
     }
 
-    function setTypedSignature() {
-      const value = document.getElementById("typedSignature").value.trim();
-      if (!value) {
-        alert("Enter a name for the typed signature.");
-        return;
+    window.clearSignaturePadCanvas = clearPad;
+    window.getSignaturePadDataUrl = () => canvas.toDataURL("image/png");
+
+    resizeCanvas();
+    window.addEventListener("resize", resizeCanvas);
+    canvas.addEventListener("mousedown", start);
+    canvas.addEventListener("mousemove", move);
+    window.addEventListener("mouseup", end);
+    canvas.addEventListener("touchstart", start, { passive: false });
+    canvas.addEventListener("touchmove", move, { passive: false });
+    window.addEventListener("touchend", end);
+  }
+
+  function dataUrlToBytes(dataUrl) {
+    const base64 = dataUrl.split(",")[1];
+    const binary = atob(base64);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+    return bytes;
+  }
+
+  function buildTypedSignatureImage(name) {
+    const canvas = document.createElement("canvas");
+    canvas.width = 700;
+    canvas.height = 180;
+    const ctx = canvas.getContext("2d");
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.font = "italic 64px Georgia";
+    ctx.fillStyle = "#111";
+    ctx.fillText(name, 18, 110);
+    return dataUrlToBytes(canvas.toDataURL("image/png"));
+  }
+
+  function setTypedSignature() {
+    const value = document.getElementById("typedSignature").value.trim();
+    if (!value) {
+      alert("Enter a name for the typed signature.");
+      return;
+    }
+    signatureImageBytes = buildTypedSignatureImage(value);
+    setStatus("Typed signature selected.");
+  }
+
+  function setDrawnSignature() {
+    const dataUrl = window.getSignaturePadDataUrl();
+    signatureImageBytes = dataUrlToBytes(dataUrl);
+    setStatus("Drawn signature selected.");
+  }
+
+  function clearSignature() {
+    signatureImageBytes = null;
+    window.clearSignaturePadCanvas();
+    setStatus("Signature cleared.");
+  }
+
+  async function fetchTemplateBytes() {
+    const response = await fetch(TEMPLATE_URL);
+    if (!response.ok) {
+      throw new Error("PDF not found. Make sure the file is in /assets and the filename matches exactly.");
+    }
+    return await response.arrayBuffer();
+  }
+
+  async function generateSealingPdf() {
+    try {
+      setStatus("Loading PDF template...");
+
+      if (!signatureImageBytes) {
+        setTypedSignature();
       }
-      signatureImageBytes = buildTypedSignatureImage(value);
-      setStatus("Typed signature selected.");
-    }
 
-    function setDrawnSignature() {
-      const dataUrl = window.getSignaturePadDataUrl();
-      signatureImageBytes = dataUrlToBytes(dataUrl);
-      setStatus("Drawn signature selected.");
-    }
+      const data = getPacketData();
+      const { PDFDocument, StandardFonts, rgb } = PDFLib;
+      const templateBytes = await fetchTemplateBytes();
+      const pdfDoc = await PDFDocument.load(templateBytes);
+      const pages = pdfDoc.getPages();
 
-    function clearSignature() {
-      signatureImageBytes = null;
-      window.clearSignaturePadCanvas();
-      setStatus("Signature cleared.");
-    }
-
-    async function fetchTemplateBytes() {
-      const response = await fetch(TEMPLATE_URL);
-      if (!response.ok) {
-        throw new Error("PDF not found. Make sure the file is in /assets and the filename matches exactly.");
+      if (pages.length < 4) {
+        throw new Error("Unexpected PDF. This template does not look like the Wood County packet.");
       }
-      return await response.arrayBuffer();
-    }
 
-    async function generateSealingPdf() {
-      try {
-        setStatus("Loading PDF template...");
+      const addressPage = pages[2];
+      const applicationPage = pages[3];
 
-        if (!signatureImageBytes) {
-          setTypedSignature();
-        }
+      const helvetica = await pdfDoc.embedFont(StandardFonts.Helvetica);
+      const helveticaBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+      const sigImage = await pdfDoc.embedPng(signatureImageBytes);
+      const black = rgb(0, 0, 0);
 
-        const data = getPacketData();
-        const { PDFDocument, StandardFonts, rgb } = PDFLib;
-        const templateBytes = await fetchTemplateBytes();
-        const pdfDoc = await PDFDocument.load(templateBytes);
-        const pages = pdfDoc.getPages();
-
-        if (pages.length < 4) {
-          throw new Error("Unexpected PDF. This template does not look like the Wood County packet.");
-        }
-
-        const addressPage = pages[2];
-        const applicationPage = pages[3];
-
-        const helvetica = await pdfDoc.embedFont(StandardFonts.Helvetica);
-        const helveticaBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
-        const sigImage = await pdfDoc.embedPng(signatureImageBytes);
-        const black = rgb(0, 0, 0);
-
-        function draw(page, text, x, y, size = 12, font = helvetica) {
-          page.drawText(String(text || ""), { x, y, size, font, color: black });
-        }
-
-        function drawFit(page, text, x, y, maxWidth, size = 12, font = helvetica) {
-          let currentSize = size;
-          const content = String(text || "");
-          let width = font.widthOfTextAtSize(content, currentSize);
-          while (width > maxWidth && currentSize > 8) {
-            currentSize -= 0.5;
-            width = font.widthOfTextAtSize(content, currentSize);
-          }
-          page.drawText(content, { x, y, size: currentSize, font, color: black });
-        }
-
-        setStatus("Filling PDF...");
-
-        draw(addressPage, new Date().toLocaleDateString("en-US", {
-          month: "long",
-          day: "numeric",
-          year: "numeric"
-        }), 148, 444, 12, helvetica);
-
-        drawFit(addressPage, data.fullName, 190, 407, 325, 12, helvetica);
-        drawFit(addressPage, data.street, 95, 370, 420, 12, helvetica);
-        drawFit(addressPage, data.apartment, 220, 334, 120, 12, helvetica);
-        drawFit(addressPage, `${data.city}, ${data.state}`, 128, 297, 250, 12, helvetica);
-        drawFit(addressPage, data.zip, 105, 260, 150, 12, helvetica);
-        drawFit(addressPage, data.email, 145, 224, 325, 12, helvetica);
-
-        drawFit(applicationPage, data.caseNumber, 470, 678, 120, 12, helvetica);
-        drawFit(applicationPage, WOOD_DEFAULTS.judge, 470, 651, 120, 12, helvetica);
-
-        drawFit(applicationPage, data.fullName, 175, 563, 240, 12, helvetica);
-        drawFit(applicationPage, `${data.street} #${data.apartment}`, 178, 536, 245, 12, helvetica);
-        drawFit(applicationPage, `${data.city}, ${data.state} ${data.zip}`, 205, 510, 220, 12, helvetica);
-        drawFit(applicationPage, data.phone, 185, 484, 240, 12, helvetica);
-        drawFit(applicationPage, data.email, 165, 458, 260, 12, helvetica);
-
-        drawFit(applicationPage, data.fullName, 145, 421, 185, 12, helvetica);
-        draw(applicationPage, formatDateForCourt(WOOD_DEFAULTS.convictionDate), 72, 386, 12, helveticaBold);
-
-        drawFit(applicationPage, data.chargeName, 52, 346, 185, 12, helvetica);
-        drawFit(applicationPage, WOOD_DEFAULTS.offenseCode, 265, 346, 110, 12, helvetica);
-        drawFit(applicationPage, data.chargeLevel, 425, 346, 130, 12, helvetica);
-
-        draw(applicationPage, formatDateForCourt(WOOD_DEFAULTS.finalDischargeDate), 262, 241, 12, helveticaBold);
-
-        const sigDims = sigImage.scale(0.32);
-        applicationPage.drawImage(sigImage, {
-          x: 382,
-          y: 76,
-          width: sigDims.width,
-          height: sigDims.height
-        });
-
-        drawFit(applicationPage, data.fullName, 88, 44, 210, 12, helvetica);
-
-        setStatus("Saving PDF...");
-
-        const pdfBytes = await pdfDoc.save();
-        const blob = new Blob([pdfBytes], { type: "application/pdf" });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.href = url;
-        link.download = "wood-county-sealing-packet-recordpathai.pdf";
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
-
-        setTimeout(() => URL.revokeObjectURL(url), 5000);
-        setStatus("Done. Your PDF should be downloading.");
-      } catch (error) {
-        console.error(error);
-        setStatus("Error: " + error.message);
-        alert(error.message);
+      function draw(page, text, x, y, size = 12, font = helvetica) {
+        page.drawText(String(text || ""), { x, y, size, font, color: black });
       }
+
+      function drawFit(page, text, x, y, maxWidth, size = 12, font = helvetica) {
+        let currentSize = size;
+        const content = String(text || "");
+        let width = font.widthOfTextAtSize(content, currentSize);
+        while (width > maxWidth && currentSize > 8) {
+          currentSize -= 0.5;
+          width = font.widthOfTextAtSize(content, currentSize);
+        }
+        page.drawText(content, { x, y, size: currentSize, font, color: black });
+      }
+
+      setStatus("Filling PDF...");
+
+      draw(addressPage, new Date().toLocaleDateString("en-US", {
+        month: "long",
+        day: "numeric",
+        year: "numeric"
+      }), 148, 444, 12, helvetica);
+
+      drawFit(addressPage, data.fullName, 190, 407, 325, 12, helvetica);
+      drawFit(addressPage, data.street, 95, 370, 420, 12, helvetica);
+      drawFit(addressPage, data.apartment, 220, 334, 120, 12, helvetica);
+      drawFit(addressPage, `${data.city}, ${data.state}`, 128, 297, 250, 12, helvetica);
+      drawFit(addressPage, data.zip, 105, 260, 150, 12, helvetica);
+      drawFit(addressPage, data.email, 145, 224, 325, 12, helvetica);
+
+      drawFit(applicationPage, data.caseNumber, 470, 678, 120, 12, helvetica);
+      drawFit(applicationPage, DEFAULTS.woodCountyJudge, 470, 651, 120, 12, helvetica);
+
+      drawFit(applicationPage, data.fullName, 175, 563, 240, 12, helvetica);
+      drawFit(applicationPage, `${data.street} #${data.apartment}`, 178, 536, 245, 12, helvetica);
+      drawFit(applicationPage, `${data.city}, ${data.state} ${data.zip}`, 205, 510, 220, 12, helvetica);
+      drawFit(applicationPage, data.phone, 185, 484, 240, 12, helvetica);
+      drawFit(applicationPage, data.email, 165, 458, 260, 12, helvetica);
+
+      drawFit(applicationPage, data.fullName, 145, 421, 185, 12, helvetica);
+      draw(applicationPage, formatDateForCourt(DEFAULTS.woodCountyConvictionDate), 72, 386, 12, helveticaBold);
+
+      drawFit(applicationPage, data.chargeName, 52, 346, 185, 12, helvetica);
+      drawFit(applicationPage, DEFAULTS.woodCountyOffenseCode, 265, 346, 110, 12, helvetica);
+      drawFit(applicationPage, data.chargeLevel, 425, 346, 130, 12, helvetica);
+
+      draw(applicationPage, formatDateForCourt(DEFAULTS.woodCountyFinalDischargeDate), 262, 241, 12, helveticaBold);
+
+      const sigDims = sigImage.scale(0.32);
+      applicationPage.drawImage(sigImage, {
+        x: 382,
+        y: 76,
+        width: sigDims.width,
+        height: sigDims.height
+      });
+
+      drawFit(applicationPage, data.fullName, 88, 44, 210, 12, helvetica);
+
+      setStatus("Saving PDF...");
+
+      const pdfBytes = await pdfDoc.save();
+      const blob = new Blob([pdfBytes], { type: "application/pdf" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "wood-county-sealing-packet-recordpathai.pdf";
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+
+      setTimeout(() => URL.revokeObjectURL(url), 5000);
+      setStatus("Done. Your PDF should be downloading.");
+    } catch (error) {
+      console.error(error);
+      setStatus("Error: " + error.message);
+      alert(error.message);
     }
+  }
 
-    document.getElementById("useTypedSigBtn").addEventListener("click", setTypedSignature);
-    document.getElementById("useDrawnSigBtn").addEventListener("click", setDrawnSignature);
-    document.getElementById("clearSigBtn").addEventListener("click", clearSignature);
-    document.getElementById("clearPadBtn").addEventListener("click", clearSignature);
-    document.getElementById("generateSealingBtn").addEventListener("click", generateSealingPdf);
-    document.getElementById("openSourceBtn").addEventListener("click", function () {
-      window.open(TEMPLATE_URL, "_blank");
-    });
+  document.getElementById("useTypedSigBtn").addEventListener("click", setTypedSignature);
+  document.getElementById("useDrawnSigBtn").addEventListener("click", setDrawnSignature);
+  document.getElementById("clearSigBtn").addEventListener("click", clearSignature);
+  document.getElementById("clearPadBtn").addEventListener("click", clearSignature);
+  document.getElementById("generateSealingBtn").addEventListener("click", generateSealingPdf);
+  document.getElementById("openSourceBtn").addEventListener("click", function () {
+    window.open(TEMPLATE_URL, "_blank");
+  });
 
-    setupSignaturePad();
-    updateEligibilitySection();
-    document.getElementById("typedSignature").value = getPacketData().fullName;
-    setTypedSignature();
-  </script>
-</body>
-</html>
+  setupSignaturePad();
+  updateEligibilitySection();
+  document.getElementById("typedSignature").value = getPacketData().fullName;
+  setTypedSignature();
+</script>
