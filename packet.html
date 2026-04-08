@@ -23,6 +23,8 @@
       --green-soft: #eaf7ef;
       --amber: #9a6700;
       --amber-soft: #fff5dc;
+      --red: #b42318;
+      --red-soft: #fef0f0;
     }
 
     body {
@@ -186,6 +188,11 @@
     .status-pill.pending {
       background: var(--amber-soft);
       color: var(--amber);
+    }
+
+    .status-pill.error {
+      background: var(--red-soft);
+      color: var(--red);
     }
 
     .status-headline {
@@ -386,6 +393,7 @@
       color: #60708d;
       line-height: 1.6;
       margin-top: 12px;
+      word-break: break-word;
     }
 
     .bottom-actions {
@@ -625,6 +633,10 @@
               Generate Sealing PDF
             </button>
 
+            <button type="button" class="packet-btn packet-btn-secondary" id="testPdfBtn">
+              Test PDF Access
+            </button>
+
             <button type="button" class="packet-btn packet-btn-secondary" id="openSourceBtn">
               Open Source PDF
             </button>
@@ -637,7 +649,7 @@
           <div class="status-text" id="statusText">Ready.</div>
 
           <p class="meta-note">
-            Payment and court submission are placeholders on this page until you wire a real checkout and routing flow.
+            If generation still fails, click <strong>Test PDF Access</strong> first. It will show the real problem instead of failing silently.
           </p>
         </section>
 
@@ -670,9 +682,11 @@
 
       let signatureImageBytes = null;
 
-      function setStatus(message) {
+      function setStatus(message, mode = "normal") {
         const el = document.getElementById("statusText");
-        if (el) el.textContent = message;
+        if (!el) return;
+        el.textContent = message;
+        el.style.color = mode === "error" ? "#b42318" : "#60708d";
       }
 
       function safe(value, fallback = "") {
@@ -935,29 +949,58 @@
       }
 
       async function fetchTemplateBytes() {
-        const response = await fetch(TEMPLATE_URL);
+        const response = await fetch(TEMPLATE_URL, { cache: "no-store" });
         if (!response.ok) {
-          throw new Error("PDF not found. Make sure the file is in /assets and the filename matches exactly.");
+          throw new Error(`PDF fetch failed with status ${response.status}. Check the file path in assets.`);
         }
-        return await response.arrayBuffer();
+
+        const bytes = await response.arrayBuffer();
+        if (!bytes || bytes.byteLength < 1000) {
+          throw new Error("PDF loaded, but the file looks too small to be a real court form.");
+        }
+
+        return bytes;
+      }
+
+      async function testPdfAccess() {
+        try {
+          setStatus("Testing PDF access...");
+          if (!window.PDFLib) {
+            throw new Error("pdf-lib did not load from the CDN.");
+          }
+
+          const bytes = await fetchTemplateBytes();
+          const pdfDoc = await window.PDFLib.PDFDocument.load(bytes);
+          const pageCount = pdfDoc.getPages().length;
+
+          setStatus(`PDF test passed. Loaded ${bytes.byteLength} bytes and found ${pageCount} pages.`);
+        } catch (error) {
+          console.error(error);
+          setStatus(error.message, "error");
+          alert(error.message);
+        }
       }
 
       async function generateSealingPdf() {
         try {
           setStatus("Loading PDF template...");
 
+          if (!window.PDFLib) {
+            throw new Error("pdf-lib failed to load. Refresh the page and try again.");
+          }
+
           if (!signatureImageBytes) {
             setTypedSignature();
           }
 
           const data = getPacketData();
-          const { PDFDocument, StandardFonts, rgb } = PDFLib;
+          const { PDFDocument, StandardFonts, rgb } = window.PDFLib;
           const templateBytes = await fetchTemplateBytes();
           const pdfDoc = await PDFDocument.load(templateBytes);
           const pages = pdfDoc.getPages();
 
           if (pages.length < 4) {
-            throw new Error("Unexpected PDF. This template does not look like the Wood County packet.");
+            throw new Error(`Unexpected PDF. Found ${pages.length} pages, but expected at least 4.`);
           }
 
           const addressPage = pages[2];
@@ -1037,12 +1080,12 @@
           document.body.appendChild(link);
           link.click();
           link.remove();
-
           setTimeout(() => URL.revokeObjectURL(url), 5000);
+
           setStatus("Done. Your PDF should be downloading.");
         } catch (error) {
           console.error(error);
-          setStatus("Error: " + error.message);
+          setStatus(error.message, "error");
           alert(error.message);
         }
       }
@@ -1056,6 +1099,7 @@
       document.getElementById("clearSigBtn").addEventListener("click", clearSignature);
       document.getElementById("clearPadBtn").addEventListener("click", clearSignature);
       document.getElementById("generateSealingBtn").addEventListener("click", generateSealingPdf);
+      document.getElementById("testPdfBtn").addEventListener("click", testPdfAccess);
       document.getElementById("openSourceBtn").addEventListener("click", function () {
         window.open(TEMPLATE_URL, "_blank");
       });
