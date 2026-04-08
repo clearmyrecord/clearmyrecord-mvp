@@ -614,7 +614,7 @@
 
           <div class="callout">
             This page generates the Wood County sealing packet from the PDF saved in your project at
-            <code>./assets/wood-county-application-for-sealing-295332-conviction.pdf</code>.
+            <code>./assets/wood-county-application-for-sealing-295332-conviction.pdf.pdf</code>.
           </div>
 
           <div class="sig-row">
@@ -655,7 +655,7 @@
           <div class="status-text" id="statusText">Ready.</div>
 
           <p class="meta-note">
-            This version uses the corrected single-`.pdf` asset path.
+            If spacing still looks off after this version, the next step is fine-tuning only the coordinates.
           </p>
         </section>
 
@@ -672,7 +672,7 @@
 
   <script>
     document.addEventListener("DOMContentLoaded", function () {
-      const TEMPLATE_URL = "./assets/wood-county-application-for-sealing-295332-conviction.pdf";
+      const TEMPLATE_URL = "./assets/wood-county-application-for-sealing-295332-conviction.pdf.pdf";
 
       const WOOD_DEFAULTS = {
         caseNumber: "2006CR0387",
@@ -762,11 +762,11 @@
         const { user, recordDetails } = readStoredData();
         const offense = getFirstOffense(recordDetails);
 
-        const fullName = `${safe(user.firstName)} ${safe(user.lastName)}`.trim() || "Matt Tunstall";
+        const fullName = `${safe(user.firstName)} ${safe(user.lastName)}`.trim() || "mattt tunstall";
 
         return {
           fullName,
-          street: safe(user.street, "231 W Horizon Ridge Parkway"),
+          street: safe(user.street, "231 w horizon ridge parkway"),
           apartment: WOOD_DEFAULTS.apartment,
           city: safe(user.city, "Henderson"),
           state: safe(user.state, "NV"),
@@ -960,16 +960,12 @@
       }
 
       async function fetchTemplateBytes() {
-        setStatus("Trying PDF at: " + TEMPLATE_URL);
-
         const response = await fetch(TEMPLATE_URL, { cache: "no-store" });
-
         if (!response.ok) {
-          throw new Error(`PDF fetch failed with status ${response.status} at ${TEMPLATE_URL}`);
+          throw new Error(`PDF fetch failed with status ${response.status}. Check the file path in assets.`);
         }
 
         const bytes = await response.arrayBuffer();
-
         if (!bytes || bytes.byteLength < 1000) {
           throw new Error("PDF loaded, but the file looks too small to be a real court form.");
         }
@@ -1042,6 +1038,7 @@
 
           setStatus("Filling PDF...");
 
+          // PAGE 3
           draw(addressPage, new Date().toLocaleDateString("en-US", {
             month: "long",
             day: "numeric",
@@ -1055,6 +1052,7 @@
           drawFit(addressPage, data.zip, 105, 260, 150, 12, helvetica);
           drawFit(addressPage, data.email, 145, 224, 325, 12, helvetica);
 
+          // PAGE 4 corrected coordinates
           drawFit(applicationPage, data.caseNumber, 470, 676, 120, 12, helvetica);
           drawFit(applicationPage, WOOD_DEFAULTS.judge, 470, 649, 120, 12, helvetica);
 
