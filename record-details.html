@@ -4,68 +4,56 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Record Details | RecordPathAI</title>
-  <link rel="stylesheet" href="css/styles.css" />
   <style>
     :root {
-      --rd-bg: #eef2f8;
-      --rd-surface: #ffffff;
-      --rd-surface-soft: #f8fbff;
-      --rd-text: #233d70;
-      --rd-muted: #667796;
-      --rd-line: #dbe4f1;
-      --rd-line-strong: #cfd9e8;
-      --rd-blue: #76a9f7;
-      --rd-blue-dark: #5d95ec;
-      --rd-blue-soft: #e7f0ff;
-      --rd-shadow: 0 10px 30px rgba(78, 110, 167, 0.12);
+      --bg: #eef2f8;
+      --surface: #ffffff;
+      --surface-soft: #f8fbff;
+      --text: #233d70;
+      --muted: #667796;
+      --line: #dbe4f1;
+      --shadow: 0 10px 30px rgba(78, 110, 167, 0.12);
     }
 
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     body {
-      background: var(--rd-bg);
-      color: var(--rd-text);
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Arial, Helvetica, sans-serif;
     }
 
     .rd-shell {
-      width: min(980px, 92%);
+      width: min(1100px, 92%);
       margin: 28px auto 60px;
     }
 
     .rd-card {
-      background: var(--rd-surface);
-      border: 1px solid var(--rd-line);
+      background: var(--surface);
+      border: 1px solid var(--line);
       border-radius: 24px;
-      box-shadow: var(--rd-shadow);
+      box-shadow: var(--shadow);
       padding: 36px;
-    }
-
-    .rd-header {
-      margin-bottom: 26px;
     }
 
     .rd-header h1 {
       margin: 0 0 10px;
-      color: #26457a;
       font-size: clamp(38px, 5vw, 64px);
       line-height: 1.02;
       letter-spacing: -0.04em;
-      font-weight: 700;
+      color: #26457a;
     }
 
     .rd-header p {
-      margin: 0;
+      margin: 0 0 26px;
       color: #60708d;
       font-size: 17px;
       line-height: 1.6;
-      max-width: 760px;
     }
 
     .rd-toolbar {
       display: flex;
-      align-items: center;
       justify-content: space-between;
       gap: 14px;
       flex-wrap: wrap;
@@ -75,38 +63,27 @@
     .rd-status {
       color: #6a7894;
       font-size: 14px;
-      line-height: 1.5;
     }
 
     .rd-btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
       min-height: 58px;
       padding: 16px 24px;
       border-radius: 16px;
+      border: none;
       font-size: 17px;
       font-weight: 700;
-      border: none;
       cursor: pointer;
-      text-decoration: none;
-      transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.12s ease;
-    }
-
-    .rd-btn:hover {
-      transform: translateY(-1px);
     }
 
     .rd-btn-primary {
       background: linear-gradient(180deg, #86b7fb 0%, #5d91e6 100%);
-      color: #ffffff;
-      box-shadow: 0 10px 30px rgba(78, 110, 167, 0.12);
+      color: #fff;
     }
 
     .rd-btn-secondary {
-      background: #ffffff;
-      color: #3c557d;
+      background: #fff;
       border: 1px solid #d5e0ef;
+      color: #3c557d;
     }
 
     .rd-btn-soft {
@@ -119,38 +96,25 @@
       gap: 18px;
     }
 
-    .rd-empty {
-      border: 1px dashed #d5e0ef;
-      border-radius: 18px;
-      background: #fbfdff;
-      padding: 20px;
-      color: #6a7894;
-      font-size: 15px;
-      line-height: 1.6;
-      text-align: center;
-    }
-
     .rd-offense {
-      background: var(--rd-surface-soft);
-      border: 1px solid var(--rd-line);
+      background: var(--surface-soft);
+      border: 1px solid var(--line);
       border-radius: 22px;
       padding: 22px;
     }
 
     .rd-offense-head {
       display: flex;
-      align-items: center;
       justify-content: space-between;
       gap: 12px;
       margin-bottom: 18px;
+      align-items: center;
     }
 
     .rd-offense-head h2 {
       margin: 0;
-      color: #26457a;
       font-size: 22px;
-      line-height: 1.2;
-      font-weight: 700;
+      color: #26457a;
     }
 
     .rd-grid {
@@ -161,7 +125,6 @@
 
     .rd-field {
       position: relative;
-      display: block;
     }
 
     .rd-field-full {
@@ -174,21 +137,19 @@
       color: #3f5a87;
       font-size: 15px;
       font-weight: 700;
-      line-height: 1.2;
     }
 
     .rd-field input,
-    .rd-field textarea {
+    .rd-field textarea,
+    .rd-field select {
       width: 100%;
       min-height: 58px;
       padding: 16px 18px;
       border: 1px solid #d5e0ef;
       border-radius: 16px;
-      background: #ffffff;
+      background: #fff;
       color: #243755;
-      font-size: 17px;
-      line-height: 1.2;
-      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+      font-size: 16px;
       outline: none;
       font-family: Arial, Helvetica, sans-serif;
     }
@@ -197,12 +158,6 @@
       min-height: 110px;
       resize: vertical;
       line-height: 1.5;
-    }
-
-    .rd-field input:focus,
-    .rd-field textarea:focus {
-      border-color: #7eaef3;
-      box-shadow: 0 0 0 4px rgba(126, 174, 243, 0.15);
     }
 
     .rd-helper {
@@ -217,7 +172,7 @@
       top: calc(100% + 6px);
       left: 0;
       right: 0;
-      background: #ffffff;
+      background: #fff;
       border: 1px solid #d5e0ef;
       border-radius: 14px;
       box-shadow: 0 12px 26px rgba(42, 63, 109, 0.12);
@@ -230,12 +185,9 @@
 
     .rd-suggestion {
       padding: 12px 14px;
-      color: #243755;
       font-size: 15px;
-      line-height: 1.35;
       cursor: pointer;
       border-bottom: 1px solid #edf2f8;
-      background: #ffffff;
     }
 
     .rd-suggestion:last-child {
@@ -245,6 +197,11 @@
     .rd-suggestion:hover,
     .rd-suggestion.active {
       background: #f3f7fe;
+    }
+
+    .court-packet-status a {
+      color: #1f4ca5;
+      text-decoration: underline;
     }
 
     .rd-actions {
@@ -266,47 +223,17 @@
     }
 
     @media (max-width: 700px) {
-      .rd-shell {
-        width: min(92%, 980px);
-        margin-top: 18px;
-      }
-
       .rd-card {
-        padding: 26px 20px 24px;
-        border-radius: 20px;
-      }
-
-      .rd-header h1 {
-        font-size: 34px;
-        line-height: 1.04;
-      }
-
-      .rd-header p {
-        font-size: 15px;
+        padding: 24px 18px;
       }
 
       .rd-grid {
         grid-template-columns: 1fr;
-        gap: 16px;
-      }
-
-      .rd-offense {
-        padding: 18px;
-      }
-
-      .rd-offense-head {
-        align-items: flex-start;
-        flex-direction: column;
-      }
-
-      .rd-field input,
-      .rd-field textarea {
-        min-height: 56px;
-        font-size: 16px;
       }
 
       .rd-toolbar,
-      .rd-actions {
+      .rd-actions,
+      .rd-offense-head {
         flex-direction: column;
         align-items: stretch;
       }
@@ -318,28 +245,13 @@
   </style>
 </head>
 <body>
-  <header class="site-header">
-    <div class="container nav-wrap">
-      <a href="index.html" class="brand">
-        <span class="brand-icon">📄</span>
-        <span class="brand-text">RecordPathAI</span>
-      </a>
-
-      <nav class="main-nav">
-        <a href="how-it-works.html">How It Works</a>
-        <a href="eligibility.html">Eligibility</a>
-        <a href="eligibility.html" class="nav-btn nav-btn-light">Check Eligibility</a>
-      </nav>
-    </div>
-  </header>
-
   <main>
     <section class="rd-shell">
       <div class="rd-card">
         <div class="rd-header">
           <h1>Enter Your Record Details</h1>
           <p>
-            Add each offense so RecordPathAI can organize your information and prepare your filing packet.
+            Add each offense, select the court and state, and RecordPathAI will look for the likely official packet for that court.
           </p>
         </div>
 
@@ -349,7 +261,6 @@
         </div>
 
         <div class="rd-list" id="offenseList"></div>
-        <div class="rd-empty" id="emptyState" hidden>No offenses added yet.</div>
 
         <div class="rd-actions">
           <a href="eligibility.html" class="rd-btn rd-btn-secondary">Back</a>
@@ -357,7 +268,7 @@
         </div>
 
         <p class="rd-note">
-          Start typing in charge-related fields to see suggestions from your charge library.
+          Nationwide packet discovery is enabled. Exact PDF auto-fill is currently mapped for Wood County Common Pleas only.
         </p>
       </div>
     </section>
