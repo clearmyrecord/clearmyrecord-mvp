@@ -13,19 +13,98 @@
       --muted: #667796;
       --line: #dbe4f1;
       --shadow: 0 10px 30px rgba(78, 110, 167, 0.12);
+      --container: 1180px;
     }
 
     * { box-sizing: border-box; }
 
     body {
       margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
       background: var(--bg);
       color: var(--text);
-      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .container {
+      width: min(var(--container), calc(100% - 32px));
+      margin: 0 auto;
+    }
+
+    .site-header {
+      padding: 20px 0 12px;
+    }
+
+    .header-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 700;
+      font-size: 18px;
+      color: #3b6db4;
+    }
+
+    .brand-icon {
+      width: 26px;
+      height: 32px;
+      border: 2px solid #222;
+      border-radius: 2px;
+      background: #fff;
+      position: relative;
+      flex: 0 0 auto;
+    }
+
+    .brand-icon::before {
+      content: "";
+      position: absolute;
+      left: 4px;
+      right: 4px;
+      top: 8px;
+      height: 2px;
+      background: #999;
+      box-shadow: 0 6px 0 #999, 0 12px 0 #999;
+    }
+
+    .nav {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+
+    .nav a {
+      font-size: 16px;
+      color: var(--text);
+      padding: 10px 12px;
+      border-radius: 14px;
+    }
+
+    .nav .nav-cta {
+      background: #e8f0fd;
+      font-weight: 700;
+      padding: 12px 18px;
+    }
+
+    .nav .nav-login {
+      background: #fff;
+      border: 1px solid #d6dfed;
+      font-weight: 700;
+      padding: 12px 18px;
     }
 
     .rd-shell {
-      width: min(1100px, 92%);
+      width: min(1040px, 92%);
       margin: 28px auto 60px;
     }
 
@@ -37,23 +116,30 @@
       padding: 36px;
     }
 
+    .rd-header {
+      margin-bottom: 26px;
+    }
+
     .rd-header h1 {
       margin: 0 0 10px;
+      color: #26457a;
       font-size: clamp(38px, 5vw, 64px);
       line-height: 1.02;
       letter-spacing: -0.04em;
-      color: #26457a;
+      font-weight: 700;
     }
 
     .rd-header p {
-      margin: 0 0 26px;
+      margin: 0;
       color: #60708d;
       font-size: 17px;
       line-height: 1.6;
+      max-width: 780px;
     }
 
     .rd-toolbar {
       display: flex;
+      align-items: center;
       justify-content: space-between;
       gap: 14px;
       flex-wrap: wrap;
@@ -63,27 +149,33 @@
     .rd-status {
       color: #6a7894;
       font-size: 14px;
+      line-height: 1.5;
     }
 
     .rd-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
       min-height: 58px;
       padding: 16px 24px;
       border-radius: 16px;
-      border: none;
       font-size: 17px;
       font-weight: 700;
+      border: none;
       cursor: pointer;
+      text-decoration: none;
     }
 
     .rd-btn-primary {
       background: linear-gradient(180deg, #86b7fb 0%, #5d91e6 100%);
-      color: #fff;
+      color: #ffffff;
+      box-shadow: 0 10px 30px rgba(78, 110, 167, 0.12);
     }
 
     .rd-btn-secondary {
-      background: #fff;
-      border: 1px solid #d5e0ef;
+      background: #ffffff;
       color: #3c557d;
+      border: 1px solid #d5e0ef;
     }
 
     .rd-btn-soft {
@@ -105,16 +197,18 @@
 
     .rd-offense-head {
       display: flex;
+      align-items: center;
       justify-content: space-between;
       gap: 12px;
       margin-bottom: 18px;
-      align-items: center;
     }
 
     .rd-offense-head h2 {
       margin: 0;
-      font-size: 22px;
       color: #26457a;
+      font-size: 22px;
+      line-height: 1.2;
+      font-weight: 700;
     }
 
     .rd-grid {
@@ -124,7 +218,7 @@
     }
 
     .rd-field {
-      position: relative;
+      display: block;
     }
 
     .rd-field-full {
@@ -137,6 +231,7 @@
       color: #3f5a87;
       font-size: 15px;
       font-weight: 700;
+      line-height: 1.2;
     }
 
     .rd-field input,
@@ -147,11 +242,13 @@
       padding: 16px 18px;
       border: 1px solid #d5e0ef;
       border-radius: 16px;
-      background: #fff;
+      background: #ffffff;
       color: #243755;
       font-size: 16px;
+      line-height: 1.2;
       outline: none;
       font-family: Arial, Helvetica, sans-serif;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
     }
 
     .rd-field textarea {
@@ -160,48 +257,18 @@
       line-height: 1.5;
     }
 
+    .rd-field input:focus,
+    .rd-field textarea:focus,
+    .rd-field select:focus {
+      border-color: #7eaef3;
+      box-shadow: 0 0 0 4px rgba(126,174,243,0.15);
+    }
+
     .rd-helper {
       margin-top: 7px;
       color: #7a89a3;
       font-size: 13px;
       line-height: 1.5;
-    }
-
-    .rd-suggestions {
-      position: absolute;
-      top: calc(100% + 6px);
-      left: 0;
-      right: 0;
-      background: #fff;
-      border: 1px solid #d5e0ef;
-      border-radius: 14px;
-      box-shadow: 0 12px 26px rgba(42, 63, 109, 0.12);
-      overflow: hidden;
-      z-index: 30;
-      display: none;
-      max-height: 240px;
-      overflow-y: auto;
-    }
-
-    .rd-suggestion {
-      padding: 12px 14px;
-      font-size: 15px;
-      cursor: pointer;
-      border-bottom: 1px solid #edf2f8;
-    }
-
-    .rd-suggestion:last-child {
-      border-bottom: none;
-    }
-
-    .rd-suggestion:hover,
-    .rd-suggestion.active {
-      background: #f3f7fe;
-    }
-
-    .court-packet-status a {
-      color: #1f4ca5;
-      text-decoration: underline;
     }
 
     .rd-actions {
@@ -223,17 +290,62 @@
     }
 
     @media (max-width: 700px) {
+      .container {
+        width: min(var(--container), calc(100% - 24px));
+      }
+
+      .site-header {
+        padding-top: 14px;
+        padding-bottom: 8px;
+      }
+
+      .header-inner {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 14px;
+      }
+
+      .nav {
+        width: 100%;
+        gap: 10px;
+      }
+
+      .nav a {
+        padding: 10px 12px;
+        font-size: 14px;
+      }
+
+      .rd-shell {
+        width: min(92%, 1040px);
+        margin-top: 18px;
+      }
+
       .rd-card {
-        padding: 24px 18px;
+        padding: 26px 20px 24px;
+        border-radius: 20px;
+      }
+
+      .rd-header h1 {
+        font-size: 34px;
+        line-height: 1.04;
+      }
+
+      .rd-header p {
+        font-size: 15px;
       }
 
       .rd-grid {
         grid-template-columns: 1fr;
+        gap: 16px;
       }
 
+      .rd-offense {
+        padding: 18px;
+      }
+
+      .rd-offense-head,
       .rd-toolbar,
-      .rd-actions,
-      .rd-offense-head {
+      .rd-actions {
         flex-direction: column;
         align-items: stretch;
       }
@@ -245,13 +357,29 @@
   </style>
 </head>
 <body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a href="index.html" class="brand">
+        <span class="brand-icon" aria-hidden="true"></span>
+        <span>RecordPathAI</span>
+      </a>
+
+      <nav class="nav">
+        <a href="how-it-works.html">How It Works</a>
+        <a href="eligibility.html">Eligibility</a>
+        <a href="eligibility.html" class="nav-cta">Check Eligibility</a>
+        <a href="login.html" class="nav-login">Log In</a>
+      </nav>
+    </div>
+  </header>
+
   <main>
     <section class="rd-shell">
       <div class="rd-card">
         <div class="rd-header">
           <h1>Enter Your Record Details</h1>
           <p>
-            Add each offense, select the court and state, and RecordPathAI will look for the likely official packet for that court.
+            Add each offense with the actual criminal offense code, court, and case details so RecordPathAI can prepare the filing packet correctly.
           </p>
         </div>
 
@@ -268,13 +396,161 @@
         </div>
 
         <p class="rd-note">
-          Nationwide packet discovery is enabled. Exact PDF auto-fill is currently mapped for Wood County Common Pleas only.
+          Include the exact offense code when possible, for example: <code>2925.11(A)</code>.
         </p>
       </div>
     </section>
   </main>
 
-  <script src="js/charges.js"></script>
-  <script src="js/record-details.js"></script>
+  <script>
+    (function () {
+      const offenseList = document.getElementById("offenseList");
+      const addOffenseBtn = document.getElementById("addOffenseBtn");
+      const continueBtn = document.getElementById("continueBtn");
+      const recordStatus = document.getElementById("recordStatus");
+
+      const states = [
+        "Alabama","Alaska","Arizona","Arkansas","California","Colorado","Connecticut","Delaware",
+        "Florida","Georgia","Hawaii","Idaho","Illinois","Indiana","Iowa","Kansas","Kentucky",
+        "Louisiana","Maine","Maryland","Massachusetts","Michigan","Minnesota","Mississippi",
+        "Missouri","Montana","Nebraska","Nevada","New Hampshire","New Jersey","New Mexico",
+        "New York","North Carolina","North Dakota","Ohio","Oklahoma","Oregon","Pennsylvania",
+        "Rhode Island","South Carolina","South Dakota","Tennessee","Texas","Utah","Vermont",
+        "Virginia","Washington","West Virginia","Wisconsin","Wyoming"
+      ];
+
+      let offenseCounter = 0;
+
+      function updateStatus() {
+        const count = offenseList.querySelectorAll(".rd-offense").length;
+        recordStatus.textContent = count === 1 ? "1 offense added" : `${count} offenses added`;
+      }
+
+      function renumberOffenses() {
+        offenseList.querySelectorAll(".rd-offense").forEach((card, index) => {
+          const title = card.querySelector(".rd-offense-head h2");
+          if (title) title.textContent = `Offense ${index + 1}`;
+        });
+      }
+
+      function makeField(label, name, placeholder, type = "text", full = false) {
+        const wrap = document.createElement("div");
+        wrap.className = `rd-field${full ? " rd-field-full" : ""}`;
+
+        const input = type === "textarea"
+          ? `<textarea name="${name}" placeholder="${placeholder || ""}"></textarea>`
+          : `<input type="${type}" name="${name}" placeholder="${placeholder || ""}" />`;
+
+        wrap.innerHTML = `
+          <label>${label}</label>
+          ${input}
+        `;
+        return wrap;
+      }
+
+      function makeStateField(name) {
+        const wrap = document.createElement("div");
+        wrap.className = "rd-field";
+        wrap.innerHTML = `
+          <label>State</label>
+          <select name="${name}">
+            <option value="">Select state</option>
+            ${states.map(state => `<option value="${state}">${state}</option>`).join("")}
+          </select>
+        `;
+        return wrap;
+      }
+
+      function buildOffenseCard(index) {
+        const card = document.createElement("section");
+        card.className = "rd-offense";
+
+        card.innerHTML = `
+          <div class="rd-offense-head">
+            <h2>Offense ${index + 1}</h2>
+            <button type="button" class="rd-btn rd-btn-secondary remove-offense-btn">Remove</button>
+          </div>
+          <div class="rd-grid"></div>
+        `;
+
+        const grid = card.querySelector(".rd-grid");
+
+        grid.appendChild(makeField("Charge Name", `charge_name_${index}`, "Example: Possession of Drugs"));
+        grid.appendChild(makeField("Offense Code", `offense_code_${index}`, "Example: 2925.11(A)"));
+
+        grid.appendChild(makeField("Charge Level", `charge_level_${index}`, "Example: Felony 3rd Degree"));
+        grid.appendChild(makeField("Disposition", `disposition_${index}`, "Example: Guilty"));
+
+        grid.appendChild(makeField("Case Number", `case_number_${index}`, "Case number"));
+        grid.appendChild(makeField("Arrest / Case Date", `arrest_date_${index}`, "", "date"));
+
+        grid.appendChild(makeField("Court", `court_${index}`, "Example: Wood County Court of Common Pleas"));
+        grid.appendChild(makeField("County", `county_${index}`, "Example: Wood County"));
+
+        grid.appendChild(makeStateField(`state_${index}`));
+
+        grid.appendChild(makeField(
+          "Notes",
+          `notes_${index}`,
+          "Anything else about this offense...",
+          "textarea",
+          true
+        ));
+
+        const removeBtn = card.querySelector(".remove-offense-btn");
+        removeBtn.addEventListener("click", function () {
+          card.remove();
+          renumberOffenses();
+          updateStatus();
+        });
+
+        return card;
+      }
+
+      function addOffense() {
+        const card = buildOffenseCard(offenseCounter);
+        offenseCounter += 1;
+        offenseList.appendChild(card);
+        updateStatus();
+      }
+
+      function collectData() {
+        return Array.from(offenseList.querySelectorAll(".rd-offense")).map((card) => {
+          const row = {};
+          card.querySelectorAll("input, textarea, select").forEach((field) => {
+            row[field.name] = field.value.trim();
+          });
+          return row;
+        });
+      }
+
+      addOffenseBtn.addEventListener("click", addOffense);
+
+      continueBtn.addEventListener("click", function () {
+        const data = collectData();
+
+        if (!data.length) {
+          alert("Please add at least one offense.");
+          return;
+        }
+
+        const first = data[0];
+        const firstKey = Object.keys(first).find((k) => k.startsWith("charge_name_"));
+        const codeKey = Object.keys(first).find((k) => k.startsWith("offense_code_"));
+        const courtKey = Object.keys(first).find((k) => k.startsWith("court_"));
+
+        if (!first[firstKey] || !first[codeKey] || !first[courtKey]) {
+          alert("Please complete at least the charge name, offense code, and court for the first offense.");
+          return;
+        }
+
+        sessionStorage.setItem("recordPath_recordDetails", JSON.stringify(data));
+        window.location.href = "packet.html";
+      });
+
+      addOffense();
+      updateStatus();
+    })();
+  </script>
 </body>
 </html>
