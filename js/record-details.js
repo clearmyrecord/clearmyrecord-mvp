@@ -1,9 +1,8 @@
 (function () {
   const offenseList = document.getElementById("offenseList");
-  const emptyState = document.getElementById("emptyState");
   const addOffenseBtn = document.getElementById("addOffenseBtn");
-  const backBtn = document.getElementById("backBtn");
   const continueBtn = document.getElementById("continueBtn");
+  const emptyState = document.getElementById("emptyState");
   const recordStatus = document.getElementById("recordStatus");
 
   const fallbackCharges = [
@@ -31,17 +30,17 @@
     "Deferred",
     "Reduced",
     "Vacated",
-    "Expunged",
-    "Sealed"
+    "Sealed",
+    "Expunged"
   ];
 
   const levelOptions = [
     "Misdemeanor",
     "Felony",
     "Infraction",
-    "Citation",
     "Traffic",
-    "Minor Misdemeanor"
+    "Minor Misdemeanor",
+    "Citation"
   ];
 
   const caseTypeOptions = [
@@ -63,25 +62,25 @@
   ];
 
   const countyOptions = [
+    "Allen County",
     "Clark County",
     "Cuyahoga County",
     "Franklin County",
     "Hamilton County",
     "Lucas County",
     "Montgomery County",
-    "Summit County"
+    "Summit County",
+    "Wood County"
   ];
 
   let offenseCounter = 0;
-  let activeSuggestionBox = null;
+  let openBox = null;
 
   function normalizeChargeLibrary() {
     try {
-      if (!Array.isArray(window.CHARGES)) {
-        return fallbackCharges.slice();
-      }
+      if (!Array.isArray(window.CHARGES)) return fallbackCharges.slice();
 
-      const normalized = window.CHARGES
+      const values = window.CHARGES
         .map((item) => {
           if (typeof item === "string") return item.trim();
           if (item && typeof item.name === "string") return item.name.trim();
@@ -91,15 +90,15 @@
         })
         .filter(Boolean);
 
-      return normalized.length ? uniqueStrings(normalized) : fallbackCharges.slice();
+      return values.length ? unique(values) : fallbackCharges.slice();
     } catch (error) {
-      console.error("Charge library failed to load.", error);
+      console.error("Unable to load charges library:", error);
       return fallbackCharges.slice();
     }
   }
 
-  function uniqueStrings(list) {
-    return Array.from(new Set(list.map((item) => String(item).trim()).filter(Boolean)));
+  function unique(list) {
+    return Array.from(new Set(list));
   }
 
   const chargeLibrary = normalizeChargeLibrary();
@@ -113,17 +112,17 @@
       .replace(/'/g, "&#039;");
   }
 
-  function closeActiveSuggestions() {
-    if (activeSuggestionBox) {
-      activeSuggestionBox.classList.remove("is-open");
-      activeSuggestionBox.innerHTML = "";
-      activeSuggestionBox = null;
+  function closeSuggestions() {
+    if (openBox) {
+      openBox.style.display = "none";
+      openBox.innerHTML = "";
+      openBox = null;
     }
   }
 
-  function updateEmptyState() {
+  function updateStatus() {
     const count = offenseList.querySelectorAll(".rd-offense").length;
-    emptyState.hidden = count > 0;
+    emptyState.hidden = count !== 0;
 
     if (count === 0) {
       recordStatus.textContent = "No offenses added";
@@ -134,73 +133,26 @@
     }
   }
 
-  function createField({
-    label,
-    name,
-    type = "text",
-    placeholder = "",
-    full = false,
-    suggestions = null,
-    helper = ""
-  }) {
-    const field = document.createElement("div");
-    field.className = `rd-field${full ? " rd-field-full" : ""}`;
-
-    const inputId = `${name}-${Math.random().toString(36).slice(2, 10)}`;
-
-    let inputMarkup = "";
-
-    if (type === "textarea") {
-      inputMarkup = `
-        <textarea
-          class="rd-textarea"
-          id="${inputId}"
-          name="${escapeHtml(name)}"
-          placeholder="${escapeHtml(placeholder)}"
-          rows="4"
-        ></textarea>
-      `;
-    } else {
-      inputMarkup = `
-        <input
-          class="rd-input"
-          id="${inputId}"
-          name="${escapeHtml(name)}"
-          type="${escapeHtml(type)}"
-          placeholder="${escapeHtml(placeholder)}"
-          autocomplete="off"
-        />
-      `;
-    }
-
-    field.innerHTML = `
-      <label class="rd-label" for="${inputId}">${escapeHtml(label)}</label>
-      ${inputMarkup}
-      ${suggestions ? '<div class="rd-suggestions"></div>' : ""}
-      ${helper ? `<div class="rd-helper">${escapeHtml(helper)}</div>` : ""}
-    `;
-
-    if (suggestions) {
-      const input = field.querySelector(type === "textarea" ? "textarea" : "input");
-      const box = field.querySelector(".rd-suggestions");
-      bindSuggestions(input, box, suggestions);
-    }
-
-    return field;
+  function renumberOffenses() {
+    const cards = offenseList.querySelectorAll(".rd-offense");
+    cards.forEach((card, index) => {
+      const title = card.querySelector(".rd-offense-head h2");
+      if (title) title.textContent = `Offense ${index + 1}`;
+    });
   }
 
-  function bindSuggestions(input, box, sourceList) {
+  function bindSuggestions(input, box, list) {
     let activeIndex = -1;
-    let currentMatches = [];
+    let matches = [];
 
-    function render(matches) {
-      currentMatches = matches;
+    function render(nextMatches) {
+      matches = nextMatches;
       activeIndex = -1;
 
       if (!matches.length) {
-        box.classList.remove("is-open");
+        box.style.display = "none";
         box.innerHTML = "";
-        if (activeSuggestionBox === box) activeSuggestionBox = null;
+        if (openBox === box) openBox = null;
         return;
       }
 
@@ -208,11 +160,12 @@
         .map((item) => `<div class="rd-suggestion">${escapeHtml(item)}</div>`)
         .join("");
 
-      box.classList.add("is-open");
-      activeSuggestionBox = box;
+      box.style.display = "block";
+      openBox = box;
 
-      Array.from(box.querySelectorAll(".rd-suggestion")).forEach((node, index) => {
-        node.addEventListener("mousedown", function (event) {
+      const items = box.querySelectorAll(".rd-suggestion");
+      items.forEach((item, index) => {
+        item.addEventListener("mousedown", function (event) {
           event.preventDefault();
           choose(index);
         });
@@ -220,16 +173,16 @@
     }
 
     function choose(index) {
-      if (index < 0 || index >= currentMatches.length) return;
-      input.value = currentMatches[index];
-      box.classList.remove("is-open");
+      if (index < 0 || index >= matches.length) return;
+      input.value = matches[index];
+      box.style.display = "none";
       box.innerHTML = "";
-      if (activeSuggestionBox === box) activeSuggestionBox = null;
-      input.dispatchEvent(new Event("change", { bubbles: true }));
+      if (openBox === box) openBox = null;
     }
 
-    function filterList(value) {
+    function filter(value) {
       const query = value.trim().toLowerCase();
+
       if (!query) {
         render([]);
         return;
@@ -238,7 +191,7 @@
       const startsWith = [];
       const includes = [];
 
-      sourceList.forEach((item) => {
+      list.forEach((item) => {
         const text = String(item);
         const lower = text.toLowerCase();
 
@@ -253,13 +206,11 @@
     }
 
     input.addEventListener("input", function () {
-      filterList(input.value);
+      filter(input.value);
     });
 
     input.addEventListener("focus", function () {
-      if (input.value.trim()) {
-        filterList(input.value);
-      }
+      if (input.value.trim()) filter(input.value);
     });
 
     input.addEventListener("keydown", function (event) {
@@ -279,186 +230,226 @@
         }
         return;
       } else if (event.key === "Escape") {
-        box.classList.remove("is-open");
+        box.style.display = "none";
         box.innerHTML = "";
-        if (activeSuggestionBox === box) activeSuggestionBox = null;
+        if (openBox === box) openBox = null;
         return;
       } else {
         return;
       }
 
       items.forEach((item, index) => {
-        item.classList.toggle("is-active", index === activeIndex);
+        item.classList.toggle("active", index === activeIndex);
       });
     });
 
     input.addEventListener("blur", function () {
       setTimeout(function () {
-        box.classList.remove("is-open");
+        box.style.display = "none";
         box.innerHTML = "";
-        if (activeSuggestionBox === box) activeSuggestionBox = null;
+        if (openBox === box) openBox = null;
       }, 140);
     });
+  }
+
+  function makeTextField(config) {
+    const wrapper = document.createElement("div");
+    wrapper.className = `rd-field${config.full ? " rd-field-full" : ""}`;
+
+    const inputId = `${config.name}-${Math.random().toString(36).slice(2, 9)}`;
+
+    wrapper.innerHTML = `
+      <label for="${inputId}">${escapeHtml(config.label)}</label>
+      <input
+        id="${inputId}"
+        name="${escapeHtml(config.name)}"
+        type="${escapeHtml(config.type || "text")}"
+        placeholder="${escapeHtml(config.placeholder || "")}"
+        autocomplete="off"
+      />
+      ${config.suggestions ? '<div class="rd-suggestions"></div>' : ""}
+      ${config.helper ? `<div class="rd-helper">${escapeHtml(config.helper)}</div>` : ""}
+    `;
+
+    if (config.suggestions) {
+      const input = wrapper.querySelector("input");
+      const box = wrapper.querySelector(".rd-suggestions");
+      bindSuggestions(input, box, config.suggestions);
+    }
+
+    return wrapper;
+  }
+
+  function makeTextareaField(config) {
+    const wrapper = document.createElement("div");
+    wrapper.className = `rd-field${config.full ? " rd-field-full" : ""}`;
+
+    const inputId = `${config.name}-${Math.random().toString(36).slice(2, 9)}`;
+
+    wrapper.innerHTML = `
+      <label for="${inputId}">${escapeHtml(config.label)}</label>
+      <textarea
+        id="${inputId}"
+        name="${escapeHtml(config.name)}"
+        placeholder="${escapeHtml(config.placeholder || "")}"
+      ></textarea>
+    `;
+
+    return wrapper;
   }
 
   function buildOffenseCard(index) {
     const card = document.createElement("section");
     card.className = "rd-offense";
-    card.dataset.offenseIndex = String(index);
 
-    const top = document.createElement("div");
-    top.className = "rd-offense-top";
-
-    const title = document.createElement("h2");
-    title.className = "rd-offense-title";
-    title.textContent = `Offense ${index + 1}`;
-
-    const removeBtn = document.createElement("button");
-    removeBtn.type = "button";
-    removeBtn.className = "rd-btn rd-btn-small rd-remove-btn";
-    removeBtn.textContent = "Remove";
-
-    top.appendChild(title);
-    top.appendChild(removeBtn);
+    const head = document.createElement("div");
+    head.className = "rd-offense-head";
+    head.innerHTML = `
+      <h2>Offense ${index + 1}</h2>
+      <button type="button" class="rd-btn rd-btn-secondary remove-offense-btn">Remove</button>
+    `;
 
     const grid = document.createElement("div");
     grid.className = "rd-grid";
 
-    grid.appendChild(createField({
-      label: "Charge Name",
-      name: `charge_name_${index}`,
-      placeholder: "Start typing a charge",
-      suggestions: chargeLibrary,
-      helper: "Suggestions come from your charge library."
-    }));
+    grid.appendChild(
+      makeTextField({
+        label: "Charge Name",
+        name: `charge_name_${index}`,
+        placeholder: "Start typing a charge",
+        suggestions: chargeLibrary,
+        helper: "Suggestions are pulled from your charge library."
+      })
+    );
 
-    grid.appendChild(createField({
-      label: "Disposition / Outcome",
-      name: `disposition_${index}`,
-      placeholder: "Start typing a disposition",
-      suggestions: dispositionOptions
-    }));
+    grid.appendChild(
+      makeTextField({
+        label: "Disposition / Outcome",
+        name: `disposition_${index}`,
+        placeholder: "Start typing a disposition",
+        suggestions: dispositionOptions
+      })
+    );
 
-    grid.appendChild(createField({
-      label: "Charge Level",
-      name: `charge_level_${index}`,
-      placeholder: "Start typing a level",
-      suggestions: levelOptions
-    }));
+    grid.appendChild(
+      makeTextField({
+        label: "Charge Level",
+        name: `charge_level_${index}`,
+        placeholder: "Start typing a level",
+        suggestions: levelOptions
+      })
+    );
 
-    grid.appendChild(createField({
-      label: "Case Type",
-      name: `case_type_${index}`,
-      placeholder: "Start typing a case type",
-      suggestions: caseTypeOptions
-    }));
+    grid.appendChild(
+      makeTextField({
+        label: "Case Type",
+        name: `case_type_${index}`,
+        placeholder: "Start typing a case type",
+        suggestions: caseTypeOptions
+      })
+    );
 
-    grid.appendChild(createField({
-      label: "Court",
-      name: `court_${index}`,
-      placeholder: "Start typing a court",
-      suggestions: courtOptions
-    }));
+    grid.appendChild(
+      makeTextField({
+        label: "Court",
+        name: `court_${index}`,
+        placeholder: "Start typing a court",
+        suggestions: courtOptions
+      })
+    );
 
-    grid.appendChild(createField({
-      label: "County",
-      name: `county_${index}`,
-      placeholder: "Start typing a county",
-      suggestions: countyOptions
-    }));
+    grid.appendChild(
+      makeTextField({
+        label: "County",
+        name: `county_${index}`,
+        placeholder: "Start typing a county",
+        suggestions: countyOptions
+      })
+    );
 
-    grid.appendChild(createField({
-      label: "Arrest Date",
-      name: `arrest_date_${index}`,
-      type: "date"
-    }));
+    grid.appendChild(
+      makeTextField({
+        label: "Arrest Date",
+        name: `arrest_date_${index}`,
+        type: "date"
+      })
+    );
 
-    grid.appendChild(createField({
-      label: "Case Number",
-      name: `case_number_${index}`,
-      placeholder: "Optional"
-    }));
+    grid.appendChild(
+      makeTextField({
+        label: "Case Number",
+        name: `case_number_${index}`,
+        placeholder: "Optional"
+      })
+    );
 
-    grid.appendChild(createField({
-      label: "Notes",
-      name: `notes_${index}`,
-      type: "textarea",
-      placeholder: "Anything else about this offense...",
-      full: true
-    }));
+    grid.appendChild(
+      makeTextareaField({
+        label: "Notes",
+        name: `notes_${index}`,
+        placeholder: "Anything else about this offense...",
+        full: true
+      })
+    );
 
-    card.appendChild(top);
+    card.appendChild(head);
     card.appendChild(grid);
 
+    const removeBtn = card.querySelector(".remove-offense-btn");
     removeBtn.addEventListener("click", function () {
       card.remove();
       renumberOffenses();
-      updateEmptyState();
+      updateStatus();
     });
 
     return card;
-  }
-
-  function renumberOffenses() {
-    const cards = Array.from(offenseList.querySelectorAll(".rd-offense"));
-    cards.forEach((card, index) => {
-      const title = card.querySelector(".rd-offense-title");
-      if (title) title.textContent = `Offense ${index + 1}`;
-    });
   }
 
   function addOffense() {
     const card = buildOffenseCard(offenseCounter);
     offenseCounter += 1;
     offenseList.appendChild(card);
-    updateEmptyState();
+    updateStatus();
 
-    const firstInput = card.querySelector(".rd-input, .rd-textarea");
+    const firstInput = card.querySelector("input, textarea");
     if (firstInput) firstInput.focus();
   }
 
   function collectData() {
     const cards = Array.from(offenseList.querySelectorAll(".rd-offense"));
+
     return cards.map((card) => {
       const data = {};
-      Array.from(card.querySelectorAll("input, textarea")).forEach((field) => {
-        data[field.name] = field.value;
+      const fields = card.querySelectorAll("input, textarea");
+
+      fields.forEach((field) => {
+        data[field.name] = field.value.trim();
       });
+
       return data;
     });
   }
 
   addOffenseBtn.addEventListener("click", addOffense);
 
-  backBtn.addEventListener("click", function () {
-    if (document.referrer) {
-      window.history.back();
-    } else {
-      window.location.href = "eligibility.html";
-    }
-  });
-
   continueBtn.addEventListener("click", function () {
     const data = collectData();
+
     try {
-      sessionStorage.setItem("clearMyRecord_recordDetails", JSON.stringify(data));
+      sessionStorage.setItem("recordPath_recordDetails", JSON.stringify(data));
     } catch (error) {
-      console.warn("Could not save record details to sessionStorage.", error);
+      console.warn("Could not save record details.", error);
     }
 
-    console.log("Record details saved:", data);
-
-    if (window.location.href.includes("record-details.html")) {
-      window.location.href = "packet.html";
-    }
+    window.location.href = "packet.html";
   });
 
   document.addEventListener("click", function (event) {
     if (!event.target.closest(".rd-field")) {
-      closeActiveSuggestions();
+      closeSuggestions();
     }
   });
 
   addOffense();
-  updateEmptyState();
+  updateStatus();
 })();
