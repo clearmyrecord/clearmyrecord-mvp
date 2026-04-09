@@ -14,7 +14,7 @@
           <div class="eyebrow">Admin Tool</div>
           <h1>PDF Overlay Mapper</h1>
           <p class="subtext">
-            Upload a flat court PDF, place text overlays, and map them to normalized case paths.
+            Upload a flat court PDF, place text overlays, drag and resize them, and fine-tune them with keyboard controls.
           </p>
         </div>
       </div>
@@ -84,6 +84,32 @@
 
       <section class="panel">
         <div class="panel-head">
+          <h2>Editor Controls</h2>
+          <p>Use snapping and keyboard shortcuts for faster production mapping.</p>
+        </div>
+
+        <div class="form-grid two-col">
+          <label class="field">
+            <span>Grid Size (PDF units)</span>
+            <input id="gridSize" type="number" value="5" min="1" step="1" />
+          </label>
+
+          <label class="field" style="justify-content:flex-end;">
+            <span>Snap to Grid</span>
+            <select id="snapToGrid">
+              <option value="off">Off</option>
+              <option value="on">On</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="status-box muted">
+          Shortcuts: Arrow keys move selected overlay • Shift + Arrow = bigger move • Delete/Backspace removes selected overlay • Ctrl/Cmd + D duplicates selected overlay
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
           <h2>Sample Case JSON</h2>
           <p>Load a sample case so you can preview values while placing overlays.</p>
         </div>
@@ -140,7 +166,7 @@
         <div class="panel-head">
           <h2>Page Canvas</h2>
           <p>
-            Click anywhere on a page to add a new overlay box. The click position is stored in PDF coordinates.
+            Click anywhere on a page to add a new overlay box. Drag boxes to move them and drag the right handle to resize width.
           </p>
         </div>
 
@@ -160,13 +186,12 @@
       <section class="panel">
         <div class="panel-head">
           <h2>Overlay Fields</h2>
-          <p>
-            Edit the selected overlay or manage all overlay fields below.
-          </p>
+          <p>Edit the selected overlay or manage all overlay fields below.</p>
         </div>
 
         <div class="button-row">
           <button id="addManualOverlayBtn" class="btn btn-secondary" type="button">Add Manual Overlay</button>
+          <button id="duplicateSelectedOverlayBtn" class="btn btn-secondary" type="button">Duplicate Selected Overlay</button>
           <button id="deleteSelectedOverlayBtn" class="btn btn-secondary" type="button">Delete Selected Overlay</button>
           <button id="buildOverlayConfigBtn" class="btn btn-primary" type="button">Build Overlay Config</button>
         </div>
