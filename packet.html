@@ -713,7 +713,7 @@
         dischargeDate: "2010-05-07",
         offenseCode: "2925.11(A)",
         offenseName: "Possession of Drugs",
-        offenseDegree: "Felony 3rd Degree",
+        offenseDegree: "F3",
         apartment: "428",
         phone: "8556219810"
       };
@@ -731,12 +731,61 @@
         return (value ?? "").toString().trim() || fallback;
       }
 
-      function formatDateIso(date) {
-        if (!(date instanceof Date) || Number.isNaN(date.getTime())) return "";
-        const y = date.getFullYear();
-        const m = String(date.getMonth() + 1).padStart(2, "0");
-        const d = String(date.getDate()).padStart(2, "0");
-        return `${y}-${m}-${d}`;
+      function normalizeState(value) {
+        const v = safe(value).toUpperCase();
+
+        const map = {
+          OHIO: "OH",
+          NEVADA: "NV",
+          CALIFORNIA: "CA",
+          ARIZONA: "AZ",
+          TEXAS: "TX",
+          FLORIDA: "FL"
+        };
+
+        return map[v] || v;
+      }
+
+      function normalizeDegree(raw) {
+        const value = safe(raw).toUpperCase();
+
+        if (!value) return "";
+        if (["MM", "M", "F5", "F4", "F3", "F2", "F1"].includes(value)) return value;
+        if (value.includes("MINOR")) return "MM";
+        if (value.includes("MISDEMEANOR")) return "M";
+        if (value.includes("FELONY 5")) return "F5";
+        if (value.includes("FELONY 4")) return "F4";
+        if (value.includes("FELONY 3")) return "F3";
+        if (value.includes("FELONY 2")) return "F2";
+        if (value.includes("FELONY 1")) return "F1";
+
+        return value;
+      }
+
+      function normalizeOutcome(raw) {
+        const value = safe(raw).toLowerCase();
+
+        if (!value) return "";
+        if (value === "guilty") return "convicted";
+        if (value === "no contest") return "convicted";
+        if (value === "convicted") return "convicted";
+        if (value === "dismissed") return "dismissed";
+        if (value === "not guilty") return "not guilty";
+        if (value === "acquitted") return "acquitted";
+        if (value === "no bill") return "no bill";
+        if (value === "pardon") return "pardon";
+        if (value === "intervention in lieu") return "intervention in lieu";
+
+        return value;
+      }
+
+      function escapeHtml(str) {
+        return String(str)
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;")
+          .replaceAll("'", "&#039;");
       }
 
       function formatDateForDisplay(dateString) {
@@ -761,7 +810,7 @@
       }
 
       function getTemplateForState(caseState) {
-        const normalized = safe(caseState).toUpperCase();
+        const normalized = normalizeState(caseState);
         if (TEMPLATE_MAP[normalized] && TEMPLATE_MAP[normalized].default) {
           return TEMPLATE_MAP[normalized].default;
         }
@@ -831,19 +880,19 @@
             street: safe(user.address1 || user.street),
             apartment: safe(user.address2, WOOD_DEFAULTS.apartment),
             city: safe(user.city),
-            residenceState: safe(user.residenceState || user.state),
+            residenceState: normalizeState(user.residenceState || user.state),
             zip: safe(user.zip),
             email: safe(user.email),
             phone: safe(user.phone, WOOD_DEFAULTS.phone),
 
-            caseState: safe(record.caseState).toUpperCase(),
+            caseState: normalizeState(record.caseState),
             caseNumber: safe(record.caseNumber, WOOD_DEFAULTS.caseNumber),
             chargeName: safe(record.chargeName, WOOD_DEFAULTS.offenseName),
             offenseCode: safe(record.statute || record.offenseCode, WOOD_DEFAULTS.offenseCode),
-            chargeLevel: safe(record.degree || record.chargeLevel, WOOD_DEFAULTS.offenseDegree),
+            chargeLevel: normalizeDegree(record.degree || record.chargeLevel || WOOD_DEFAULTS.offenseDegree),
             dispositionDate: safe(record.dispositionDate || record.convictionDate, WOOD_DEFAULTS.dispositionDate),
             dischargeDate: safe(record.dischargeDate || record.probationCompletedDate, WOOD_DEFAULTS.dischargeDate),
-            disposition: safe(record.outcome || record.disposition),
+            disposition: normalizeOutcome(record.outcome || record.disposition),
             court: safe(record.filingCourtName || record.court, "Wood County Court of Common Pleas"),
             county: safe(record.filingCounty || record.county, "Wood County"),
             eligibility: record.eligibility || null
@@ -863,19 +912,19 @@
           street: safe(user.street, "231 w horizon ridge parkway"),
           apartment: WOOD_DEFAULTS.apartment,
           city: safe(user.city, "Henderson"),
-          residenceState: safe(user.state, "NV"),
+          residenceState: normalizeState(user.state || "NV"),
           zip: safe(user.zip, "89012"),
           email: safe(user.email, "unitedpainterswv@gmail.com"),
           phone: safe(user.phone, WOOD_DEFAULTS.phone),
 
-          caseState: safe(offense.caseState, "OH").toUpperCase(),
+          caseState: normalizeState(offense.caseState || "OH"),
           caseNumber: safe(offense.caseNumber, WOOD_DEFAULTS.caseNumber),
           chargeName: safe(offense.chargeName, WOOD_DEFAULTS.offenseName),
           offenseCode: safe(offense.offenseCode, WOOD_DEFAULTS.offenseCode),
-          chargeLevel: safe(offense.chargeLevel, WOOD_DEFAULTS.offenseDegree),
+          chargeLevel: normalizeDegree(offense.chargeLevel || WOOD_DEFAULTS.offenseDegree),
           dispositionDate: safe(offense.dispositionDate, WOOD_DEFAULTS.dispositionDate),
           dischargeDate: safe(offense.dischargeDate, WOOD_DEFAULTS.dischargeDate),
-          disposition: safe(offense.disposition),
+          disposition: normalizeOutcome(offense.disposition),
           court: safe(offense.court, "Wood County Court of Common Pleas"),
           county: safe(offense.county, "Wood County"),
           eligibility: null
@@ -886,14 +935,15 @@
         const record = data.record || {};
 
         return {
-          caseState: safe(data.caseState).toUpperCase(),
+          caseState: normalizeState(data.caseState),
           filingCourtName: safe(data.court),
           filingCounty: safe(data.county),
           caseNumber: safe(data.caseNumber),
           chargeName: safe(data.chargeName),
           statute: safe(data.offenseCode),
-          degree: safe(record.degree || data.chargeLevel).toUpperCase(),
-          outcome: safe(record.outcome || data.disposition),
+          degree: normalizeDegree(record.degree || data.chargeLevel),
+          outcome: normalizeOutcome(record.outcome || data.disposition),
+          dispositionDate: safe(data.dispositionDate),
           dischargeDate: safe(data.dischargeDate),
 
           pendingCharges: !!record.pendingCharges,
@@ -918,7 +968,10 @@
       }
 
       function getEligibilityResult(data) {
-        if (data.eligibility) return data.eligibility;
+        if (data.eligibility && data.eligibility.state) {
+          data.eligibility.state = normalizeState(data.eligibility.state);
+          return data.eligibility;
+        }
 
         if (window.CMRRules && typeof window.CMRRules.evaluateRecordEligibility === "function") {
           try {
@@ -931,7 +984,7 @@
         return {
           eligible: false,
           status: "needs_review",
-          state: safe(data.caseState).toUpperCase(),
+          state: normalizeState(data.caseState),
           reliefType: "unknown",
           reasons: ["Eligibility engine not available on this page."],
           waitingPeriod: null,
@@ -944,8 +997,14 @@
         document.getElementById("summaryName").textContent = data.fullName || "—";
         document.getElementById("summaryEmail").textContent = data.email || "—";
         document.getElementById("summaryPhone").textContent = data.phone || "—";
-        document.getElementById("summaryAddress").textContent =
-          `${safe(data.street)}, ${safe(data.city)}, ${safe(data.residenceState)} ${safe(data.zip)}`.replace(/^,\s*|,\s*,/g, "").trim() || "—";
+
+        const addressParts = [
+          safe(data.street),
+          safe(data.city),
+          [safe(data.residenceState), safe(data.zip)].filter(Boolean).join(" ")
+        ].filter(Boolean);
+
+        document.getElementById("summaryAddress").textContent = addressParts.join(", ") || "—";
         document.getElementById("summaryResidenceState").textContent = data.residenceState || "—";
 
         document.getElementById("summaryCaseState").textContent = data.caseState || "—";
@@ -972,13 +1031,17 @@
         } else {
           el.className = "callout warning";
           el.innerHTML = `
-            No mapped PDF template is loaded yet for <strong>${data.caseState || "this state"}</strong>.
+            No mapped PDF template is loaded yet for <strong>${escapeHtml(data.caseState || "this state")}</strong>.
             You can still review the case, signature, and eligibility data, but PDF generation is not live for this template yet.
           `;
         }
 
         const conflict = document.getElementById("stateConflictCallout");
-        if (data.residenceState && data.caseState && data.residenceState.toUpperCase() !== data.caseState.toUpperCase()) {
+        if (
+          data.residenceState &&
+          data.caseState &&
+          normalizeState(data.residenceState) !== normalizeState(data.caseState)
+        ) {
           conflict.style.display = "block";
         } else {
           conflict.style.display = "none";
@@ -986,7 +1049,7 @@
       }
 
       function updateEligibilitySection(data, result) {
-        const state = safe(data.caseState).toUpperCase();
+        const state = normalizeState(data.caseState);
 
         document.getElementById("stateValue").textContent = state || "—";
         document.getElementById("convictionDateValue").textContent = formatDateForDisplay(data.dispositionDate);
@@ -1213,8 +1276,8 @@
             throw new Error(`PDF generation is not mapped yet for ${data.caseState || "this state"}.`);
           }
 
-          if (data.caseState !== "OH") {
-            throw new Error("This PDF filler is currently mapped only for the Ohio template you loaded.");
+          if (normalizeState(data.caseState) !== "OH") {
+            throw new Error("This PDF filler is currently mapped only for the loaded Ohio template.");
           }
 
           if (!signatureImageBytes) {
@@ -1259,7 +1322,10 @@
           const displayName = data.fullName || "Name Not Entered";
           const displayStreet = data.street || "";
           const displayApartment = data.apartment || WOOD_DEFAULTS.apartment;
-          const displayCityStateZip = `${safe(data.city)}${data.city ? ", " : ""}${safe(data.residenceState)} ${safe(data.zip)}`.trim();
+          const displayCityStateZip = [
+            safe(data.city),
+            [safe(data.residenceState), safe(data.zip)].filter(Boolean).join(" ")
+          ].filter(Boolean).join(", ");
 
           draw(addressPage, new Date().toLocaleDateString("en-US", {
             month: "long",
@@ -1305,7 +1371,7 @@
           const url = URL.createObjectURL(blob);
           const link = document.createElement("a");
           link.href = url;
-          link.download = `${(data.caseState || "case").toLowerCase()}-filing-packet.pdf`;
+          link.download = `${(normalizeState(data.caseState) || "case").toLowerCase()}-filing-packet.pdf`;
           document.body.appendChild(link);
           link.click();
           link.remove();
@@ -1321,15 +1387,6 @@
 
       function handlePayAndSubmit() {
         alert("Payment and court submission are not live on this page yet.");
-      }
-
-      function escapeHtml(str) {
-        return String(str)
-          .replaceAll("&", "&amp;")
-          .replaceAll("<", "&lt;")
-          .replaceAll(">", "&gt;")
-          .replaceAll('"', "&quot;")
-          .replaceAll("'", "&#039;");
       }
 
       const initialData = getPacketData();
