@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ClearMyRecord - PDF Overlay Mapper</title>
+  <link rel="stylesheet" href="./overlay-mapper.css" />
+</head>
+<body>
+  <div class="page-shell">
+    <header class="topbar">
+      <div class="topbar-inner">
+        <div>
+          <div class="eyebrow">Admin Tool</div>
+          <h1>PDF Overlay Mapper</h1>
+          <p class="subtext">
+            Upload a flat court PDF, place text overlays, and map them to normalized case paths.
+          </p>
+        </div>
+      </div>
+    </header>
+
+    <main class="main-content">
+      <section class="panel">
+        <div class="panel-head">
+          <h2>Overlay Template Details</h2>
+          <p>Define the metadata for this overlay mapping configuration.</p>
+        </div>
+
+        <div class="form-grid two-col">
+          <label class="field">
+            <span>Overlay ID</span>
+            <input id="overlayId" type="text" placeholder="oh-wood-sealing-overlay" />
+          </label>
+
+          <label class="field">
+            <span>State</span>
+            <select id="state">
+              <option value="">Select state</option>
+              <option value="OH">Ohio</option>
+              <option value="NV">Nevada</option>
+            </select>
+          </label>
+
+          <label class="field">
+            <span>County</span>
+            <input id="county" type="text" placeholder="Wood" />
+          </label>
+
+          <label class="field">
+            <span>Court</span>
+            <input id="court" type="text" placeholder="Wood County Court of Common Pleas" />
+          </label>
+
+          <label class="field">
+            <span>Filing Type</span>
+            <select id="filingType">
+              <option value="sealing">Sealing</option>
+              <option value="expungement">Expungement</option>
+            </select>
+          </label>
+
+          <label class="field">
+            <span>PDF Path</span>
+            <input id="pdfPath" type="text" placeholder="/assets/oh/wood/sealing.pdf" />
+          </label>
+
+          <label class="field">
+            <span>Version</span>
+            <input id="version" type="text" value="1.0" />
+          </label>
+
+          <label class="field">
+            <span>Default Font Size</span>
+            <input id="defaultFontSize" type="number" value="11" min="6" max="36" />
+          </label>
+        </div>
+
+        <div class="button-row">
+          <button id="autoGenerateBtn" class="btn btn-secondary" type="button">Auto Generate IDs</button>
+          <button id="buildOverlayMetaBtn" class="btn btn-primary" type="button">Build Overlay Metadata</button>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <h2>Sample Case JSON</h2>
+          <p>Load a sample case so you can preview values while placing overlays.</p>
+        </div>
+
+        <label class="field">
+          <span>Sample Case JSON</span>
+          <textarea id="sampleCaseJson" rows="14" spellcheck="false"></textarea>
+        </label>
+
+        <div class="button-row">
+          <button id="loadSampleBtn" class="btn btn-primary" type="button">Load Sample Case</button>
+          <button id="loadDemoBtn" class="btn btn-secondary" type="button">Load Demo Case</button>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <h2>Available Case Paths</h2>
+          <p>Pick from these normalized case paths when mapping overlay fields.</p>
+        </div>
+
+        <div id="casePathList" class="path-list empty-state">
+          Load a sample case to see available mapping paths.
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <h2>Upload PDF</h2>
+          <p>Upload a flat or non-fillable PDF. Each page will be rendered below.</p>
+        </div>
+
+        <div class="form-grid two-col">
+          <label class="field">
+            <span>PDF File</span>
+            <input id="pdfUpload" type="file" accept="application/pdf,.pdf" />
+          </label>
+
+          <label class="field">
+            <span>Loaded File</span>
+            <input id="pdfFileName" type="text" readonly placeholder="No PDF loaded" />
+          </label>
+        </div>
+
+        <div class="button-row">
+          <button id="renderPdfBtn" class="btn btn-primary" type="button">Render PDF Pages</button>
+          <button id="clearPdfBtn" class="btn btn-secondary" type="button">Clear PDF</button>
+        </div>
+
+        <div id="pdfStatus" class="status-box muted">No PDF rendered yet.</div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <h2>Page Canvas</h2>
+          <p>
+            Click anywhere on a page to add a new overlay box. The click position is stored in PDF coordinates.
+          </p>
+        </div>
+
+        <div class="viewer-controls">
+          <button id="prevPageBtn" class="btn btn-secondary" type="button">Previous Page</button>
+          <div id="pageIndicator" class="page-indicator">Page 0 / 0</div>
+          <button id="nextPageBtn" class="btn btn-secondary" type="button">Next Page</button>
+        </div>
+
+        <div class="page-canvas-wrap">
+          <div id="pageCanvasContainer" class="page-canvas-container empty-canvas">
+            Render a PDF to start placing overlays.
+          </div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <h2>Overlay Fields</h2>
+          <p>
+            Edit the selected overlay or manage all overlay fields below.
+          </p>
+        </div>
+
+        <div class="button-row">
+          <button id="addManualOverlayBtn" class="btn btn-secondary" type="button">Add Manual Overlay</button>
+          <button id="deleteSelectedOverlayBtn" class="btn btn-secondary" type="button">Delete Selected Overlay</button>
+          <button id="buildOverlayConfigBtn" class="btn btn-primary" type="button">Build Overlay Config</button>
+        </div>
+
+        <div class="overlay-table-wrap">
+          <table class="overlay-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Page</th>
+                <th>X</th>
+                <th>Y</th>
+                <th>Width</th>
+                <th>Font</th>
+                <th>Align</th>
+                <th>Case Path</th>
+                <th>Preview</th>
+              </tr>
+            </thead>
+            <tbody id="overlayTableBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <h2>Output</h2>
+          <p>Copy these JSON structures into your overlay registry.</p>
+        </div>
+
+        <div class="output-grid">
+          <label class="field">
+            <span>Overlay Metadata JSON</span>
+            <textarea id="overlayMetaOutput" rows="14" spellcheck="false" readonly></textarea>
+          </label>
+
+          <label class="field">
+            <span>Overlay Fields JSON</span>
+            <textarea id="overlayFieldsOutput" rows="14" spellcheck="false" readonly></textarea>
+          </label>
+        </div>
+
+        <div class="button-row">
+          <button id="copyMetaBtn" class="btn btn-secondary" type="button">Copy Overlay Metadata</button>
+          <button id="copyFieldsBtn" class="btn btn-secondary" type="button">Copy Overlay Fields</button>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.min.js"></script>
+  <script>
+    if (window.pdfjsLib) {
+      pdfjsLib.GlobalWorkerOptions.workerSrc =
+        "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.worker.min.js";
+    }
+  </script>
+  <script src="./overlay-mapper.js"></script>
+</body>
+</html>
