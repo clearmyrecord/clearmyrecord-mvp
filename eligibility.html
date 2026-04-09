@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Eligibility - ClearMyRecord</title>
+  <title>Eligibility | ClearMyRecord</title>
   <link rel="stylesheet" href="css/styles.css" />
 </head>
 <body>
@@ -12,6 +12,13 @@
       <h1>Eligibility Check</h1>
       <p>Use the state where the case was filed, not where the user currently lives.</p>
 
+      <div class="result-card" style="margin-bottom: 24px; background:#f8fbff; border:1px solid #d9e8f7;">
+        <p style="margin:0;">
+          <strong>Important:</strong> If you live in Nevada but your case is in Ohio, choose <strong>Ohio</strong> as the case state.
+          The packet and eligibility logic must follow the <strong>case state</strong>, not your residence.
+        </p>
+      </div>
+
       <form id="eligibility-form" class="form-grid">
         <div>
           <label>Case State</label>
@@ -19,6 +26,8 @@
             <option value="">Select</option>
             <option value="OH">Ohio</option>
             <option value="NV">Nevada</option>
+            <option value="CA">California</option>
+            <option value="AZ">Arizona</option>
           </select>
         </div>
 
@@ -29,22 +38,22 @@
 
         <div>
           <label>Filing County</label>
-          <input type="text" name="filingCounty" placeholder="Franklin" />
+          <input type="text" name="filingCounty" placeholder="Franklin County" />
         </div>
 
         <div>
           <label>Case Number</label>
-          <input type="text" name="caseNumber" />
+          <input type="text" name="caseNumber" placeholder="Case number" />
         </div>
 
         <div>
           <label>Charge Name</label>
-          <input type="text" name="chargeName" />
+          <input type="text" name="chargeName" placeholder="Example: Possession of Drugs" />
         </div>
 
         <div>
-          <label>Statute</label>
-          <input type="text" name="statute" placeholder="e.g. ORC 2919.25" />
+          <label>Statute / Offense Code</label>
+          <input type="text" name="statute" placeholder="Example: 2925.11(A)" />
         </div>
 
         <div>
@@ -56,6 +65,8 @@
             <option value="F5">F5</option>
             <option value="F4">F4</option>
             <option value="F3">F3</option>
+            <option value="F2">F2</option>
+            <option value="F1">F1</option>
           </select>
         </div>
 
@@ -74,7 +85,7 @@
         </div>
 
         <div>
-          <label>Discharge / Case Closed Date</label>
+          <label>Case Closed / Discharge Date</label>
           <input type="date" name="dischargeDate" />
         </div>
 
@@ -82,7 +93,7 @@
           <label><input type="checkbox" name="pendingCharges" /> Pending charges anywhere?</label>
         </div>
 
-        <h2>Ohio Flags</h2>
+        <h2>Ohio Screening Flags</h2>
 
         <div class="checkbox-row"><label><input type="checkbox" name="isTraffic" /> Traffic conviction</label></div>
         <div class="checkbox-row"><label><input type="checkbox" name="isTheftInOffice" /> Theft in office</label></div>
@@ -103,7 +114,7 @@
           <input type="number" name="totalF3" min="0" value="0" />
         </div>
 
-        <h2>Nevada Flags</h2>
+        <h2>Nevada Screening Flags</h2>
 
         <div>
           <label>Nevada category</label>
