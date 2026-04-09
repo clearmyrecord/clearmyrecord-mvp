@@ -8,6 +8,9 @@ const els = {
   version: document.getElementById("version"),
   defaultFontSize: document.getElementById("defaultFontSize"),
 
+  gridSize: document.getElementById("gridSize"),
+  snapToGrid: document.getElementById("snapToGrid"),
+
   autoGenerateBtn: document.getElementById("autoGenerateBtn"),
   buildOverlayMetaBtn: document.getElementById("buildOverlayMetaBtn"),
 
@@ -28,6 +31,7 @@ const els = {
   pageCanvasContainer: document.getElementById("pageCanvasContainer"),
 
   addManualOverlayBtn: document.getElementById("addManualOverlayBtn"),
+  duplicateSelectedOverlayBtn: document.getElementById("duplicateSelectedOverlayBtn"),
   deleteSelectedOverlayBtn: document.getElementById("deleteSelectedOverlayBtn"),
   buildOverlayConfigBtn: document.getElementById("buildOverlayConfigBtn"),
   overlayTableBody: document.getElementById("overlayTableBody"),
@@ -50,7 +54,7 @@ let overlayItems = [];
 let selectedOverlayId = null;
 
 let pointerState = {
-  mode: null, // "drag" | "resize" | null
+  mode: null,
   overlayId: null,
   startClientX: 0,
   startClientY: 0,
@@ -215,6 +219,20 @@ function escapeHtml(value) {
     .replaceAll("'", "&#039;");
 }
 
+function getGridSize() {
+  return Math.max(1, Number(els.gridSize.value || 5));
+}
+
+function isSnapEnabled() {
+  return els.snapToGrid.value === "on";
+}
+
+function snapValue(value) {
+  if (!isSnapEnabled()) return round2(value);
+  const grid = getGridSize();
+  return round2(Math.round(Number(value || 0) / grid) * grid);
+}
+
 function renderPathList(paths) {
   if (!paths.length) {
     els.casePathList.className = "path-list empty-state";
@@ -306,7 +324,9 @@ function buildOverlayMeta() {
     path: els.pdfPath.value.trim(),
     version: els.version.value.trim(),
     pageCount: pdfDoc ? pdfDoc.numPages : 0,
-    defaultFontSize: Number(els.defaultFontSize.value || 11)
+    defaultFontSize: Number(els.defaultFontSize.value || 11),
+    snapToGrid: isSnapEnabled(),
+    gridSize: getGridSize()
   };
 
   const errors = [];
@@ -331,9 +351,9 @@ function addOverlayAtPdfCoords(pageNumber, pdfX, pdfY) {
     id: makeId(),
     name: `field_${overlayItems.length + 1}`,
     page: pageNumber,
-    x: round2(pdfX),
-    y: round2(pdfY),
-    width: 160,
+    x: snapValue(pdfX),
+    y: snapValue(pdfY),
+    width: snapValue(160),
     fontSize: defaultSize,
     align: "left",
     sourcePath: "",
@@ -348,6 +368,27 @@ function addOverlayAtPdfCoords(pageNumber, pdfX, pdfY) {
 
 function addManualOverlay() {
   addOverlayAtPdfCoords(currentPageNumber || 1, 100, 700);
+}
+
+function duplicateSelectedOverlay() {
+  const selected = getOverlayById(selectedOverlayId);
+  if (!selected) {
+    alert("Select an overlay first.");
+    return;
+  }
+
+  const clone = {
+    ...selected,
+    id: makeId(),
+    name: `${selected.name}_copy`,
+    x: snapValue(Number(selected.x) + getGridSize()),
+    y: snapValue(Number(selected.y) - getGridSize())
+  };
+
+  overlayItems.push(clone);
+  selectedOverlayId = clone.id;
+  renderOverlayTable();
+  renderOverlayMarkers();
 }
 
 function deleteSelectedOverlay() {
@@ -477,11 +518,17 @@ function renderOverlayTable() {
         }
 
         if (key === "width") {
-          item.width = Math.max(20, Number(item.width || 20));
+          item.width = Math.max(20, round2(item.width));
+          if (isSnapEnabled()) item.width = snapValue(item.width);
         }
 
         if (key === "fontSize") {
           item.fontSize = Math.max(6, Number(item.fontSize || 6));
+        }
+
+        if (key === "x" || key === "y") {
+          item[key] = round2(item[key]);
+          if (isSnapEnabled()) item[key] = snapValue(item[key]);
         }
 
         renderOverlayMarkers();
@@ -503,10 +550,10 @@ function renderOverlayTable() {
 
     bind(".ov-name", "name", (v) => v);
     bind(".ov-page", "page", (v) => Number(v || 1));
-    bind(".ov-x", "x", (v) => round2(v));
-    bind(".ov-y", "y", (v) => round2(v));
-    bind(".ov-width", "width", (v) => round2(v));
-    bind(".ov-font", "fontSize", (v) => round2(v));
+    bind(".ov-x", "x", (v) => Number(v || 0));
+    bind(".ov-y", "y", (v) => Number(v || 0));
+    bind(".ov-width", "width", (v) => Number(v || 20));
+    bind(".ov-font", "fontSize", (v) => Number(v || 11));
     bind(".ov-align", "align", (v) => v);
     bind(".ov-source", "sourcePath", (v) => v);
 
@@ -569,7 +616,7 @@ async function renderPdf() {
     currentPageNumber = 1;
     await renderCurrentPage();
     setPdfStatus(
-      `Rendered PDF with ${pdfDoc.numPages} page(s). Drag boxes to move them. Drag the right handle to resize width.`,
+      `Rendered PDF with ${pdfDoc.numPages} page(s). Drag, resize, or use keyboard nudging.`,
       "success"
     );
   } catch (error) {
@@ -608,7 +655,6 @@ async function renderCurrentPage() {
 
 function handleCanvasClick(event) {
   if (!currentViewport || !currentCanvas) return;
-
   if (pointerState.mode) return;
 
   const rect = currentCanvas.getBoundingClientRect();
@@ -627,6 +673,7 @@ function clearPdf() {
   currentPageNumber = 1;
   currentViewport = null;
   currentCanvas = null;
+
   pointerState = {
     mode: null,
     overlayId: null,
@@ -726,12 +773,24 @@ function onPointerMove(event) {
     const pageWidthPdf = currentViewport.width / currentScale;
     const pageHeightPdf = currentViewport.height / currentScale;
 
-    item.x = round2(clamp(pointerState.startX + deltaXPdf, 0, Math.max(pageWidthPdf - 5, 0)));
-    item.y = round2(clamp(pointerState.startY - deltaYPdf, 0, Math.max(pageHeightPdf - 5, 0)));
+    let nextX = clamp(pointerState.startX + deltaXPdf, 0, Math.max(pageWidthPdf - 5, 0));
+    let nextY = clamp(pointerState.startY - deltaYPdf, 0, Math.max(pageHeightPdf - 5, 0));
+
+    if (isSnapEnabled()) {
+      nextX = snapValue(nextX);
+      nextY = snapValue(nextY);
+    }
+
+    item.x = round2(nextX);
+    item.y = round2(nextY);
   }
 
   if (pointerState.mode === "resize") {
-    item.width = round2(Math.max(20, pointerState.startWidth + deltaXPdf));
+    let nextWidth = Math.max(20, pointerState.startWidth + deltaXPdf);
+    if (isSnapEnabled()) {
+      nextWidth = snapValue(nextWidth);
+    }
+    item.width = round2(nextWidth);
   }
 
   renderOverlayMarkers();
@@ -743,6 +802,99 @@ function stopPointerAction() {
 
   pointerState.mode = null;
   pointerState.overlayId = null;
+}
+
+function nudgeSelectedOverlay(direction, bigStep = false) {
+  const item = getOverlayById(selectedOverlayId);
+  if (!item || !currentViewport) return;
+
+  const baseStep = isSnapEnabled() ? getGridSize() : 1;
+  const step = bigStep ? baseStep * 5 : baseStep;
+
+  const pageWidthPdf = currentViewport.width / currentScale;
+  const pageHeightPdf = currentViewport.height / currentScale;
+
+  if (direction === "left") {
+    item.x = clamp(item.x - step, 0, pageWidthPdf);
+  }
+
+  if (direction === "right") {
+    item.x = clamp(item.x + step, 0, pageWidthPdf);
+  }
+
+  if (direction === "up") {
+    item.y = clamp(item.y + step, 0, pageHeightPdf);
+  }
+
+  if (direction === "down") {
+    item.y = clamp(item.y - step, 0, pageHeightPdf);
+  }
+
+  if (isSnapEnabled()) {
+    item.x = snapValue(item.x);
+    item.y = snapValue(item.y);
+  } else {
+    item.x = round2(item.x);
+    item.y = round2(item.y);
+  }
+
+  renderOverlayMarkers();
+  renderOverlayTable();
+}
+
+function isTypingTarget(target) {
+  if (!target) return false;
+  const tag = target.tagName?.toLowerCase();
+  return tag === "input" || tag === "textarea" || tag === "select" || target.isContentEditable;
+}
+
+function handleKeydown(event) {
+  if (isTypingTarget(event.target)) return;
+
+  const item = getOverlayById(selectedOverlayId);
+  const hasSelection = Boolean(item);
+
+  if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "d") {
+    if (!hasSelection) return;
+    event.preventDefault();
+    duplicateSelectedOverlay();
+    return;
+  }
+
+  if (event.key === "Delete" || event.key === "Backspace") {
+    if (!hasSelection) return;
+    event.preventDefault();
+    deleteSelectedOverlay();
+    return;
+  }
+
+  if (!hasSelection) return;
+
+  const bigStep = event.shiftKey;
+
+  if (event.key === "ArrowLeft") {
+    event.preventDefault();
+    nudgeSelectedOverlay("left", bigStep);
+    return;
+  }
+
+  if (event.key === "ArrowRight") {
+    event.preventDefault();
+    nudgeSelectedOverlay("right", bigStep);
+    return;
+  }
+
+  if (event.key === "ArrowUp") {
+    event.preventDefault();
+    nudgeSelectedOverlay("up", bigStep);
+    return;
+  }
+
+  if (event.key === "ArrowDown") {
+    event.preventDefault();
+    nudgeSelectedOverlay("down", bigStep);
+    return;
+  }
 }
 
 els.autoGenerateBtn.addEventListener("click", autoGenerateIds);
@@ -762,11 +914,22 @@ els.prevPageBtn.addEventListener("click", goPrevPage);
 els.nextPageBtn.addEventListener("click", goNextPage);
 
 els.addManualOverlayBtn.addEventListener("click", addManualOverlay);
+els.duplicateSelectedOverlayBtn.addEventListener("click", duplicateSelectedOverlay);
 els.deleteSelectedOverlayBtn.addEventListener("click", deleteSelectedOverlay);
 els.buildOverlayConfigBtn.addEventListener("click", buildOverlayConfig);
 
 els.copyMetaBtn.addEventListener("click", () => copyText(els.overlayMetaOutput.value, "Overlay metadata"));
 els.copyFieldsBtn.addEventListener("click", () => copyText(els.overlayFieldsOutput.value, "Overlay fields"));
+
+els.gridSize.addEventListener("change", () => {
+  els.gridSize.value = String(getGridSize());
+});
+els.snapToGrid.addEventListener("change", () => {
+  renderOverlayMarkers();
+  renderOverlayTable();
+});
+
+window.addEventListener("keydown", handleKeydown);
 
 els.sampleCaseJson.value = JSON.stringify(getDemoCase(), null, 2);
 loadSampleCase();
