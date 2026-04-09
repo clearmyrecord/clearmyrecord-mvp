@@ -3,10 +3,11 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Your Filing Packet | RecordPathAI</title>
+  <title>Your Filing Packet | ClearMyRecord</title>
   <script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
   <style>
     * { box-sizing: border-box; }
+
     :root {
       --bg: #eef2f8;
       --surface: #ffffff;
@@ -24,34 +25,43 @@
       --amber-soft: #fff5dc;
       --red: #b42318;
       --red-soft: #fef0f0;
+      --purple: #5b5fc7;
+      --purple-soft: #eef0ff;
     }
+
     body {
       margin: 0;
       font-family: Arial, Helvetica, sans-serif;
       background: var(--bg);
       color: var(--text);
     }
+
     a {
       color: inherit;
       text-decoration: none;
     }
+
     code {
       font-family: Consolas, Monaco, monospace;
       font-size: 0.95em;
     }
+
     .container {
       width: min(var(--container), calc(100% - 32px));
       margin: 0 auto;
     }
+
     .site-header {
       padding: 20px 0 12px;
     }
+
     .header-inner {
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 20px;
     }
+
     .brand {
       display: flex;
       align-items: center;
@@ -60,6 +70,7 @@
       font-size: 18px;
       color: #3b6db4;
     }
+
     .brand-icon {
       width: 26px;
       height: 32px;
@@ -69,6 +80,7 @@
       position: relative;
       flex: 0 0 auto;
     }
+
     .brand-icon::before {
       content: "";
       position: absolute;
@@ -79,37 +91,44 @@
       background: #999;
       box-shadow: 0 6px 0 #999, 0 12px 0 #999;
     }
+
     .nav {
       display: flex;
       align-items: center;
       gap: 14px;
       flex-wrap: wrap;
     }
+
     .nav a {
       font-size: 16px;
       color: var(--text);
       padding: 10px 12px;
       border-radius: 14px;
     }
+
     .nav .nav-cta {
       background: #e8f0fd;
       font-weight: 700;
       padding: 12px 18px;
     }
+
     .nav .nav-login {
       background: #fff;
       border: 1px solid #d6dfed;
       font-weight: 700;
       padding: 12px 18px;
     }
+
     .packet-shell {
       width: min(980px, 100%);
       margin: 24px auto 64px;
     }
+
     .packet-stack {
       display: grid;
       gap: 22px;
     }
+
     .packet-card {
       background: var(--surface);
       border: 1px solid var(--line);
@@ -117,6 +136,7 @@
       box-shadow: var(--shadow);
       padding: 30px;
     }
+
     .packet-title {
       margin: 0 0 12px;
       font-size: clamp(40px, 5vw, 64px);
@@ -125,6 +145,7 @@
       font-weight: 800;
       color: #26457a;
     }
+
     .packet-subtitle {
       margin: 0;
       color: #60708d;
@@ -132,6 +153,7 @@
       line-height: 1.6;
       max-width: 760px;
     }
+
     .section-title {
       margin: 0 0 18px;
       color: #26457a;
@@ -140,12 +162,14 @@
       letter-spacing: -0.03em;
       font-weight: 800;
     }
+
     .status-banner {
       border-radius: 24px;
       padding: 24px;
       border: 1px solid var(--line);
       background: var(--blue-soft);
     }
+
     .status-pill {
       display: inline-flex;
       align-items: center;
@@ -157,18 +181,27 @@
       font-weight: 800;
       margin-bottom: 14px;
     }
+
     .status-pill.eligible {
       background: var(--green-soft);
       color: var(--green);
     }
+
     .status-pill.pending {
       background: var(--amber-soft);
       color: var(--amber);
     }
+
     .status-pill.error {
       background: var(--red-soft);
       color: var(--red);
     }
+
+    .status-pill.review {
+      background: var(--purple-soft);
+      color: var(--purple);
+    }
+
     .status-headline {
       margin: 0 0 8px;
       font-size: clamp(28px, 4vw, 46px);
@@ -176,6 +209,7 @@
       color: #1f2f4d;
       font-weight: 800;
     }
+
     .status-copy {
       margin: 0;
       color: #60708d;
@@ -183,18 +217,21 @@
       line-height: 1.65;
       max-width: 820px;
     }
+
     .date-grid {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
       gap: 18px;
       margin-top: 20px;
     }
+
     .date-box {
       border: 2px solid #d7e2f1;
       border-radius: 22px;
       background: #fbfdff;
       padding: 24px 24px 22px;
     }
+
     .date-label {
       margin: 0 0 10px;
       color: #5c6f8f;
@@ -203,6 +240,7 @@
       letter-spacing: 0.04em;
       text-transform: uppercase;
     }
+
     .date-value {
       margin: 0;
       font-size: clamp(20px, 2.5vw, 30px);
@@ -211,26 +249,31 @@
       color: #1f2f4d;
       word-break: break-word;
     }
+
     .summary-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 18px;
     }
+
     .summary-box {
       background: var(--surface-soft);
       border: 1px solid var(--line);
       border-radius: 20px;
       padding: 20px;
     }
+
     .summary-box h3 {
       margin: 0 0 12px;
       font-size: 18px;
       color: #294578;
     }
+
     .summary-list {
       display: grid;
       gap: 10px;
     }
+
     .summary-row {
       display: grid;
       grid-template-columns: 160px 1fr;
@@ -239,9 +282,11 @@
       font-size: 15px;
       line-height: 1.5;
     }
+
     .summary-row strong {
       color: #3d5682;
     }
+
     .callout {
       background: var(--blue-soft);
       border: 1px solid #d8e3f4;
@@ -253,6 +298,13 @@
       line-height: 1.7;
       margin: 0 0 22px;
     }
+
+    .callout.warning {
+      background: #fff8e8;
+      border-left-color: #d97706;
+      border-color: #f1ddac;
+    }
+
     .sig-row {
       display: grid;
       grid-template-columns: 1fr auto;
@@ -260,6 +312,7 @@
       align-items: center;
       margin-bottom: 14px;
     }
+
     .sig-input {
       width: 100%;
       min-height: 54px;
@@ -269,11 +322,13 @@
       font-size: 16px;
       outline: none;
     }
+
     .sig-actions {
       display: flex;
       gap: 10px;
       flex-wrap: wrap;
     }
+
     .sig-small-btn {
       min-height: 48px;
       padding: 12px 16px;
@@ -284,18 +339,21 @@
       font-weight: 700;
       cursor: pointer;
     }
+
     .sig-pad-wrap {
       background: #fbfdff;
       border: 1px solid #dbe3f0;
       border-radius: 18px;
       padding: 14px;
     }
+
     .sig-pad-label {
       margin: 0 0 10px;
       font-size: 14px;
       color: #60708d;
       font-weight: 700;
     }
+
     #signaturePad {
       width: 100%;
       height: 180px;
@@ -305,11 +363,13 @@
       touch-action: none;
       display: block;
     }
+
     .button-stack {
       display: grid;
       gap: 16px;
       margin-top: 22px;
     }
+
     .packet-btn {
       display: inline-flex;
       align-items: center;
@@ -323,19 +383,23 @@
       font-weight: 800;
       text-align: center;
     }
+
     .packet-btn-primary {
       background: #17459c;
       color: #fff;
       box-shadow: 0 10px 24px rgba(23, 69, 156, 0.18);
     }
+
     .packet-btn-secondary {
       background: #e8edf6;
       color: #22314d;
     }
+
     .packet-btn-muted {
       background: #eef2f7;
       color: #7f8ba0;
     }
+
     .status-text,
     .meta-note {
       font-size: 14px;
@@ -344,12 +408,14 @@
       margin-top: 12px;
       word-break: break-word;
     }
+
     .bottom-actions {
       display: flex;
       gap: 14px;
       flex-wrap: wrap;
       margin-top: 4px;
     }
+
     .nav-button {
       display: inline-flex;
       align-items: center;
@@ -363,80 +429,105 @@
       cursor: pointer;
       text-decoration: none;
     }
+
     .nav-button-secondary {
       background: #ffffff;
       color: #3c557d;
       border: 1px solid #d5e0ef;
       flex: 0 0 auto;
     }
+
     .nav-button-primary {
       background: linear-gradient(180deg, #86b7fb 0%, #5d91e6 100%);
       color: #ffffff;
       box-shadow: 0 10px 30px rgba(78,110,167,0.12);
       flex: 1 1 220px;
     }
+
+    .reason-list {
+      margin: 16px 0 0;
+      padding-left: 20px;
+      color: #4e607f;
+      line-height: 1.65;
+    }
+
     @media (max-width: 900px) {
       .date-grid,
       .summary-grid {
         grid-template-columns: 1fr;
       }
+
       .sig-row {
         grid-template-columns: 1fr;
       }
     }
+
     @media (max-width: 700px) {
       .container {
         width: min(var(--container), calc(100% - 24px));
       }
+
       .site-header {
         padding-top: 14px;
         padding-bottom: 8px;
       }
+
       .header-inner {
         flex-direction: column;
         align-items: flex-start;
         gap: 14px;
       }
+
       .nav {
         width: 100%;
         gap: 10px;
       }
+
       .nav a {
         padding: 10px 12px;
         font-size: 14px;
       }
+
       .packet-shell {
         margin-top: 18px;
         margin-bottom: 44px;
       }
+
       .packet-card {
         padding: 24px 18px;
         border-radius: 22px;
       }
+
       .packet-title {
         font-size: 34px;
         line-height: 1.04;
       }
+
       .packet-subtitle,
       .callout,
       .status-copy {
         font-size: 15px;
       }
+
       .date-box {
         padding: 20px 18px;
       }
+
       .packet-btn {
         min-height: 68px;
         font-size: 18px;
         border-radius: 18px;
       }
+
       .summary-row {
         grid-template-columns: 1fr;
         gap: 4px;
       }
+
       .bottom-actions {
         flex-direction: column;
       }
+
       .nav-button {
         width: 100%;
       }
@@ -448,7 +539,7 @@
     <div class="container header-inner">
       <a href="index.html" class="brand">
         <span class="brand-icon" aria-hidden="true"></span>
-        <span>RecordPathAI</span>
+        <span>ClearMyRecord</span>
       </a>
       <nav class="nav">
         <a href="how-it-works.html">How It Works</a>
@@ -458,35 +549,39 @@
       </nav>
     </div>
   </header>
+
   <main>
     <section class="packet-shell">
       <div class="packet-stack">
         <section class="packet-card">
           <h1 class="packet-title">Your Filing Packet</h1>
           <p class="packet-subtitle">
-            Review eligibility, confirm your case details, then generate your filing packet.
+            Review your case, verify the correct filing state, and generate the packet tied to the court where the case was actually filed.
           </p>
         </section>
+
         <section class="packet-card">
           <h2 class="section-title">Eligibility Status</h2>
           <div class="status-banner">
             <div id="statusPill" class="status-pill pending">Eligibility Needs Review</div>
             <h3 id="eligibilityHeadline" class="status-headline">Checking your eligibility...</h3>
             <p id="eligibilitySummary" class="status-copy">
-              We are reviewing the record details you entered.
+              We are reviewing the case-state data you entered.
             </p>
+            <ul id="eligibilityReasons" class="reason-list"></ul>
           </div>
+
           <div class="date-grid">
             <div class="date-box">
-              <p class="date-label">State</p>
+              <p class="date-label">Case State</p>
               <p class="date-value" id="stateValue">—</p>
             </div>
             <div class="date-box">
-              <p class="date-label">Conviction Date</p>
+              <p class="date-label">Disposition Date</p>
               <p class="date-value" id="convictionDateValue">—</p>
             </div>
             <div class="date-box">
-              <p class="date-label">Probation Completed</p>
+              <p class="date-label">Case Closed / Discharge</p>
               <p class="date-value" id="probationCompletedValue">—</p>
             </div>
             <div class="date-box">
@@ -494,10 +589,12 @@
               <p class="date-value" id="eligibleDateValue">—</p>
             </div>
           </div>
+
           <p class="meta-note">
-            This page gives a screening result based on the data entered in your flow. Final approval depends on the court and case details.
+            This page gives a screening result based on the data entered in your flow. Final approval depends on the court, the statute, and the full case history.
           </p>
         </section>
+
         <section class="packet-card">
           <h2 class="section-title">Case Summary</h2>
           <div class="summary-grid">
@@ -508,11 +605,13 @@
                 <div class="summary-row"><strong>Email</strong><span id="summaryEmail">—</span></div>
                 <div class="summary-row"><strong>Phone</strong><span id="summaryPhone">—</span></div>
                 <div class="summary-row"><strong>Address</strong><span id="summaryAddress">—</span></div>
+                <div class="summary-row"><strong>Residence State</strong><span id="summaryResidenceState">—</span></div>
               </div>
             </div>
             <div class="summary-box">
               <h3>Case</h3>
               <div class="summary-list">
+                <div class="summary-row"><strong>Case State</strong><span id="summaryCaseState">—</span></div>
                 <div class="summary-row"><strong>Charge</strong><span id="summaryCharge">—</span></div>
                 <div class="summary-row"><strong>Offense Code</strong><span id="summaryOffenseCode">—</span></div>
                 <div class="summary-row"><strong>Level</strong><span id="summaryLevel">—</span></div>
@@ -524,12 +623,18 @@
             </div>
           </div>
         </section>
+
         <section class="packet-card">
           <h2 class="section-title">Generate Packet</h2>
-          <div class="callout">
-            This page generates the Wood County sealing packet from the PDF saved in your project at
-            <code>./assets/wood-county-application-for-sealing-295332-conviction.pdf</code>.
+
+          <div id="templateCallout" class="callout">
+            Reviewing which packet template should be used for this case.
           </div>
+
+          <div id="stateConflictCallout" class="callout warning" style="display:none;">
+            Your residence state and case state are different. That is okay. The packet will follow the <strong>case state</strong>, not your home address.
+          </div>
+
           <div class="sig-row">
             <input id="typedSignature" class="sig-input" type="text" placeholder="Typed signature name" />
             <div class="sig-actions">
@@ -537,6 +642,7 @@
               <button type="button" class="sig-small-btn" id="clearSigBtn">Clear Signature</button>
             </div>
           </div>
+
           <div class="sig-pad-wrap">
             <p class="sig-pad-label">Or draw your signature below</p>
             <canvas id="signaturePad"></canvas>
@@ -545,9 +651,10 @@
               <button type="button" class="sig-small-btn" id="clearPadBtn">Clear Pad</button>
             </div>
           </div>
+
           <div class="button-stack">
             <button type="button" class="packet-btn packet-btn-primary" id="generateSealingBtn">
-              Generate Sealing PDF
+              Generate PDF Packet
             </button>
             <button type="button" class="packet-btn packet-btn-secondary" id="testPdfBtn">
               Test PDF Access
@@ -559,11 +666,14 @@
               Pay $50 & Submit to Court
             </button>
           </div>
+
           <div class="status-text" id="statusText">Ready.</div>
+
           <p class="meta-note">
-            If spacing still looks off after this version, the next step is fine-tuning only the coordinates.
+            This page currently supports court-ready PDF generation for mapped templates. e-Filing can be layered in later through your court integration partner.
           </p>
         </section>
+
         <section class="packet-card">
           <div class="bottom-actions">
             <a href="record-details.html" class="nav-button nav-button-secondary">Back</a>
@@ -573,15 +683,34 @@
       </div>
     </section>
   </main>
+
+  <script src="js/rules.js"></script>
   <script>
     document.addEventListener("DOMContentLoaded", function () {
-      const TEMPLATE_URL = "./assets/wood-county-application-for-sealing-295332-conviction.pdf";
+      const TEMPLATE_MAP = {
+        OH: {
+          default: {
+            key: "wood-county-conviction",
+            label: "Ohio conviction packet template",
+            url: "./assets/wood-county-application-for-sealing-295332-conviction.pdf",
+            supportsPdfFill: true
+          }
+        },
+        NV: {
+          default: {
+            key: "nv-not-mapped",
+            label: "Nevada template not mapped yet",
+            url: "",
+            supportsPdfFill: false
+          }
+        }
+      };
 
       const WOOD_DEFAULTS = {
         caseNumber: "2006CR0387",
         judge: "Robert Pollex",
-        convictionDate: "2007-05-04",
-        probationCompletedDate: "2010-05-07",
+        dispositionDate: "2007-05-04",
+        dischargeDate: "2010-05-07",
         offenseCode: "2925.11(A)",
         offenseName: "Possession of Drugs",
         offenseDegree: "Felony 3rd Degree",
@@ -602,19 +731,23 @@
         return (value ?? "").toString().trim() || fallback;
       }
 
-      function isoDate(date) {
+      function formatDateIso(date) {
+        if (!(date instanceof Date) || Number.isNaN(date.getTime())) return "";
         const y = date.getFullYear();
         const m = String(date.getMonth() + 1).padStart(2, "0");
         const d = String(date.getDate()).padStart(2, "0");
         return `${y}-${m}-${d}`;
       }
 
-      function addYears(dateString, years) {
+      function formatDateForDisplay(dateString) {
+        if (!dateString) return "—";
         const date = new Date(dateString);
-        if (Number.isNaN(date.getTime())) return "";
-        const copy = new Date(date);
-        copy.setFullYear(copy.getFullYear() + years);
-        return isoDate(copy);
+        if (Number.isNaN(date.getTime())) return dateString;
+        return date.toLocaleDateString("en-US", {
+          year: "numeric",
+          month: "short",
+          day: "numeric"
+        });
       }
 
       function formatDateForCourt(dateString) {
@@ -627,7 +760,20 @@
         return `${month}/${day}/${year}`;
       }
 
-      function readStoredData() {
+      function getTemplateForState(caseState) {
+        const normalized = safe(caseState).toUpperCase();
+        if (TEMPLATE_MAP[normalized] && TEMPLATE_MAP[normalized].default) {
+          return TEMPLATE_MAP[normalized].default;
+        }
+        return {
+          key: "unmapped",
+          label: "Template not mapped yet",
+          url: "",
+          supportsPdfFill: false
+        };
+      }
+
+      function readLegacyData() {
         try {
           return {
             user: JSON.parse(localStorage.getItem("cmr_user") || "{}"),
@@ -638,118 +784,264 @@
         }
       }
 
-      function getFirstOffense(recordDetails) {
+      function readNewAppState() {
+        try {
+          return JSON.parse(localStorage.getItem("cmr_app_state_v2") || "null");
+        } catch (error) {
+          return null;
+        }
+      }
+
+      function getLegacyOffense(recordDetails) {
         if (!Array.isArray(recordDetails) || !recordDetails.length) return {};
         const row = recordDetails[0] || {};
-        const byPrefix = (prefix) => {
+
+        function byPrefix(prefix) {
           const key = Object.keys(row).find((k) => k.startsWith(prefix));
           return key ? row[key] : "";
-        };
+        }
+
         return {
           chargeName: byPrefix("charge_name_"),
           offenseCode: byPrefix("offense_code_"),
           chargeLevel: byPrefix("charge_level_"),
           caseNumber: byPrefix("case_number_"),
-          convictionDate: byPrefix("conviction_date_"),
-          probationCompletedDate: byPrefix("probation_completed_date_"),
+          dispositionDate: byPrefix("conviction_date_"),
+          dischargeDate: byPrefix("probation_completed_date_"),
           disposition: byPrefix("disposition_"),
-          stateFromRecord: byPrefix("state_"),
+          caseState: byPrefix("state_"),
           court: byPrefix("court_"),
           county: byPrefix("county_")
         };
       }
 
       function getPacketData() {
-        const { user, recordDetails } = readStoredData();
-        const offense = getFirstOffense(recordDetails);
-        const fullName = `${safe(user.firstName)} ${safe(user.lastName)}`.trim() || "mattt tunstall";
+        const newState = readNewAppState();
+
+        if (newState && Array.isArray(newState.records) && newState.records.length) {
+          const record = newState.records.find(r => r.id === newState.currentRecordId) || newState.records[0] || {};
+          const user = newState.user || {};
+          const fullName = `${safe(user.firstName)} ${safe(user.lastName)}`.trim();
+
+          return {
+            source: "new",
+            user,
+            record,
+            fullName: fullName || "Name Not Entered",
+            street: safe(user.address1 || user.street),
+            apartment: safe(user.address2, WOOD_DEFAULTS.apartment),
+            city: safe(user.city),
+            residenceState: safe(user.residenceState || user.state),
+            zip: safe(user.zip),
+            email: safe(user.email),
+            phone: safe(user.phone, WOOD_DEFAULTS.phone),
+
+            caseState: safe(record.caseState).toUpperCase(),
+            caseNumber: safe(record.caseNumber, WOOD_DEFAULTS.caseNumber),
+            chargeName: safe(record.chargeName, WOOD_DEFAULTS.offenseName),
+            offenseCode: safe(record.statute || record.offenseCode, WOOD_DEFAULTS.offenseCode),
+            chargeLevel: safe(record.degree || record.chargeLevel, WOOD_DEFAULTS.offenseDegree),
+            dispositionDate: safe(record.dispositionDate || record.convictionDate, WOOD_DEFAULTS.dispositionDate),
+            dischargeDate: safe(record.dischargeDate || record.probationCompletedDate, WOOD_DEFAULTS.dischargeDate),
+            disposition: safe(record.outcome || record.disposition),
+            court: safe(record.filingCourtName || record.court, "Wood County Court of Common Pleas"),
+            county: safe(record.filingCounty || record.county, "Wood County"),
+            eligibility: record.eligibility || null
+          };
+        }
+
+        const legacy = readLegacyData();
+        const user = legacy.user || {};
+        const offense = getLegacyOffense(legacy.recordDetails || []);
+        const fullName = `${safe(user.firstName)} ${safe(user.lastName)}`.trim();
 
         return {
-          fullName,
+          source: "legacy",
+          user,
+          record: offense,
+          fullName: fullName || "Name Not Entered",
           street: safe(user.street, "231 w horizon ridge parkway"),
           apartment: WOOD_DEFAULTS.apartment,
           city: safe(user.city, "Henderson"),
-          state: safe(user.state, "NV"),
+          residenceState: safe(user.state, "NV"),
           zip: safe(user.zip, "89012"),
           email: safe(user.email, "unitedpainterswv@gmail.com"),
           phone: safe(user.phone, WOOD_DEFAULTS.phone),
+
+          caseState: safe(offense.caseState, "OH").toUpperCase(),
           caseNumber: safe(offense.caseNumber, WOOD_DEFAULTS.caseNumber),
           chargeName: safe(offense.chargeName, WOOD_DEFAULTS.offenseName),
           offenseCode: safe(offense.offenseCode, WOOD_DEFAULTS.offenseCode),
           chargeLevel: safe(offense.chargeLevel, WOOD_DEFAULTS.offenseDegree),
-          convictionDate: safe(offense.convictionDate, WOOD_DEFAULTS.convictionDate),
-          probationCompletedDate: safe(offense.probationCompletedDate, WOOD_DEFAULTS.probationCompletedDate),
-          disposition: safe(offense.disposition, ""),
+          dispositionDate: safe(offense.dispositionDate, WOOD_DEFAULTS.dispositionDate),
+          dischargeDate: safe(offense.dischargeDate, WOOD_DEFAULTS.dischargeDate),
+          disposition: safe(offense.disposition),
           court: safe(offense.court, "Wood County Court of Common Pleas"),
-          county: safe(offense.county, "Wood County")
+          county: safe(offense.county, "Wood County"),
+          eligibility: null
         };
       }
 
-      function updateSummary() {
-        const data = getPacketData();
-        document.getElementById("summaryName").textContent = data.fullName;
-        document.getElementById("summaryEmail").textContent = data.email;
-        document.getElementById("summaryPhone").textContent = data.phone;
-        document.getElementById("summaryAddress").textContent = `${data.street}, ${data.city}, ${data.state} ${data.zip}`;
-        document.getElementById("summaryCharge").textContent = data.chargeName;
-        document.getElementById("summaryOffenseCode").textContent = data.offenseCode;
-        document.getElementById("summaryLevel").textContent = data.chargeLevel;
-        document.getElementById("summaryCaseNumber").textContent = data.caseNumber;
-        document.getElementById("summaryCourt").textContent = data.court;
-        document.getElementById("summaryCounty").textContent = data.county;
+      function buildEligibilityInput(data) {
+        const record = data.record || {};
+
+        return {
+          caseState: safe(data.caseState).toUpperCase(),
+          filingCourtName: safe(data.court),
+          filingCounty: safe(data.county),
+          caseNumber: safe(data.caseNumber),
+          chargeName: safe(data.chargeName),
+          statute: safe(data.offenseCode),
+          degree: safe(record.degree || data.chargeLevel).toUpperCase(),
+          outcome: safe(record.outcome || data.disposition),
+          dischargeDate: safe(data.dischargeDate),
+
+          pendingCharges: !!record.pendingCharges,
+
+          isTraffic: !!record.isTraffic,
+          isTheftInOffice: !!record.isTheftInOffice,
+          isFirstOrSecondDegreeFelony: !!record.isFirstOrSecondDegreeFelony,
+          isSexOffenseRegistry: !!record.isSexOffenseRegistry,
+          victimUnder13: !!record.victimUnder13,
+          isFelonyViolenceNonSex: !!record.isFelonyViolenceNonSex,
+          isDomesticViolenceConviction: !!record.isDomesticViolenceConviction,
+          dvMisdemeanorSealable: !!record.dvMisdemeanorSealable,
+          totalFelonies: Number(record.totalFelonies || 0),
+          totalF3: Number(record.totalF3 || 0),
+
+          nvCategory: safe(record.nvCategory),
+          isCrimeAgainstChild: !!record.isCrimeAgainstChild,
+          isSexOffense: !!record.isSexOffense,
+          isFelonyDUI: !!record.isFelonyDUI,
+          isHomeInvasionDeadlyWeapon: !!record.isHomeInvasionDeadlyWeapon
+        };
+      }
+
+      function getEligibilityResult(data) {
+        if (data.eligibility) return data.eligibility;
+
+        if (window.CMRRules && typeof window.CMRRules.evaluateRecordEligibility === "function") {
+          try {
+            return window.CMRRules.evaluateRecordEligibility(buildEligibilityInput(data));
+          } catch (error) {
+            console.error("Eligibility evaluation failed", error);
+          }
+        }
+
+        return {
+          eligible: false,
+          status: "needs_review",
+          state: safe(data.caseState).toUpperCase(),
+          reliefType: "unknown",
+          reasons: ["Eligibility engine not available on this page."],
+          waitingPeriod: null,
+          earliestEligibleDate: null,
+          manualReview: true
+        };
+      }
+
+      function updateSummary(data) {
+        document.getElementById("summaryName").textContent = data.fullName || "—";
+        document.getElementById("summaryEmail").textContent = data.email || "—";
+        document.getElementById("summaryPhone").textContent = data.phone || "—";
+        document.getElementById("summaryAddress").textContent =
+          `${safe(data.street)}, ${safe(data.city)}, ${safe(data.residenceState)} ${safe(data.zip)}`.replace(/^,\s*|,\s*,/g, "").trim() || "—";
+        document.getElementById("summaryResidenceState").textContent = data.residenceState || "—";
+
+        document.getElementById("summaryCaseState").textContent = data.caseState || "—";
+        document.getElementById("summaryCharge").textContent = data.chargeName || "—";
+        document.getElementById("summaryOffenseCode").textContent = data.offenseCode || "—";
+        document.getElementById("summaryLevel").textContent = data.chargeLevel || "—";
+        document.getElementById("summaryCaseNumber").textContent = data.caseNumber || "—";
+        document.getElementById("summaryCourt").textContent = data.court || "—";
+        document.getElementById("summaryCounty").textContent = data.county || "—";
         document.getElementById("summaryDisposition").textContent = data.disposition || "—";
       }
 
-      function updateEligibilitySection() {
-        const data = getPacketData();
-        const state = data.state;
-        const convictionDate = data.convictionDate;
-        const probationCompletedDate = data.probationCompletedDate;
+      function updateTemplateCallout(data) {
+        const template = getTemplateForState(data.caseState);
+        const el = document.getElementById("templateCallout");
+
+        if (template.supportsPdfFill && template.url) {
+          el.className = "callout";
+          el.innerHTML = `
+            This packet is tied to the <strong>case state</strong>, not the residence state.
+            Current mapped template: <strong>${template.label}</strong><br />
+            Source PDF: <code>${template.url}</code>
+          `;
+        } else {
+          el.className = "callout warning";
+          el.innerHTML = `
+            No mapped PDF template is loaded yet for <strong>${data.caseState || "this state"}</strong>.
+            You can still review the case, signature, and eligibility data, but PDF generation is not live for this template yet.
+          `;
+        }
+
+        const conflict = document.getElementById("stateConflictCallout");
+        if (data.residenceState && data.caseState && data.residenceState.toUpperCase() !== data.caseState.toUpperCase()) {
+          conflict.style.display = "block";
+        } else {
+          conflict.style.display = "none";
+        }
+      }
+
+      function updateEligibilitySection(data, result) {
+        const state = safe(data.caseState).toUpperCase();
 
         document.getElementById("stateValue").textContent = state || "—";
-        document.getElementById("convictionDateValue").textContent = convictionDate || "—";
-        document.getElementById("probationCompletedValue").textContent = probationCompletedDate || "—";
+        document.getElementById("convictionDateValue").textContent = formatDateForDisplay(data.dispositionDate);
+        document.getElementById("probationCompletedValue").textContent = formatDateForDisplay(data.dischargeDate);
+        document.getElementById("eligibleDateValue").textContent =
+          result && result.earliestEligibleDate ? formatDateForDisplay(result.earliestEligibleDate) : "—";
 
         const pill = document.getElementById("statusPill");
         const headline = document.getElementById("eligibilityHeadline");
         const summary = document.getElementById("eligibilitySummary");
-        const eligibleDateEl = document.getElementById("eligibleDateValue");
-        const probationDateObj = new Date(probationCompletedDate);
+        const reasonList = document.getElementById("eligibilityReasons");
 
-        if (Number.isNaN(probationDateObj.getTime())) {
+        const reasons = Array.isArray(result?.reasons) ? result.reasons : [];
+        reasonList.innerHTML = reasons.map(reason => `<li>${escapeHtml(reason)}</li>`).join("");
+
+        if (!result) {
           pill.className = "status-pill pending";
           pill.textContent = "Eligibility Needs Review";
-          headline.textContent = "We need a valid probation completion date.";
-          summary.textContent = "Go back and make sure the date probation completed is filled in on the record details page.";
-          eligibleDateEl.textContent = "—";
+          headline.textContent = "We could not evaluate this record yet.";
+          summary.textContent = "Please go back and make sure the case-state and discharge fields are filled in.";
           return;
         }
 
-        if (state === "Ohio") {
-          const eligibleDate = addYears(probationCompletedDate, 3);
-          const eligibleDateObj = new Date(eligibleDate);
-          const isEligible = new Date() >= eligibleDateObj;
-          eligibleDateEl.textContent = eligibleDate;
-
-          if (isEligible) {
-            pill.className = "status-pill eligible";
-            pill.textContent = "Eligible to Seal";
-            headline.textContent = "You appear eligible to seal your record.";
-            summary.textContent = `Based on the probation completion date entered for this case, the estimated waiting period has passed as of ${eligibleDate}.`;
-          } else {
-            pill.className = "status-pill pending";
-            pill.textContent = "Not Yet Eligible";
-            headline.textContent = "You do not appear eligible to seal your record yet.";
-            summary.textContent = `Based on the probation completion date entered for this case, the estimated waiting period appears to end on ${eligibleDate}.`;
-          }
+        if (result.status === "likely_eligible") {
+          pill.className = "status-pill eligible";
+          pill.textContent = "Likely Eligible";
+          headline.textContent = `This ${state || "case"} appears likely eligible.`;
+          summary.textContent = result.waitingPeriod
+            ? `The waiting period appears satisfied under ${state}.`
+            : `This appears to fit a currently available filing path under ${state}.`;
           return;
         }
 
-        eligibleDateEl.textContent = "Manual Review";
-        pill.className = "status-pill pending";
-        pill.textContent = "Manual Review";
-        headline.textContent = `${state} eligibility needs review.`;
-        summary.textContent = "This page can still collect details and generate packet workflows, but the timing logic for this state is not fully mapped yet.";
+        if (result.status === "not_eligible_yet") {
+          pill.className = "status-pill pending";
+          pill.textContent = "Not Yet Eligible";
+          headline.textContent = `This ${state || "case"} does not appear eligible yet.`;
+          summary.textContent = result.earliestEligibleDate
+            ? `The earliest estimated filing date is ${formatDateForDisplay(result.earliestEligibleDate)}.`
+            : "The waiting period does not appear to be satisfied yet.";
+          return;
+        }
+
+        if (result.status === "ineligible") {
+          pill.className = "status-pill error";
+          pill.textContent = "Likely Ineligible";
+          headline.textContent = `This ${state || "case"} appears excluded.`;
+          summary.textContent = "Based on the screening rules currently loaded, this offense or outcome appears outside the standard sealing/expungement path.";
+          return;
+        }
+
+        pill.className = "status-pill review";
+        pill.textContent = "Needs Review";
+        headline.textContent = `${state || "This case"} needs manual review.`;
+        summary.textContent = "The system could not confidently resolve this matter from the current inputs.";
       }
 
       function setupSignaturePad() {
@@ -819,7 +1111,9 @@
         const base64 = dataUrl.split(",")[1];
         const binary = atob(base64);
         const bytes = new Uint8Array(binary.length);
-        for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+        for (let i = 0; i < binary.length; i++) {
+          bytes[i] = binary.charCodeAt(i);
+        }
         return bytes;
       }
 
@@ -857,8 +1151,12 @@
         setStatus("Signature cleared.");
       }
 
-      async function fetchTemplateBytes() {
-        const response = await fetch(TEMPLATE_URL, { cache: "no-store" });
+      async function fetchTemplateBytes(templateUrl) {
+        if (!templateUrl) {
+          throw new Error("No PDF template is mapped for this case state yet.");
+        }
+
+        const response = await fetch(templateUrl, { cache: "no-store" });
 
         if (!response.ok) {
           throw new Error(`PDF fetch failed with status ${response.status}. Check the file path in assets.`);
@@ -875,13 +1173,23 @@
 
       async function testPdfAccess() {
         try {
+          const data = getPacketData();
+          const template = getTemplateForState(data.caseState);
+
           setStatus("Testing PDF access...");
+
           if (!window.PDFLib) {
             throw new Error("pdf-lib did not load from the CDN.");
           }
-          const bytes = await fetchTemplateBytes();
+
+          if (!template.supportsPdfFill || !template.url) {
+            throw new Error(`No mapped PDF template is available yet for ${data.caseState || "this state"}.`);
+          }
+
+          const bytes = await fetchTemplateBytes(template.url);
           const pdfDoc = await window.PDFLib.PDFDocument.load(bytes);
           const pageCount = pdfDoc.getPages().length;
+
           setStatus(`PDF test passed. Loaded ${bytes.byteLength} bytes and found ${pageCount} pages.`);
         } catch (error) {
           console.error(error);
@@ -892,19 +1200,29 @@
 
       async function generateSealingPdf() {
         try {
-          setStatus("Loading PDF template...");
+          const data = getPacketData();
+          const template = getTemplateForState(data.caseState);
+
+          setStatus("Preparing PDF packet...");
 
           if (!window.PDFLib) {
             throw new Error("pdf-lib failed to load. Refresh the page and try again.");
+          }
+
+          if (!template.supportsPdfFill || !template.url) {
+            throw new Error(`PDF generation is not mapped yet for ${data.caseState || "this state"}.`);
+          }
+
+          if (data.caseState !== "OH") {
+            throw new Error("This PDF filler is currently mapped only for the Ohio template you loaded.");
           }
 
           if (!signatureImageBytes) {
             setTypedSignature();
           }
 
-          const data = getPacketData();
           const { PDFDocument, StandardFonts, rgb } = window.PDFLib;
-          const templateBytes = await fetchTemplateBytes();
+          const templateBytes = await fetchTemplateBytes(template.url);
           const pdfDoc = await PDFDocument.load(templateBytes);
           const pages = pdfDoc.getPages();
 
@@ -927,14 +1245,21 @@
             let currentSize = size;
             const content = String(text || "");
             let width = font.widthOfTextAtSize(content, currentSize);
+
             while (width > maxWidth && currentSize > 8) {
               currentSize -= 0.5;
               width = font.widthOfTextAtSize(content, currentSize);
             }
+
             page.drawText(content, { x, y, size: currentSize, font, color: black });
           }
 
           setStatus("Filling PDF...");
+
+          const displayName = data.fullName || "Name Not Entered";
+          const displayStreet = data.street || "";
+          const displayApartment = data.apartment || WOOD_DEFAULTS.apartment;
+          const displayCityStateZip = `${safe(data.city)}${data.city ? ", " : ""}${safe(data.residenceState)} ${safe(data.zip)}`.trim();
 
           draw(addressPage, new Date().toLocaleDateString("en-US", {
             month: "long",
@@ -942,26 +1267,26 @@
             year: "numeric"
           }), 148, 444, 12, helvetica);
 
-          drawFit(addressPage, data.fullName, 190, 407, 325, 12, helvetica);
-          drawFit(addressPage, data.street, 95, 370, 420, 12, helvetica);
-          drawFit(addressPage, data.apartment, 220, 334, 120, 12, helvetica);
-          drawFit(addressPage, `${data.city}, ${data.state}`, 128, 297, 250, 12, helvetica);
-          drawFit(addressPage, data.zip, 105, 260, 150, 12, helvetica);
-          drawFit(addressPage, data.email, 145, 224, 325, 12, helvetica);
+          drawFit(addressPage, displayName, 190, 407, 325, 12, helvetica);
+          drawFit(addressPage, displayStreet, 95, 370, 420, 12, helvetica);
+          drawFit(addressPage, displayApartment, 220, 334, 120, 12, helvetica);
+          drawFit(addressPage, displayCityStateZip, 128, 297, 250, 12, helvetica);
+          drawFit(addressPage, safe(data.zip), 105, 260, 150, 12, helvetica);
+          drawFit(addressPage, safe(data.email), 145, 224, 325, 12, helvetica);
 
-          drawFit(applicationPage, data.caseNumber, 470, 676, 120, 12, helvetica);
+          drawFit(applicationPage, safe(data.caseNumber, WOOD_DEFAULTS.caseNumber), 470, 676, 120, 12, helvetica);
           drawFit(applicationPage, WOOD_DEFAULTS.judge, 470, 649, 120, 12, helvetica);
-          drawFit(applicationPage, data.fullName, 245, 563, 170, 12, helvetica);
-          drawFit(applicationPage, data.street, 175, 535, 240, 12, helvetica);
-          drawFit(applicationPage, `${data.city}, ${data.state} ${data.zip}`, 205, 508, 210, 12, helvetica);
-          drawFit(applicationPage, data.phone, 175, 480, 240, 12, helvetica);
-          drawFit(applicationPage, data.email, 165, 452, 250, 12, helvetica);
-          drawFit(applicationPage, data.fullName, 145, 420, 170, 12, helvetica);
-          draw(applicationPage, formatDateForCourt(data.convictionDate), 95, 389, 12, helveticaBold);
-          drawFit(applicationPage, data.chargeName, 70, 326, 220, 12, helvetica);
-          drawFit(applicationPage, data.offenseCode, 355, 326, 120, 12, helvetica);
-          drawFit(applicationPage, data.chargeLevel, 505, 326, 135, 12, helvetica);
-          draw(applicationPage, formatDateForCourt(data.probationCompletedDate), 340, 214, 12, helveticaBold);
+          drawFit(applicationPage, displayName, 245, 563, 170, 12, helvetica);
+          drawFit(applicationPage, displayStreet, 175, 535, 240, 12, helvetica);
+          drawFit(applicationPage, displayCityStateZip, 205, 508, 210, 12, helvetica);
+          drawFit(applicationPage, safe(data.phone, WOOD_DEFAULTS.phone), 175, 480, 240, 12, helvetica);
+          drawFit(applicationPage, safe(data.email), 165, 452, 250, 12, helvetica);
+          drawFit(applicationPage, displayName, 145, 420, 170, 12, helvetica);
+          draw(applicationPage, formatDateForCourt(safe(data.dispositionDate, WOOD_DEFAULTS.dispositionDate)), 95, 389, 12, helveticaBold);
+          drawFit(applicationPage, safe(data.chargeName, WOOD_DEFAULTS.offenseName), 70, 326, 220, 12, helvetica);
+          drawFit(applicationPage, safe(data.offenseCode, WOOD_DEFAULTS.offenseCode), 355, 326, 120, 12, helvetica);
+          drawFit(applicationPage, safe(data.chargeLevel, WOOD_DEFAULTS.offenseDegree), 505, 326, 135, 12, helvetica);
+          draw(applicationPage, formatDateForCourt(safe(data.dischargeDate, WOOD_DEFAULTS.dischargeDate)), 340, 214, 12, helveticaBold);
 
           const sigDims = sigImage.scale(0.32);
           applicationPage.drawImage(sigImage, {
@@ -971,7 +1296,7 @@
             height: sigDims.height
           });
 
-          drawFit(applicationPage, data.fullName, 95, 44, 210, 12, helvetica);
+          drawFit(applicationPage, displayName, 95, 44, 210, 12, helvetica);
 
           setStatus("Saving PDF...");
 
@@ -980,12 +1305,12 @@
           const url = URL.createObjectURL(blob);
           const link = document.createElement("a");
           link.href = url;
-          link.download = "wood-county-sealing-packet-recordpathai.pdf";
+          link.download = `${(data.caseState || "case").toLowerCase()}-filing-packet.pdf`;
           document.body.appendChild(link);
           link.click();
           link.remove();
-          setTimeout(() => URL.revokeObjectURL(url), 5000);
 
+          setTimeout(() => URL.revokeObjectURL(url), 5000);
           setStatus("Done. Your PDF should be downloading.");
         } catch (error) {
           console.error(error);
@@ -998,6 +1323,18 @@
         alert("Payment and court submission are not live on this page yet.");
       }
 
+      function escapeHtml(str) {
+        return String(str)
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;")
+          .replaceAll("'", "&#039;");
+      }
+
+      const initialData = getPacketData();
+      const initialEligibility = getEligibilityResult(initialData);
+
       document.getElementById("useTypedSigBtn").addEventListener("click", setTypedSignature);
       document.getElementById("useDrawnSigBtn").addEventListener("click", setDrawnSignature);
       document.getElementById("clearSigBtn").addEventListener("click", clearSignature);
@@ -1005,14 +1342,23 @@
       document.getElementById("generateSealingBtn").addEventListener("click", generateSealingPdf);
       document.getElementById("testPdfBtn").addEventListener("click", testPdfAccess);
       document.getElementById("openSourceBtn").addEventListener("click", function () {
-        window.open(TEMPLATE_URL, "_blank");
+        const data = getPacketData();
+        const template = getTemplateForState(data.caseState);
+
+        if (!template.url) {
+          alert(`No mapped source PDF yet for ${data.caseState || "this state"}.`);
+          return;
+        }
+
+        window.open(template.url, "_blank");
       });
       document.getElementById("payAndSubmitBtn").addEventListener("click", handlePayAndSubmit);
 
       setupSignaturePad();
-      updateSummary();
-      updateEligibilitySection();
-      document.getElementById("typedSignature").value = getPacketData().fullName;
+      updateSummary(initialData);
+      updateTemplateCallout(initialData);
+      updateEligibilitySection(initialData, initialEligibility);
+      document.getElementById("typedSignature").value = initialData.fullName || "";
       setTypedSignature();
     });
   </script>
