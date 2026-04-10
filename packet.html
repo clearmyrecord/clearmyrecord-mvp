@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Your Filing Packet | ClearMyRecord</title>
+  <title>Your Filing Packet | RecordPathAI</title>
   <script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
   <style>
     * { box-sizing: border-box; }
@@ -305,6 +305,68 @@
       border-color: #f1ddac;
     }
 
+    .record-list {
+      display: grid;
+      gap: 14px;
+      margin-top: 16px;
+    }
+
+    .record-item {
+      border: 1px solid #dbe3f0;
+      background: #fbfdff;
+      border-radius: 18px;
+      padding: 18px;
+    }
+
+    .record-item.is-current {
+      border-color: #7eaef3;
+      background: #eef4ff;
+    }
+
+    .record-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+    }
+
+    .record-tag {
+      display: inline-flex;
+      align-items: center;
+      min-height: 34px;
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: #e7eefc;
+      color: #34517f;
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .record-title {
+      margin: 0;
+      font-size: 18px;
+      color: #21365a;
+      font-weight: 800;
+    }
+
+    .record-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px 18px;
+    }
+
+    .record-line {
+      font-size: 14px;
+      line-height: 1.5;
+      color: #556781;
+    }
+
+    .record-line strong {
+      color: #304d7b;
+    }
+
     .sig-row {
       display: grid;
       grid-template-columns: 1fr auto;
@@ -453,7 +515,8 @@
 
     @media (max-width: 900px) {
       .date-grid,
-      .summary-grid {
+      .summary-grid,
+      .record-grid {
         grid-template-columns: 1fr;
       }
 
@@ -539,12 +602,13 @@
     <div class="container header-inner">
       <a href="index.html" class="brand">
         <span class="brand-icon" aria-hidden="true"></span>
-        <span>ClearMyRecord</span>
+        <span>RecordPathAI</span>
       </a>
       <nav class="nav">
         <a href="how-it-works.html">How It Works</a>
         <a href="eligibility.html">Eligibility</a>
-        <a href="eligibility.html" class="nav-cta">Check Eligibility</a>
+        <a href="record-details.html">Record Details</a>
+        <a href="packet.html" class="nav-cta">Packet</a>
         <a href="login.html" class="nav-login">Log In</a>
       </nav>
     </div>
@@ -556,7 +620,7 @@
         <section class="packet-card">
           <h1 class="packet-title">Your Filing Packet</h1>
           <p class="packet-subtitle">
-            Review your case, verify the correct filing state, and generate the packet tied to the court where the case was actually filed.
+            Review your saved intake and record details, see the eligibility screening result, and generate the packet tied to the court where the case was actually filed.
           </p>
         </section>
 
@@ -591,12 +655,12 @@
           </div>
 
           <p class="meta-note">
-            This page gives a screening result based on the data entered in your flow. Final approval depends on the court, the statute, and the full case history.
+            This page gives a screening result based on the saved data in your RecordPathAI flow. Final approval depends on the court, the statute, and the full case history.
           </p>
         </section>
 
         <section class="packet-card">
-          <h2 class="section-title">Case Summary</h2>
+          <h2 class="section-title">Intake Summary</h2>
           <div class="summary-grid">
             <div class="summary-box">
               <h3>Person</h3>
@@ -609,7 +673,7 @@
               </div>
             </div>
             <div class="summary-box">
-              <h3>Case</h3>
+              <h3>Selected Record</h3>
               <div class="summary-list">
                 <div class="summary-row"><strong>Case State</strong><span id="summaryCaseState">—</span></div>
                 <div class="summary-row"><strong>Charge</strong><span id="summaryCharge">—</span></div>
@@ -622,6 +686,14 @@
               </div>
             </div>
           </div>
+        </section>
+
+        <section class="packet-card">
+          <h2 class="section-title">All Saved Offenses</h2>
+          <p class="packet-subtitle" style="font-size:16px; margin-bottom:0;">
+            The packet and eligibility banner above use the current selected record. This section shows every saved offense currently in your flow.
+          </p>
+          <div id="recordList" class="record-list"></div>
         </section>
 
         <section class="packet-card">
@@ -687,6 +759,8 @@
   <script src="js/rules.js"></script>
   <script>
     document.addEventListener("DOMContentLoaded", function () {
+      const STORAGE_KEY = "cmr_app_state_v2";
+
       const TEMPLATE_MAP = {
         OH: {
           default: {
@@ -700,6 +774,22 @@
           default: {
             key: "nv-not-mapped",
             label: "Nevada template not mapped yet",
+            url: "",
+            supportsPdfFill: false
+          }
+        },
+        CA: {
+          default: {
+            key: "ca-not-mapped",
+            label: "California template not mapped yet",
+            url: "",
+            supportsPdfFill: false
+          }
+        },
+        AZ: {
+          default: {
+            key: "az-not-mapped",
+            label: "Arizona template not mapped yet",
             url: "",
             supportsPdfFill: false
           }
@@ -733,7 +823,6 @@
 
       function normalizeState(value) {
         const v = safe(value).toUpperCase();
-
         const map = {
           OHIO: "OH",
           NEVADA: "NV",
@@ -742,13 +831,11 @@
           TEXAS: "TX",
           FLORIDA: "FL"
         };
-
         return map[v] || v;
       }
 
       function normalizeDegree(raw) {
         const value = safe(raw).toUpperCase();
-
         if (!value) return "";
         if (["MM", "M", "F5", "F4", "F3", "F2", "F1"].includes(value)) return value;
         if (value.includes("MINOR")) return "MM";
@@ -758,16 +845,13 @@
         if (value.includes("FELONY 3")) return "F3";
         if (value.includes("FELONY 2")) return "F2";
         if (value.includes("FELONY 1")) return "F1";
-
         return value;
       }
 
       function normalizeOutcome(raw) {
         const value = safe(raw).toLowerCase();
-
         if (!value) return "";
-        if (value === "guilty") return "convicted";
-        if (value === "no contest") return "convicted";
+        if (value === "guilty" || value === "no contest") return "convicted";
         if (value === "convicted") return "convicted";
         if (value === "dismissed") return "dismissed";
         if (value === "not guilty") return "not guilty";
@@ -775,12 +859,11 @@
         if (value === "no bill") return "no bill";
         if (value === "pardon") return "pardon";
         if (value === "intervention in lieu") return "intervention in lieu";
-
         return value;
       }
 
       function escapeHtml(str) {
-        return String(str)
+        return String(str == null ? "" : str)
           .replaceAll("&", "&amp;")
           .replaceAll("<", "&lt;")
           .replaceAll(">", "&gt;")
@@ -822,112 +905,55 @@
         };
       }
 
-      function readLegacyData() {
-        try {
-          return {
-            user: JSON.parse(localStorage.getItem("cmr_user") || "{}"),
-            recordDetails: JSON.parse(sessionStorage.getItem("recordPath_recordDetails") || "[]")
-          };
-        } catch (error) {
-          return { user: {}, recordDetails: [] };
-        }
-      }
-
       function readNewAppState() {
         try {
-          return JSON.parse(localStorage.getItem("cmr_app_state_v2") || "null");
+          return JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
         } catch (error) {
           return null;
         }
       }
 
-      function getLegacyOffense(recordDetails) {
-        if (!Array.isArray(recordDetails) || !recordDetails.length) return {};
-        const row = recordDetails[0] || {};
-
-        function byPrefix(prefix) {
-          const key = Object.keys(row).find((k) => k.startsWith(prefix));
-          return key ? row[key] : "";
+      function getCurrentRecord(state) {
+        if (!state || !Array.isArray(state.records) || !state.records.length) return null;
+        if (state.currentRecordId) {
+          const match = state.records.find(r => r && r.id === state.currentRecordId);
+          if (match) return match;
         }
-
-        return {
-          chargeName: byPrefix("charge_name_"),
-          offenseCode: byPrefix("offense_code_"),
-          chargeLevel: byPrefix("charge_level_"),
-          caseNumber: byPrefix("case_number_"),
-          dispositionDate: byPrefix("conviction_date_"),
-          dischargeDate: byPrefix("probation_completed_date_"),
-          disposition: byPrefix("disposition_"),
-          caseState: byPrefix("state_"),
-          court: byPrefix("court_"),
-          county: byPrefix("county_")
-        };
+        return state.records[0] || null;
       }
 
       function getPacketData() {
-        const newState = readNewAppState();
-
-        if (newState && Array.isArray(newState.records) && newState.records.length) {
-          const record = newState.records.find(r => r.id === newState.currentRecordId) || newState.records[0] || {};
-          const user = newState.user || {};
-          const fullName = `${safe(user.firstName)} ${safe(user.lastName)}`.trim();
-
-          return {
-            source: "new",
-            user,
-            record,
-            fullName: fullName || "Name Not Entered",
-            street: safe(user.address1 || user.street),
-            apartment: safe(user.address2, WOOD_DEFAULTS.apartment),
-            city: safe(user.city),
-            residenceState: normalizeState(user.residenceState || user.state),
-            zip: safe(user.zip),
-            email: safe(user.email),
-            phone: safe(user.phone, WOOD_DEFAULTS.phone),
-
-            caseState: normalizeState(record.caseState),
-            caseNumber: safe(record.caseNumber, WOOD_DEFAULTS.caseNumber),
-            chargeName: safe(record.chargeName, WOOD_DEFAULTS.offenseName),
-            offenseCode: safe(record.statute || record.offenseCode, WOOD_DEFAULTS.offenseCode),
-            chargeLevel: normalizeDegree(record.degree || record.chargeLevel || WOOD_DEFAULTS.offenseDegree),
-            dispositionDate: safe(record.dispositionDate || record.convictionDate, WOOD_DEFAULTS.dispositionDate),
-            dischargeDate: safe(record.dischargeDate || record.probationCompletedDate, WOOD_DEFAULTS.dischargeDate),
-            disposition: normalizeOutcome(record.outcome || record.disposition),
-            court: safe(record.filingCourtName || record.court, "Wood County Court of Common Pleas"),
-            county: safe(record.filingCounty || record.county, "Wood County"),
-            eligibility: record.eligibility || null
-          };
-        }
-
-        const legacy = readLegacyData();
-        const user = legacy.user || {};
-        const offense = getLegacyOffense(legacy.recordDetails || []);
+        const state = readNewAppState() || {};
+        const user = state.user || {};
+        const records = Array.isArray(state.records) ? state.records : [];
+        const record = getCurrentRecord(state) || {};
         const fullName = `${safe(user.firstName)} ${safe(user.lastName)}`.trim();
 
         return {
-          source: "legacy",
+          state,
           user,
-          record: offense,
+          records,
+          record,
           fullName: fullName || "Name Not Entered",
-          street: safe(user.street, "231 w horizon ridge parkway"),
-          apartment: WOOD_DEFAULTS.apartment,
-          city: safe(user.city, "Henderson"),
-          residenceState: normalizeState(user.state || "NV"),
-          zip: safe(user.zip, "89012"),
-          email: safe(user.email, "unitedpainterswv@gmail.com"),
+          street: safe(user.address1 || user.street),
+          apartment: safe(user.address2, WOOD_DEFAULTS.apartment),
+          city: safe(user.city),
+          residenceState: normalizeState(user.residenceState || user.state),
+          zip: safe(user.zip),
+          email: safe(user.email),
           phone: safe(user.phone, WOOD_DEFAULTS.phone),
 
-          caseState: normalizeState(offense.caseState || "OH"),
-          caseNumber: safe(offense.caseNumber, WOOD_DEFAULTS.caseNumber),
-          chargeName: safe(offense.chargeName, WOOD_DEFAULTS.offenseName),
-          offenseCode: safe(offense.offenseCode, WOOD_DEFAULTS.offenseCode),
-          chargeLevel: normalizeDegree(offense.chargeLevel || WOOD_DEFAULTS.offenseDegree),
-          dispositionDate: safe(offense.dispositionDate, WOOD_DEFAULTS.dispositionDate),
-          dischargeDate: safe(offense.dischargeDate, WOOD_DEFAULTS.dischargeDate),
-          disposition: normalizeOutcome(offense.disposition),
-          court: safe(offense.court, "Wood County Court of Common Pleas"),
-          county: safe(offense.county, "Wood County"),
-          eligibility: null
+          caseState: normalizeState(record.caseState),
+          caseNumber: safe(record.caseNumber, WOOD_DEFAULTS.caseNumber),
+          chargeName: safe(record.chargeName, WOOD_DEFAULTS.offenseName),
+          offenseCode: safe(record.statute || record.offenseCode, WOOD_DEFAULTS.offenseCode),
+          chargeLevel: normalizeDegree(record.degree || record.chargeLevel || WOOD_DEFAULTS.offenseDegree),
+          dispositionDate: safe(record.dispositionDate || record.convictionDate, WOOD_DEFAULTS.dispositionDate),
+          dischargeDate: safe(record.dischargeDate || record.probationCompletedDate, WOOD_DEFAULTS.dischargeDate),
+          disposition: normalizeOutcome(record.outcome || record.disposition),
+          court: safe(record.filingCourtName || record.court, "Wood County Court of Common Pleas"),
+          county: safe(record.filingCounty || record.county, "Wood County"),
+          eligibility: record.eligibility || null
         };
       }
 
@@ -947,7 +973,6 @@
           dischargeDate: safe(data.dischargeDate),
 
           pendingCharges: !!record.pendingCharges,
-
           isTraffic: !!record.isTraffic,
           isTheftInOffice: !!record.isTheftInOffice,
           isFirstOrSecondDegreeFelony: !!record.isFirstOrSecondDegreeFelony,
@@ -1015,6 +1040,44 @@
         document.getElementById("summaryCourt").textContent = data.court || "—";
         document.getElementById("summaryCounty").textContent = data.county || "—";
         document.getElementById("summaryDisposition").textContent = data.disposition || "—";
+      }
+
+      function renderAllRecords(data) {
+        const container = document.getElementById("recordList");
+        const records = Array.isArray(data.records) ? data.records : [];
+
+        if (!records.length) {
+          container.innerHTML = `
+            <div class="record-item">
+              <div class="record-title">No saved offenses found.</div>
+              <div class="record-line">Go back to Record Details and add at least one offense.</div>
+            </div>
+          `;
+          return;
+        }
+
+        container.innerHTML = records.map(function (record, index) {
+          const isCurrent = data.record && record.id === data.record.id;
+          return `
+            <div class="record-item${isCurrent ? " is-current" : ""}">
+              <div class="record-head">
+                <h3 class="record-title">Offense ${index + 1}: ${escapeHtml(safe(record.chargeName, "Unnamed offense"))}</h3>
+                <span class="record-tag">${isCurrent ? "Current packet record" : "Saved record"}</span>
+              </div>
+              <div class="record-grid">
+                <div class="record-line"><strong>Case State:</strong> ${escapeHtml(safe(record.caseState, "—"))}</div>
+                <div class="record-line"><strong>Case Number:</strong> ${escapeHtml(safe(record.caseNumber, "—"))}</div>
+                <div class="record-line"><strong>Statute:</strong> ${escapeHtml(safe(record.statute, "—"))}</div>
+                <div class="record-line"><strong>Degree:</strong> ${escapeHtml(safe(record.degree, "—"))}</div>
+                <div class="record-line"><strong>Outcome:</strong> ${escapeHtml(safe(record.outcome, "—"))}</div>
+                <div class="record-line"><strong>Disposition Date:</strong> ${escapeHtml(formatDateForDisplay(record.dispositionDate))}</div>
+                <div class="record-line"><strong>Discharge Date:</strong> ${escapeHtml(formatDateForDisplay(record.dischargeDate))}</div>
+                <div class="record-line"><strong>Court:</strong> ${escapeHtml(safe(record.filingCourtName, "—"))}</div>
+                <div class="record-line"><strong>County:</strong> ${escapeHtml(safe(record.filingCounty, "—"))}</div>
+              </div>
+            </div>
+          `;
+        }).join("");
       }
 
       function updateTemplateCallout(data) {
@@ -1097,7 +1160,7 @@
           pill.className = "status-pill error";
           pill.textContent = "Likely Ineligible";
           headline.textContent = `This ${state || "case"} appears excluded.`;
-          summary.textContent = "Based on the screening rules currently loaded, this offense or outcome appears outside the standard sealing/expungement path.";
+          summary.textContent = "Based on the screening rules currently loaded, this offense or outcome appears outside the standard sealing or expungement path.";
           return;
         }
 
@@ -1413,6 +1476,7 @@
 
       setupSignaturePad();
       updateSummary(initialData);
+      renderAllRecords(initialData);
       updateTemplateCallout(initialData);
       updateEligibilitySection(initialData, initialEligibility);
       document.getElementById("typedSignature").value = initialData.fullName || "";
