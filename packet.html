@@ -873,8 +873,16 @@
 
       function formatDateForDisplay(dateString) {
         if (!dateString) return "—";
-        const date = new Date(dateString);
-        if (Number.isNaN(date.getTime())) return dateString;
+        const date = new Date(dateString + "T12:00:00");
+        if (Number.isNaN(date.getTime())) {
+          const fallback = new Date(dateString);
+          if (Number.isNaN(fallback.getTime())) return dateString;
+          return fallback.toLocaleDateString("en-US", {
+            year: "numeric",
+            month: "short",
+            day: "numeric"
+          });
+        }
         return date.toLocaleDateString("en-US", {
           year: "numeric",
           month: "short",
@@ -884,12 +892,63 @@
 
       function formatDateForCourt(dateString) {
         if (!dateString) return "";
-        const date = new Date(dateString);
+        const date = new Date(dateString + "T12:00:00");
         if (Number.isNaN(date.getTime())) return dateString;
         const month = String(date.getMonth() + 1).padStart(2, "0");
         const day = String(date.getDate()).padStart(2, "0");
         const year = date.getFullYear();
         return `${month}/${day}/${year}`;
+      }
+
+      function parseDate(dateString) {
+        if (!dateString) return null;
+        const date = new Date(dateString + "T12:00:00");
+        return Number.isNaN(date.getTime()) ? null : date;
+      }
+
+      function toIsoDate(date) {
+        if (!(date instanceof Date) || Number.isNaN(date.getTime())) return null;
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, "0");
+        const day = String(date.getDate()).padStart(2, "0");
+        return `${year}-${month}-${day}`;
+      }
+
+      function addMonths(dateString, months) {
+        const date = parseDate(dateString);
+        if (!date) return null;
+        const next = new Date(date);
+        next.setMonth(next.getMonth() + months);
+        return toIsoDate(next);
+      }
+
+      function addYears(dateString, years) {
+        const date = parseDate(dateString);
+        if (!date) return null;
+        const next = new Date(date);
+        next.setFullYear(next.getFullYear() + years);
+        return toIsoDate(next);
+      }
+
+      function inferArizonaClass(record) {
+        const raw = [
+          safe(record.azClass),
+          safe(record.azOffenseClass),
+          safe(record.degree),
+          safe(record.chargeLevel),
+          safe(record.notes)
+        ].join(" ").toLowerCase();
+
+        if (raw.includes("class 2 felony")) return "AZ_F2";
+        if (raw.includes("class 3 felony")) return "AZ_F3";
+        if (raw.includes("class 4 felony")) return "AZ_F4";
+        if (raw.includes("class 5 felony")) return "AZ_F5";
+        if (raw.includes("class 6 felony")) return "AZ_F6";
+        if (raw.includes("class 1 misdemeanor")) return "AZ_M1";
+        if (raw.includes("class 2 misdemeanor")) return "AZ_M2";
+        if (raw.includes("class 3 misdemeanor")) return "AZ_M3";
+
+        return "";
       }
 
       function getTemplateForState(caseState) {
@@ -916,7 +975,7 @@
       function getCurrentRecord(state) {
         if (!state || !Array.isArray(state.records) || !state.records.length) return null;
         if (state.currentRecordId) {
-          const match = state.records.find(r => r && r.id === state.currentRecordId);
+          const match = state.records.find((r) => r && r.id === state.currentRecordId);
           if (match) return match;
         }
         return state.records[0] || null;
@@ -1018,6 +1077,116 @@
         };
       }
 
+      function estimateEligibleDate(data, result) {
+        const record = data.record || {};
+        const state = normalizeState(data.caseState);
+        const outcome = normalizeOutcome(record.outcome || data.disposition);
+        const degree = normalizeDegree(record.degree || data.chargeLevel);
+        const reliefType = safe(result && result.reliefType).toLowerCase();
+
+        const dispositionDate = safe(data.dispositionDate);
+        const dischargeDate = safe(data.dischargeDate);
+        const baseConvictionDate = dischargeDate || dispositionDate;
+
+        if (record.pendingCharges) return null;
+
+        if (state === "OH") {
+          if (outcome === "dismissed" || outcome === "not guilty" || outcome === "acquitted" || outcome === "pardon") {
+            return dispositionDate || dischargeDate || null;
+          }
+
+          if (outcome === "no bill") {
+            return addYears(dispositionDate, 2);
+          }
+
+          if (!baseConvictionDate) return null;
+
+          if (record.isSexOffenseRegistry) {
+            return addYears(baseConvictionDate, 5);
+          }
+
+          if (degree === "MM") return addMonths(baseConvictionDate, 6);
+          if (degree === "M") return addYears(baseConvictionDate, 1);
+
+          if (degree === "F4" || degree === "F5") {
+            return reliefType === "expungement"
+              ? addYears(baseConvictionDate, 11)
+              : addYears(baseConvictionDate, 1);
+          }
+
+          if (degree === "F3") {
+            return reliefType === "expungement"
+              ? addYears(baseConvictionDate, 13)
+              : addYears(baseConvictionDate, 3);
+          }
+
+          return null;
+        }
+
+        if (state === "NV") {
+          if (outcome === "dismissed" || outcome === "not guilty" || outcome === "acquitted" || outcome === "no bill") {
+            return dispositionDate || dischargeDate || null;
+          }
+
+          if (!baseConvictionDate) return null;
+
+          if (record.isCrimeAgainstChild || record.isSexOffense || record.isHomeInvasionDeadlyWeapon || record.isFelonyDUI) {
+            return null;
+          }
+
+          const nvCategory = safe(record.nvCategory).toLowerCase();
+
+          if (nvCategory === "standard_misdemeanor") return addYears(baseConvictionDate, 1);
+          if (nvCategory === "listed_misdemeanor") return addYears(baseConvictionDate, 2);
+          if (nvCategory === "dui_or_dv") return addYears(baseConvictionDate, 7);
+          if (nvCategory === "felony") return addYears(baseConvictionDate, 5);
+          if (nvCategory === "violent_or_category_a") return addYears(baseConvictionDate, 10);
+
+          if (record.isDomesticViolenceConviction) return addYears(baseConvictionDate, 7);
+          if (degree === "M" || degree === "MM") return addYears(baseConvictionDate, 1);
+          if (degree.startsWith("F")) return addYears(baseConvictionDate, 5);
+
+          return null;
+        }
+
+        if (state === "AZ") {
+          if (outcome === "dismissed" || outcome === "not guilty" || outcome === "acquitted" || outcome === "no bill") {
+            return dispositionDate || dischargeDate || null;
+          }
+
+          if (!baseConvictionDate) return null;
+
+          const azClass = inferArizonaClass(record);
+
+          if (azClass === "AZ_F2" || azClass === "AZ_F3") return addYears(baseConvictionDate, 10);
+          if (azClass === "AZ_F4" || azClass === "AZ_F5" || azClass === "AZ_F6") return addYears(baseConvictionDate, 5);
+          if (azClass === "AZ_M1") return addYears(baseConvictionDate, 3);
+          if (azClass === "AZ_M2" || azClass === "AZ_M3") return addYears(baseConvictionDate, 2);
+
+          return null;
+        }
+
+        if (state === "CA") {
+          if (outcome === "dismissed" || outcome === "not guilty" || outcome === "acquitted") {
+            return dispositionDate || dischargeDate || null;
+          }
+
+          if (!baseConvictionDate) return null;
+
+          if (record.caReliefTrack === "1203.42") {
+            return addYears(baseConvictionDate, 2);
+          }
+
+          if (record.caNoProbation === true) {
+            return addYears(dispositionDate || baseConvictionDate, 1);
+          }
+
+          return dischargeDate || null;
+        }
+
+        return (result && result.earliestEligibleDate) ? result.earliestEligibleDate : null;
+      }
+
       function updateSummary(data) {
         document.getElementById("summaryName").textContent = data.fullName || "—";
         document.getElementById("summaryEmail").textContent = data.email || "—";
@@ -1113,20 +1282,21 @@
 
       function updateEligibilitySection(data, result) {
         const state = normalizeState(data.caseState);
+        const estimatedEligibleDate = estimateEligibleDate(data, result) || (result && result.earliestEligibleDate) || null;
 
         document.getElementById("stateValue").textContent = state || "—";
         document.getElementById("convictionDateValue").textContent = formatDateForDisplay(data.dispositionDate);
         document.getElementById("probationCompletedValue").textContent = formatDateForDisplay(data.dischargeDate);
         document.getElementById("eligibleDateValue").textContent =
-          result && result.earliestEligibleDate ? formatDateForDisplay(result.earliestEligibleDate) : "—";
+          estimatedEligibleDate ? formatDateForDisplay(estimatedEligibleDate) : "—";
 
         const pill = document.getElementById("statusPill");
         const headline = document.getElementById("eligibilityHeadline");
         const summary = document.getElementById("eligibilitySummary");
         const reasonList = document.getElementById("eligibilityReasons");
 
-        const reasons = Array.isArray(result?.reasons) ? result.reasons : [];
-        reasonList.innerHTML = reasons.map(reason => `<li>${escapeHtml(reason)}</li>`).join("");
+        const reasons = Array.isArray(result && result.reasons) ? result.reasons : [];
+        reasonList.innerHTML = reasons.map((reason) => `<li>${escapeHtml(reason)}</li>`).join("");
 
         if (!result) {
           pill.className = "status-pill pending";
@@ -1150,8 +1320,8 @@
           pill.className = "status-pill pending";
           pill.textContent = "Not Yet Eligible";
           headline.textContent = `This ${state || "case"} does not appear eligible yet.`;
-          summary.textContent = result.earliestEligibleDate
-            ? `The earliest estimated filing date is ${formatDateForDisplay(result.earliestEligibleDate)}.`
+          summary.textContent = estimatedEligibleDate
+            ? `The earliest estimated filing date is ${formatDateForDisplay(estimatedEligibleDate)}.`
             : "The waiting period does not appear to be satisfied yet.";
           return;
         }
