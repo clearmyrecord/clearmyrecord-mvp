@@ -364,44 +364,44 @@
         <form id="user-profile-form" class="form-grid" onsubmit="return false;">
           <div class="field">
             <label for="firstName">First Name</label>
-            <input id="firstName" name="firstName" type="text" placeholder="First name" />
+            <input id="firstName" data-path="petitioner.first_name" type="text" placeholder="First name" />
           </div>
 
           <div class="field">
             <label for="lastName">Last Name</label>
-            <input id="lastName" name="lastName" type="text" placeholder="Last name" />
+            <input id="lastName" data-path="petitioner.last_name" type="text" placeholder="Last name" />
           </div>
 
           <div class="field">
             <label for="email">Email</label>
-            <input id="email" name="email" type="email" placeholder="Email address" />
+            <input id="email" data-path="petitioner.email" type="email" placeholder="Email address" />
           </div>
 
           <div class="field">
             <label for="phone">Phone</label>
-            <input id="phone" name="phone" type="text" placeholder="Phone number" />
+            <input id="phone" data-path="petitioner.phone" type="text" placeholder="Phone number" />
           </div>
 
           <div class="field field-full">
             <label for="address1">Street Address</label>
-            <input id="address1" name="address1" type="text" placeholder="Street address" />
+            <input id="address1" data-path="petitioner.address.line1" type="text" placeholder="Street address" />
           </div>
 
           <div class="field">
             <label for="address2">Apartment / Unit</label>
-            <input id="address2" name="address2" type="text" placeholder="Apartment, suite, unit, etc." />
+            <input id="address2" data-path="petitioner.address.line2" type="text" placeholder="Apartment, suite, unit, etc." />
           </div>
 
           <div class="field"></div>
 
           <div class="field">
             <label for="city">City</label>
-            <input id="city" name="city" type="text" placeholder="City" />
+            <input id="city" data-path="petitioner.address.city" type="text" placeholder="City" />
           </div>
 
           <div class="field">
             <label for="residenceState">Residence State</label>
-            <select id="residenceState" name="residenceState">
+            <select id="residenceState" data-path="petitioner.address.state">
               <option value="">Select</option>
               <option value="OH">Ohio</option>
               <option value="NV">Nevada</option>
@@ -414,7 +414,7 @@
 
           <div class="field">
             <label for="zip">ZIP</label>
-            <input id="zip" name="zip" type="text" placeholder="ZIP code" />
+            <input id="zip" data-path="petitioner.address.zip" type="text" placeholder="ZIP code" />
           </div>
         </form>
 
@@ -437,99 +437,28 @@
 
   <script src="js/rules.js"></script>
   <script src="js/app.js"></script>
-  <script>
-    (function () {
-      const STORAGE_KEY = "cmr_app_state_v2";
-
-      function getStoredState() {
-        try {
-          return JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
-        } catch (err) {
-          return null;
-        }
-      }
-
-      function saveProfileDraft() {
-        const state = getStoredState() || {
-          user: {},
-          records: [],
-          currentRecordId: null
-        };
-
-        state.user = {
-          ...(state.user || {}),
-          firstName: document.getElementById("firstName")?.value.trim() || "",
-          lastName: document.getElementById("lastName")?.value.trim() || "",
-          email: document.getElementById("email")?.value.trim() || "",
-          phone: document.getElementById("phone")?.value.trim() || "",
-          address1: document.getElementById("address1")?.value.trim() || "",
-          address2: document.getElementById("address2")?.value.trim() || "",
-          city: document.getElementById("city")?.value.trim() || "",
-          residenceState: document.getElementById("residenceState")?.value.trim().toUpperCase() || "",
-          zip: document.getElementById("zip")?.value.trim() || ""
-        };
-
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-      }
-
-      function loadProfileDraft() {
-        const state = getStoredState();
-        const user = state && state.user ? state.user : {};
-
-        const fieldMap = {
-          firstName: "firstName",
-          lastName: "lastName",
-          email: "email",
-          phone: "phone",
-          address1: "address1",
-          address2: "address2",
-          city: "city",
-          residenceState: "residenceState",
-          zip: "zip"
-        };
-
-        Object.keys(fieldMap).forEach(function (key) {
-          const el = document.getElementById(fieldMap[key]);
-          if (el && user[key] != null) {
-            el.value = user[key];
-          }
-        });
-      }
-
-      document.addEventListener("DOMContentLoaded", function () {
-        const profileForm = document.getElementById("user-profile-form");
-        const saveBtn = document.getElementById("save-profile");
-        const continueBtn = document.getElementById("eligibility-continue");
-
-        loadProfileDraft();
-
-        if (profileForm) {
-          profileForm.querySelectorAll("input, select").forEach((el) => {
-            el.addEventListener("input", saveProfileDraft);
-            el.addEventListener("change", saveProfileDraft);
-          });
-        }
-
-        if (saveBtn) {
-          saveBtn.addEventListener("click", function () {
-            saveProfileDraft();
-          });
-        }
-
-        if (continueBtn) {
-          continueBtn.addEventListener("click", function () {
-            saveProfileDraft();
-          });
-        }
-      });
-    })();
-  </script>
   <script src="js/packet-data-bridge.js"></script>
-<script>
-  document.addEventListener("DOMContentLoaded", function () {
-    RecordPathDataBridge.initPage(document);
-  });
-</script>
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      RecordPathDataBridge.initPage(document);
 
+      const saveBtn = document.getElementById("save-profile");
+      const continueBtn = document.getElementById("eligibility-continue");
+
+      function saveNow() {
+        const data = RecordPathDataBridge.loadPacketData();
+        RecordPathDataBridge.derivePacketData(data);
+        RecordPathDataBridge.savePacketData(data);
+      }
+
+      if (saveBtn) {
+        saveBtn.addEventListener("click", saveNow);
+      }
+
+      if (continueBtn) {
+        continueBtn.addEventListener("click", saveNow);
+      }
+    });
+  </script>
 </body>
 </html>
