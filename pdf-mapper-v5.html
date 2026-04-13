@@ -1,0 +1,1011 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  />
+  <title>RecordPathAI PDF Mapper V5</title>
+
+  <!-- PDF.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    :root {
+      --bg: #f3f6fb;
+      --panel: #ffffff;
+      --line: #d9e2f0;
+      --text: #1c2740;
+      --muted: #64748b;
+      --primary: #1d4ed8;
+      --primary-dark: #1e40af;
+      --accent: #eff6ff;
+      --danger: #dc2626;
+      --success: #059669;
+      --shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+      --radius: 16px;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .app {
+      display: grid;
+      grid-template-columns: 320px 1fr 340px;
+      gap: 16px;
+      min-height: 100vh;
+      padding: 16px;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .panel-header {
+      padding: 16px 18px;
+      border-bottom: 1px solid var(--line);
+      background: #f8fbff;
+    }
+
+    .panel-header h2,
+    .panel-header h3 {
+      margin: 0;
+      font-size: 18px;
+    }
+
+    .panel-body {
+      padding: 16px 18px;
+    }
+
+    .stack {
+      display: grid;
+      gap: 12px;
+    }
+
+    .muted {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .label {
+      font-size: 13px;
+      font-weight: 700;
+      color: #334155;
+      margin-bottom: 6px;
+      display: block;
+    }
+
+    input[type="text"],
+    input[type="number"],
+    select,
+    textarea,
+    input[type="file"] {
+      width: 100%;
+      border: 1px solid #cbd5e1;
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 14px;
+      background: #fff;
+      color: var(--text);
+    }
+
+    textarea {
+      min-height: 100px;
+      resize: vertical;
+    }
+
+    .btn {
+      border: 0;
+      border-radius: 10px;
+      padding: 11px 14px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: 0.2s ease;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: #fff;
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-dark);
+    }
+
+    .btn-secondary {
+      background: #e2e8f0;
+      color: #0f172a;
+    }
+
+    .btn-secondary:hover {
+      background: #cbd5e1;
+    }
+
+    .btn-danger {
+      background: var(--danger);
+      color: #fff;
+    }
+
+    .btn-danger:hover {
+      opacity: 0.92;
+    }
+
+    .btn-success {
+      background: var(--success);
+      color: #fff;
+    }
+
+    .btn-success:hover {
+      opacity: 0.92;
+    }
+
+    .btn-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .btn-row-3 {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 10px;
+    }
+
+    .workspace {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    .topbar {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 12px 14px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+
+    .topbar-left,
+    .topbar-right {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      background: #eef2ff;
+      color: #3730a3;
+      padding: 8px 12px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .viewer-shell {
+      flex: 1;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 16px;
+      overflow: auto;
+      min-height: 70vh;
+    }
+
+    .pdf-stage-wrap {
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100%;
+    }
+
+    .pdf-stage {
+      position: relative;
+      display: inline-block;
+      background: #fff;
+      border: 1px solid #cbd5e1;
+      box-shadow: 0 10px 20px rgba(15, 23, 42, 0.08);
+    }
+
+    #pdfCanvas {
+      display: block;
+      max-width: 100%;
+      height: auto;
+    }
+
+    #overlay {
+      position: absolute;
+      inset: 0;
+      pointer-events: auto;
+    }
+
+    .field-box {
+      position: absolute;
+      border: 2px solid #2563eb;
+      background: rgba(37, 99, 235, 0.12);
+      cursor: move;
+      user-select: none;
+      border-radius: 6px;
+      min-width: 20px;
+      min-height: 20px;
+    }
+
+    .field-box.selected {
+      border-color: #dc2626;
+      background: rgba(220, 38, 38, 0.12);
+      box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.15);
+    }
+
+    .field-label {
+      position: absolute;
+      top: -22px;
+      left: 0;
+      background: rgba(15, 23, 42, 0.9);
+      color: #fff;
+      font-size: 11px;
+      padding: 3px 6px;
+      border-radius: 6px;
+      white-space: nowrap;
+      max-width: 220px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .resize-handle {
+      position: absolute;
+      width: 12px;
+      height: 12px;
+      right: -6px;
+      bottom: -6px;
+      background: #2563eb;
+      border: 2px solid #fff;
+      border-radius: 50%;
+      cursor: nwse-resize;
+    }
+
+    .field-list {
+      display: grid;
+      gap: 10px;
+      max-height: 240px;
+      overflow: auto;
+    }
+
+    .field-item {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 10px 12px;
+      cursor: pointer;
+      background: #fff;
+    }
+
+    .field-item:hover {
+      background: #f8fafc;
+    }
+
+    .field-item.active {
+      border-color: var(--primary);
+      background: #eff6ff;
+    }
+
+    .field-item-title {
+      font-size: 14px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .field-item-sub {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.4;
+    }
+
+    .small-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .section-title {
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #64748b;
+      margin-top: 6px;
+      margin-bottom: 6px;
+    }
+
+    .json-box {
+      font-family: Consolas, Monaco, monospace;
+      font-size: 12px;
+      min-height: 180px;
+    }
+
+    @media (max-width: 1200px) {
+      .app {
+        grid-template-columns: 1fr;
+      }
+
+      .workspace {
+        order: -1;
+      }
+
+      .viewer-shell {
+        min-height: 55vh;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <!-- Left Panel -->
+    <aside class="panel">
+      <div class="panel-header">
+        <h2>PDF Mapper V5</h2>
+      </div>
+      <div class="panel-body stack">
+        <div>
+          <label class="label" for="pdfUpload">Upload PDF</label>
+          <input type="file" id="pdfUpload" accept="application/pdf" />
+        </div>
+
+        <div class="btn-row">
+          <button class="btn btn-primary" id="addTextFieldBtn">Add Text</button>
+          <button class="btn btn-secondary" id="addCheckboxBtn">Add Checkbox</button>
+        </div>
+
+        <div class="btn-row">
+          <button class="btn btn-secondary" id="addDateBtn">Add Date</button>
+          <button class="btn btn-secondary" id="addSignatureBtn">Add Signature</button>
+        </div>
+
+        <div class="btn-row">
+          <button class="btn btn-danger" id="deleteFieldBtn">Delete Selected</button>
+          <button class="btn btn-secondary" id="duplicateFieldBtn">Duplicate</button>
+        </div>
+
+        <div>
+          <div class="section-title">Page Fields</div>
+          <div id="fieldList" class="field-list"></div>
+        </div>
+
+        <div>
+          <div class="section-title">Import / Export</div>
+          <div class="btn-row">
+            <button class="btn btn-success" id="exportJsonBtn">Export JSON</button>
+            <button class="btn btn-secondary" id="importJsonBtn">Import JSON</button>
+          </div>
+        </div>
+
+        <div>
+          <label class="label" for="jsonInput">JSON</label>
+          <textarea
+            id="jsonInput"
+            class="json-box"
+            placeholder="Exported JSON will appear here. You can also paste JSON here and click Import JSON."
+          ></textarea>
+        </div>
+
+        <p class="muted">
+          Use this tool to map fields over a PDF form. Each box stores its page,
+          position, size, field type, and name.
+        </p>
+      </div>
+    </aside>
+
+    <!-- Center Workspace -->
+    <main class="workspace">
+      <div class="topbar">
+        <div class="topbar-left">
+          <span class="badge" id="fileStatus">No PDF loaded</span>
+          <span class="badge" id="pageStatus">Page 0 / 0</span>
+          <span class="badge" id="zoomStatus">Zoom 100%</span>
+        </div>
+
+        <div class="topbar-right">
+          <button class="btn btn-secondary" id="prevPageBtn">Prev</button>
+          <button class="btn btn-secondary" id="nextPageBtn">Next</button>
+          <button class="btn btn-secondary" id="zoomOutBtn">-</button>
+          <button class="btn btn-secondary" id="zoomInBtn">+</button>
+          <button class="btn btn-secondary" id="fitWidthBtn">Fit Width</button>
+        </div>
+      </div>
+
+      <div class="viewer-shell">
+        <div class="pdf-stage-wrap">
+          <div class="pdf-stage" id="pdfStage">
+            <canvas id="pdfCanvas"></canvas>
+            <div id="overlay"></div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Right Panel -->
+    <aside class="panel">
+      <div class="panel-header">
+        <h3>Selected Field</h3>
+      </div>
+      <div class="panel-body stack">
+        <div>
+          <label class="label" for="fieldName">Field Name</label>
+          <input type="text" id="fieldName" placeholder="ex: petitioner_name" />
+        </div>
+
+        <div>
+          <label class="label" for="fieldType">Field Type</label>
+          <select id="fieldType">
+            <option value="text">Text</option>
+            <option value="checkbox">Checkbox</option>
+            <option value="date">Date</option>
+            <option value="signature">Signature</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="label" for="fieldPlaceholder">Placeholder / Notes</label>
+          <input
+            type="text"
+            id="fieldPlaceholder"
+            placeholder="Optional admin note"
+          />
+        </div>
+
+        <div class="small-grid">
+          <div>
+            <label class="label" for="fieldX">X</label>
+            <input type="number" id="fieldX" step="1" />
+          </div>
+          <div>
+            <label class="label" for="fieldY">Y</label>
+            <input type="number" id="fieldY" step="1" />
+          </div>
+        </div>
+
+        <div class="small-grid">
+          <div>
+            <label class="label" for="fieldWidth">Width</label>
+            <input type="number" id="fieldWidth" step="1" />
+          </div>
+          <div>
+            <label class="label" for="fieldHeight">Height</label>
+            <input type="number" id="fieldHeight" step="1" />
+          </div>
+        </div>
+
+        <div>
+          <label class="label" for="fieldPage">Page</label>
+          <input type="number" id="fieldPage" min="1" step="1" />
+        </div>
+
+        <div class="btn-row">
+          <button class="btn btn-primary" id="updateFieldBtn">Update Field</button>
+          <button class="btn btn-secondary" id="clearSelectionBtn">Clear</button>
+        </div>
+
+        <p class="muted">
+          Drag and resize fields directly on the PDF, or edit their values here.
+        </p>
+      </div>
+    </aside>
+  </div>
+
+  <script>
+    pdfjsLib.GlobalWorkerOptions.workerSrc =
+      "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+
+    const pdfUpload = document.getElementById("pdfUpload");
+    const pdfCanvas = document.getElementById("pdfCanvas");
+    const overlay = document.getElementById("overlay");
+    const pdfStage = document.getElementById("pdfStage");
+
+    const fileStatus = document.getElementById("fileStatus");
+    const pageStatus = document.getElementById("pageStatus");
+    const zoomStatus = document.getElementById("zoomStatus");
+
+    const prevPageBtn = document.getElementById("prevPageBtn");
+    const nextPageBtn = document.getElementById("nextPageBtn");
+    const zoomInBtn = document.getElementById("zoomInBtn");
+    const zoomOutBtn = document.getElementById("zoomOutBtn");
+    const fitWidthBtn = document.getElementById("fitWidthBtn");
+
+    const addTextFieldBtn = document.getElementById("addTextFieldBtn");
+    const addCheckboxBtn = document.getElementById("addCheckboxBtn");
+    const addDateBtn = document.getElementById("addDateBtn");
+    const addSignatureBtn = document.getElementById("addSignatureBtn");
+    const deleteFieldBtn = document.getElementById("deleteFieldBtn");
+    const duplicateFieldBtn = document.getElementById("duplicateFieldBtn");
+
+    const exportJsonBtn = document.getElementById("exportJsonBtn");
+    const importJsonBtn = document.getElementById("importJsonBtn");
+    const jsonInput = document.getElementById("jsonInput");
+    const fieldList = document.getElementById("fieldList");
+
+    const fieldNameInput = document.getElementById("fieldName");
+    const fieldTypeInput = document.getElementById("fieldType");
+    const fieldPlaceholderInput = document.getElementById("fieldPlaceholder");
+    const fieldXInput = document.getElementById("fieldX");
+    const fieldYInput = document.getElementById("fieldY");
+    const fieldWidthInput = document.getElementById("fieldWidth");
+    const fieldHeightInput = document.getElementById("fieldHeight");
+    const fieldPageInput = document.getElementById("fieldPage");
+    const updateFieldBtn = document.getElementById("updateFieldBtn");
+    const clearSelectionBtn = document.getElementById("clearSelectionBtn");
+
+    let pdfDoc = null;
+    let currentPage = 1;
+    let currentScale = 1.25;
+    let mappings = [];
+    let selectedFieldId = null;
+    let nextFieldId = 1;
+
+    let interaction = {
+      mode: null,
+      fieldId: null,
+      startX: 0,
+      startY: 0,
+      startLeft: 0,
+      startTop: 0,
+      startWidth: 0,
+      startHeight: 0
+    };
+
+    function clamp(value, min, max) {
+      return Math.max(min, Math.min(max, value));
+    }
+
+    function getCurrentPageFields() {
+      return mappings.filter((f) => Number(f.page) === Number(currentPage));
+    }
+
+    function getSelectedField() {
+      return mappings.find((f) => f.id === selectedFieldId) || null;
+    }
+
+    function setSelectedField(id) {
+      selectedFieldId = id;
+      renderOverlay();
+      renderFieldList();
+      populateFieldEditor();
+    }
+
+    function clearSelectedField() {
+      selectedFieldId = null;
+      renderOverlay();
+      renderFieldList();
+      populateFieldEditor();
+    }
+
+    function createField(type) {
+      if (!pdfDoc) {
+        alert("Please upload a PDF first.");
+        return;
+      }
+
+      const field = {
+        id: nextFieldId++,
+        name: `${type}_${Date.now()}`,
+        type,
+        placeholder: "",
+        page: currentPage,
+        x: 60,
+        y: 60,
+        width: type === "checkbox" ? 24 : 180,
+        height: type === "checkbox" ? 24 : 28
+      };
+
+      mappings.push(field);
+      setSelectedField(field.id);
+      renderOverlay();
+      renderFieldList();
+      populateFieldEditor();
+    }
+
+    async function loadPdfFromFile(file) {
+      const arrayBuffer = await file.arrayBuffer();
+      pdfDoc = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+      currentPage = 1;
+      fileStatus.textContent = file.name;
+      await renderPage(currentPage);
+    }
+
+    async function renderPage(pageNum) {
+      if (!pdfDoc) return;
+
+      const page = await pdfDoc.getPage(pageNum);
+      const viewport = page.getViewport({ scale: currentScale });
+
+      const canvasContext = pdfCanvas.getContext("2d");
+      pdfCanvas.width = viewport.width;
+      pdfCanvas.height = viewport.height;
+      pdfCanvas.style.width = viewport.width + "px";
+      pdfCanvas.style.height = viewport.height + "px";
+
+      overlay.style.width = viewport.width + "px";
+      overlay.style.height = viewport.height + "px";
+      pdfStage.style.width = viewport.width + "px";
+      pdfStage.style.height = viewport.height + "px";
+
+      const renderContext = {
+        canvasContext,
+        viewport
+      };
+
+      await page.render(renderContext).promise;
+      pageStatus.textContent = `Page ${currentPage} / ${pdfDoc.numPages}`;
+      zoomStatus.textContent = `Zoom ${Math.round(currentScale * 100)}%`;
+
+      renderOverlay();
+      renderFieldList();
+      populateFieldEditor();
+    }
+
+    function renderOverlay() {
+      overlay.innerHTML = "";
+
+      const pageFields = getCurrentPageFields();
+
+      pageFields.forEach((field) => {
+        const box = document.createElement("div");
+        box.className = "field-box" + (field.id === selectedFieldId ? " selected" : "");
+        box.style.left = field.x + "px";
+        box.style.top = field.y + "px";
+        box.style.width = field.width + "px";
+        box.style.height = field.height + "px";
+        box.dataset.id = field.id;
+
+        const label = document.createElement("div");
+        label.className = "field-label";
+        label.textContent = `${field.name} (${field.type})`;
+
+        const handle = document.createElement("div");
+        handle.className = "resize-handle";
+
+        box.appendChild(label);
+        box.appendChild(handle);
+
+        box.addEventListener("mousedown", (e) => {
+          e.stopPropagation();
+          setSelectedField(field.id);
+
+          const rect = overlay.getBoundingClientRect();
+          interaction.startX = e.clientX - rect.left;
+          interaction.startY = e.clientY - rect.top;
+          interaction.fieldId = field.id;
+          interaction.startLeft = field.x;
+          interaction.startTop = field.y;
+          interaction.startWidth = field.width;
+          interaction.startHeight = field.height;
+
+          if (e.target.classList.contains("resize-handle")) {
+            interaction.mode = "resize";
+          } else {
+            interaction.mode = "drag";
+          }
+
+          document.addEventListener("mousemove", onPointerMove);
+          document.addEventListener("mouseup", onPointerUp);
+        });
+
+        overlay.appendChild(box);
+      });
+    }
+
+    function onPointerMove(e) {
+      const field = mappings.find((f) => f.id === interaction.fieldId);
+      if (!field) return;
+
+      const rect = overlay.getBoundingClientRect();
+      const currentX = e.clientX - rect.left;
+      const currentY = e.clientY - rect.top;
+      const dx = currentX - interaction.startX;
+      const dy = currentY - interaction.startY;
+
+      if (interaction.mode === "drag") {
+        field.x = clamp(interaction.startLeft + dx, 0, overlay.clientWidth - field.width);
+        field.y = clamp(interaction.startTop + dy, 0, overlay.clientHeight - field.height);
+      }
+
+      if (interaction.mode === "resize") {
+        field.width = clamp(interaction.startWidth + dx, 20, overlay.clientWidth - field.x);
+        field.height = clamp(interaction.startHeight + dy, 20, overlay.clientHeight - field.y);
+      }
+
+      renderOverlay();
+      renderFieldList();
+      populateFieldEditor();
+    }
+
+    function onPointerUp() {
+      interaction.mode = null;
+      interaction.fieldId = null;
+      document.removeEventListener("mousemove", onPointerMove);
+      document.removeEventListener("mouseup", onPointerUp);
+    }
+
+    function renderFieldList() {
+      const pageFields = getCurrentPageFields();
+      fieldList.innerHTML = "";
+
+      if (!pageFields.length) {
+        fieldList.innerHTML = `<div class="muted">No mapped fields on this page yet.</div>`;
+        return;
+      }
+
+      pageFields.forEach((field) => {
+        const item = document.createElement("div");
+        item.className = "field-item" + (field.id === selectedFieldId ? " active" : "");
+        item.innerHTML = `
+          <div class="field-item-title">${escapeHtml(field.name)}</div>
+          <div class="field-item-sub">
+            Type: ${escapeHtml(field.type)}<br>
+            X: ${Math.round(field.x)}, Y: ${Math.round(field.y)}<br>
+            W: ${Math.round(field.width)}, H: ${Math.round(field.height)}
+          </div>
+        `;
+        item.addEventListener("click", () => setSelectedField(field.id));
+        fieldList.appendChild(item);
+      });
+    }
+
+    function populateFieldEditor() {
+      const field = getSelectedField();
+
+      if (!field) {
+        fieldNameInput.value = "";
+        fieldTypeInput.value = "text";
+        fieldPlaceholderInput.value = "";
+        fieldXInput.value = "";
+        fieldYInput.value = "";
+        fieldWidthInput.value = "";
+        fieldHeightInput.value = "";
+        fieldPageInput.value = currentPage || "";
+        return;
+      }
+
+      fieldNameInput.value = field.name || "";
+      fieldTypeInput.value = field.type || "text";
+      fieldPlaceholderInput.value = field.placeholder || "";
+      fieldXInput.value = Math.round(field.x);
+      fieldYInput.value = Math.round(field.y);
+      fieldWidthInput.value = Math.round(field.width);
+      fieldHeightInput.value = Math.round(field.height);
+      fieldPageInput.value = field.page;
+    }
+
+    function updateSelectedFieldFromForm() {
+      const field = getSelectedField();
+      if (!field) {
+        alert("Select a field first.");
+        return;
+      }
+
+      field.name = fieldNameInput.value.trim() || field.name;
+      field.type = fieldTypeInput.value;
+      field.placeholder = fieldPlaceholderInput.value.trim();
+
+      field.x = clamp(Number(fieldXInput.value) || 0, 0, Math.max(0, overlay.clientWidth - 20));
+      field.y = clamp(Number(fieldYInput.value) || 0, 0, Math.max(0, overlay.clientHeight - 20));
+      field.width = clamp(Number(fieldWidthInput.value) || 20, 20, overlay.clientWidth - field.x);
+      field.height = clamp(Number(fieldHeightInput.value) || 20, 20, overlay.clientHeight - field.y);
+
+      const requestedPage = clamp(
+        Number(fieldPageInput.value) || currentPage,
+        1,
+        pdfDoc ? pdfDoc.numPages : 1
+      );
+      field.page = requestedPage;
+
+      if (field.page !== currentPage) {
+        clearSelectedField();
+      }
+
+      renderOverlay();
+      renderFieldList();
+      populateFieldEditor();
+    }
+
+    function deleteSelectedField() {
+      const field = getSelectedField();
+      if (!field) {
+        alert("Select a field first.");
+        return;
+      }
+
+      mappings = mappings.filter((f) => f.id !== field.id);
+      clearSelectedField();
+      renderOverlay();
+      renderFieldList();
+    }
+
+    function duplicateSelectedField() {
+      const field = getSelectedField();
+      if (!field) {
+        alert("Select a field first.");
+        return;
+      }
+
+      const copy = {
+        ...field,
+        id: nextFieldId++,
+        name: field.name + "_copy",
+        x: clamp(field.x + 12, 0, Math.max(0, overlay.clientWidth - field.width)),
+        y: clamp(field.y + 12, 0, Math.max(0, overlay.clientHeight - field.height))
+      };
+
+      mappings.push(copy);
+      setSelectedField(copy.id);
+      renderOverlay();
+      renderFieldList();
+      populateFieldEditor();
+    }
+
+    function exportJson() {
+      const payload = {
+        version: 5,
+        exportedAt: new Date().toISOString(),
+        document: fileStatus.textContent,
+        pageCount: pdfDoc ? pdfDoc.numPages : 0,
+        mappings
+      };
+
+      jsonInput.value = JSON.stringify(payload, null, 2);
+    }
+
+    function importJson() {
+      const raw = jsonInput.value.trim();
+      if (!raw) {
+        alert("Paste JSON first.");
+        return;
+      }
+
+      try {
+        const parsed = JSON.parse(raw);
+
+        if (Array.isArray(parsed)) {
+          mappings = parsed;
+        } else if (Array.isArray(parsed.mappings)) {
+          mappings = parsed.mappings;
+        } else {
+          throw new Error("Invalid JSON format.");
+        }
+
+        const ids = mappings.map((f) => Number(f.id) || 0);
+        nextFieldId = (ids.length ? Math.max(...ids) : 0) + 1;
+        clearSelectedField();
+        renderOverlay();
+        renderFieldList();
+        populateFieldEditor();
+        alert("Mappings imported.");
+      } catch (err) {
+        alert("Import failed: " + err.message);
+      }
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    overlay.addEventListener("mousedown", (e) => {
+      if (e.target === overlay) {
+        clearSelectedField();
+      }
+    });
+
+    pdfUpload.addEventListener("change", async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      try {
+        await loadPdfFromFile(file);
+      } catch (err) {
+        console.error(err);
+        alert("Failed to load PDF.");
+      }
+    });
+
+    addTextFieldBtn.addEventListener("click", () => createField("text"));
+    addCheckboxBtn.addEventListener("click", () => createField("checkbox"));
+    addDateBtn.addEventListener("click", () => createField("date"));
+    addSignatureBtn.addEventListener("click", () => createField("signature"));
+
+    deleteFieldBtn.addEventListener("click", deleteSelectedField);
+    duplicateFieldBtn.addEventListener("click", duplicateSelectedField);
+
+    exportJsonBtn.addEventListener("click", exportJson);
+    importJsonBtn.addEventListener("click", importJson);
+
+    updateFieldBtn.addEventListener("click", updateSelectedFieldFromForm);
+    clearSelectionBtn.addEventListener("click", clearSelectedField);
+
+    prevPageBtn.addEventListener("click", async () => {
+      if (!pdfDoc || currentPage <= 1) return;
+      currentPage -= 1;
+      clearSelectedField();
+      await renderPage(currentPage);
+    });
+
+    nextPageBtn.addEventListener("click", async () => {
+      if (!pdfDoc || currentPage >= pdfDoc.numPages) return;
+      currentPage += 1;
+      clearSelectedField();
+      await renderPage(currentPage);
+    });
+
+    zoomInBtn.addEventListener("click", async () => {
+      if (!pdfDoc) return;
+      currentScale = Math.min(currentScale + 0.2, 3);
+      await renderPage(currentPage);
+    });
+
+    zoomOutBtn.addEventListener("click", async () => {
+      if (!pdfDoc) return;
+      currentScale = Math.max(currentScale - 0.2, 0.4);
+      await renderPage(currentPage);
+    });
+
+    fitWidthBtn.addEventListener("click", async () => {
+      if (!pdfDoc) return;
+
+      const viewerShell = document.querySelector(".viewer-shell");
+      const page = await pdfDoc.getPage(currentPage);
+      const unscaled = page.getViewport({ scale: 1 });
+
+      const availableWidth = Math.max(300, viewerShell.clientWidth - 60);
+      currentScale = availableWidth / unscaled.width;
+      await renderPage(currentPage);
+    });
+
+    window.addEventListener("keydown", async (e) => {
+      if (e.key === "Delete") {
+        deleteSelectedField();
+      }
+
+      if (e.key === "Escape") {
+        clearSelectedField();
+      }
+
+      if (e.key === "ArrowLeft" && pdfDoc && currentPage > 1) {
+        currentPage -= 1;
+        clearSelectedField();
+        await renderPage(currentPage);
+      }
+
+      if (e.key === "ArrowRight" && pdfDoc && currentPage < pdfDoc.numPages) {
+        currentPage += 1;
+        clearSelectedField();
+        await renderPage(currentPage);
+      }
+    });
+  </script>
+</body>
+</html>
