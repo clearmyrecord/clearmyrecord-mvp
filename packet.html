@@ -756,11 +756,10 @@
     </section>
   </main>
 
+  <script src="js/packet-data-bridge.js"></script>
   <script src="js/rules.js"></script>
   <script>
     document.addEventListener("DOMContentLoaded", function () {
-      const STORAGE_KEY = "cmr_app_state_v2";
-
       const TEMPLATE_MAP = {
         OH: {
           default: {
@@ -964,11 +963,11 @@
         };
       }
 
-      function readNewAppState() {
+      function readPacketData() {
         try {
-          return JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
-        } catch (error) {
-          return null;
+          return JSON.parse(localStorage.getItem("recordPathPacketData") || "{}");
+        } catch (e) {
+          return {};
         }
       }
 
@@ -982,37 +981,41 @@
       }
 
       function getPacketData() {
-        const state = readNewAppState() || {};
-        const user = state.user || {};
-        const records = Array.isArray(state.records) ? state.records : [];
-        const record = getCurrentRecord(state) || {};
-        const fullName = `${safe(user.firstName)} ${safe(user.lastName)}`.trim();
+        const data = readPacketData();
+
+        const petitioner = data.petitioner || {};
+        const address = petitioner.address || {};
+        const charges = Array.isArray(data.charges) ? data.charges : [];
+        const record = charges[0] || {};
+
+        const fullName =
+          petitioner.full_name ||
+          `${petitioner.first_name || ""} ${petitioner.last_name || ""}`.trim();
 
         return {
-          state,
-          user,
-          records,
-          record,
           fullName: fullName || "Name Not Entered",
-          street: safe(user.address1 || user.street),
-          apartment: safe(user.address2, WOOD_DEFAULTS.apartment),
-          city: safe(user.city),
-          residenceState: normalizeState(user.residenceState || user.state),
-          zip: safe(user.zip),
-          email: safe(user.email),
-          phone: safe(user.phone, WOOD_DEFAULTS.phone),
+          email: petitioner.email || "",
+          phone: petitioner.phone || "",
 
-          caseState: normalizeState(record.caseState),
-          caseNumber: safe(record.caseNumber, WOOD_DEFAULTS.caseNumber),
-          chargeName: safe(record.chargeName, WOOD_DEFAULTS.offenseName),
-          offenseCode: safe(record.statute || record.offenseCode, WOOD_DEFAULTS.offenseCode),
-          chargeLevel: normalizeDegree(record.degree || record.chargeLevel || WOOD_DEFAULTS.offenseDegree),
-          dispositionDate: safe(record.dispositionDate || record.convictionDate, WOOD_DEFAULTS.dispositionDate),
-          dischargeDate: safe(record.dischargeDate || record.probationCompletedDate, WOOD_DEFAULTS.dischargeDate),
-          disposition: normalizeOutcome(record.outcome || record.disposition),
-          court: safe(record.filingCourtName || record.court, "Wood County Court of Common Pleas"),
-          county: safe(record.filingCounty || record.county, "Wood County"),
-          eligibility: record.eligibility || null
+          street: address.line1 || "",
+          apartment: address.line2 || "",
+          city: address.city || "",
+          residenceState: address.state || "",
+          zip: address.zip || "",
+
+          caseState: record.case_state || "",
+          caseNumber: record.case_number || "",
+          chargeName: record.charge_name || "",
+          offenseCode: record.charge_code || "",
+          chargeLevel: record.level || record.degree || "",
+          dispositionDate: record.disposition_date || "",
+          dischargeDate: record.discharge_date || record.disposition_date || "",
+          disposition: record.final_disposition || "",
+          court: record.court_name || "",
+          county: record.court_county || "",
+
+          record: record,
+          records: charges
         };
       }
 
@@ -1026,8 +1029,8 @@
           caseNumber: safe(data.caseNumber),
           chargeName: safe(data.chargeName),
           statute: safe(data.offenseCode),
-          degree: normalizeDegree(record.degree || data.chargeLevel),
-          outcome: normalizeOutcome(record.outcome || data.disposition),
+          degree: normalizeDegree(record.level || record.degree || data.chargeLevel),
+          outcome: normalizeOutcome(record.final_disposition || record.outcome || data.disposition),
           dispositionDate: safe(data.dispositionDate),
           dischargeDate: safe(data.dischargeDate),
 
@@ -1080,8 +1083,8 @@
       function estimateEligibleDate(data, result) {
         const record = data.record || {};
         const state = normalizeState(data.caseState);
-        const outcome = normalizeOutcome(record.outcome || data.disposition);
-        const degree = normalizeDegree(record.degree || data.chargeLevel);
+        const outcome = normalizeOutcome(record.final_disposition || record.outcome || data.disposition);
+        const degree = normalizeDegree(record.level || record.degree || data.chargeLevel);
         const reliefType = safe(result && result.reliefType).toLowerCase();
 
         const dispositionDate = safe(data.dispositionDate);
@@ -1226,23 +1229,24 @@
         }
 
         container.innerHTML = records.map(function (record, index) {
-          const isCurrent = data.record && record.id === data.record.id;
+          const isCurrent = data.record && record === data.record;
+
           return `
             <div class="record-item${isCurrent ? " is-current" : ""}">
               <div class="record-head">
-                <h3 class="record-title">Offense ${index + 1}: ${escapeHtml(safe(record.chargeName, "Unnamed offense"))}</h3>
+                <h3 class="record-title">Offense ${index + 1}: ${escapeHtml(safe(record.charge_name, "Unnamed offense"))}</h3>
                 <span class="record-tag">${isCurrent ? "Current packet record" : "Saved record"}</span>
               </div>
               <div class="record-grid">
-                <div class="record-line"><strong>Case State:</strong> ${escapeHtml(safe(record.caseState, "—"))}</div>
-                <div class="record-line"><strong>Case Number:</strong> ${escapeHtml(safe(record.caseNumber, "—"))}</div>
-                <div class="record-line"><strong>Statute:</strong> ${escapeHtml(safe(record.statute, "—"))}</div>
-                <div class="record-line"><strong>Degree:</strong> ${escapeHtml(safe(record.degree, "—"))}</div>
-                <div class="record-line"><strong>Outcome:</strong> ${escapeHtml(safe(record.outcome, "—"))}</div>
-                <div class="record-line"><strong>Disposition Date:</strong> ${escapeHtml(formatDateForDisplay(record.dispositionDate))}</div>
-                <div class="record-line"><strong>Discharge Date:</strong> ${escapeHtml(formatDateForDisplay(record.dischargeDate))}</div>
-                <div class="record-line"><strong>Court:</strong> ${escapeHtml(safe(record.filingCourtName, "—"))}</div>
-                <div class="record-line"><strong>County:</strong> ${escapeHtml(safe(record.filingCounty, "—"))}</div>
+                <div class="record-line"><strong>Case State:</strong> ${escapeHtml(safe(record.case_state, "—"))}</div>
+                <div class="record-line"><strong>Case Number:</strong> ${escapeHtml(safe(record.case_number, "—"))}</div>
+                <div class="record-line"><strong>Statute:</strong> ${escapeHtml(safe(record.charge_code, "—"))}</div>
+                <div class="record-line"><strong>Degree:</strong> ${escapeHtml(safe(record.level || record.degree, "—"))}</div>
+                <div class="record-line"><strong>Outcome:</strong> ${escapeHtml(safe(record.final_disposition, "—"))}</div>
+                <div class="record-line"><strong>Disposition Date:</strong> ${escapeHtml(formatDateForDisplay(record.disposition_date))}</div>
+                <div class="record-line"><strong>Discharge Date:</strong> ${escapeHtml(formatDateForDisplay(record.discharge_date || record.disposition_date))}</div>
+                <div class="record-line"><strong>Court:</strong> ${escapeHtml(safe(record.court_name, "—"))}</div>
+                <div class="record-line"><strong>County:</strong> ${escapeHtml(safe(record.court_county, "—"))}</div>
               </div>
             </div>
           `;
@@ -1653,12 +1657,5 @@
       setTypedSignature();
     });
   </script>
-<script src="js/packet-data-bridge.js"></script>
-<script>
-  document.addEventListener("DOMContentLoaded", function () {
-    RecordPathDataBridge.initPage(document);
-  });
-</script>
-  
 </body>
 </html>
