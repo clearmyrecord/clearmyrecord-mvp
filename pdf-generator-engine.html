@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  />
+  <title>RecordPathAI PDF Generator Engine</title>
+
+  <script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    :root {
+      --bg: #f3f7fc;
+      --panel: #ffffff;
+      --line: #d9e3f0;
+      --text: #1e293b;
+      --muted: #64748b;
+      --primary: #1d4ed8;
+      --primary-dark: #1e40af;
+      --success: #059669;
+      --danger: #dc2626;
+      --radius: 16px;
+      --shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    .app {
+      width: min(1200px, 94%);
+      margin: 24px auto;
+      display: grid;
+      grid-template-columns: 360px 1fr;
+      gap: 18px;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .panel-header {
+      padding: 16px 18px;
+      border-bottom: 1px solid var(--line);
+      background: #f8fbff;
+    }
+
+    .panel-header h2,
+    .panel-header h3 {
+      margin: 0;
+      font-size: 18px;
+    }
+
+    .panel-body {
+      padding: 18px;
+    }
+
+    .stack {
+      display: grid;
+      gap: 14px;
+    }
+
+    .label {
+      display: block;
+      font-size: 13px;
+      font-weight: 700;
+      margin-bottom: 6px;
+      color: #334155;
+    }
+
+    input[type="file"],
+    textarea,
+    select,
+    input[type="text"] {
+      width: 100%;
+      border: 1px solid #cbd5e1;
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 14px;
+      background: #fff;
+      color: var(--text);
+    }
+
+    textarea {
+      min-height: 180px;
+      resize: vertical;
+      font-family: Consolas, Monaco, monospace;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .btn {
+      border: 0;
+      border-radius: 10px;
+      padding: 12px 14px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: 0.2s ease;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: #fff;
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-dark);
+    }
+
+    .btn-secondary {
+      background: #e2e8f0;
+      color: #0f172a;
+    }
+
+    .btn-secondary:hover {
+      background: #cbd5e1;
+    }
+
+    .btn-success {
+      background: var(--success);
+      color: #fff;
+    }
+
+    .btn-danger {
+      background: var(--danger);
+      color: #fff;
+    }
+
+    .btn-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .btn-row-3 {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 10px;
+    }
+
+    .muted {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .status-card {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #f8fafc;
+      padding: 12px 14px;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .status-line {
+      margin-bottom: 4px;
+    }
+
+    .good {
+      color: #047857;
+      font-weight: 700;
+    }
+
+    .bad {
+      color: #b91c1c;
+      font-weight: 700;
+    }
+
+    .preview {
+      min-height: 500px;
+      padding: 18px;
+    }
+
+    .preview-box {
+      border: 1px dashed #cbd5e1;
+      border-radius: 14px;
+      background: #fff;
+      padding: 18px;
+      min-height: 420px;
+    }
+
+    .preview-title {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+
+    .log {
+      background: #0f172a;
+      color: #e2e8f0;
+      border-radius: 12px;
+      padding: 14px;
+      min-height: 220px;
+      white-space: pre-wrap;
+      font-family: Consolas, Monaco, monospace;
+      font-size: 12px;
+      line-height: 1.55;
+      overflow: auto;
+    }
+
+    code.inline {
+      background: #eff6ff;
+      color: #1d4ed8;
+      padding: 2px 6px;
+      border-radius: 6px;
+    }
+
+    @media (max-width: 980px) {
+      .app {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="panel">
+      <div class="panel-header">
+        <h2>RecordPathAI PDF Generator</h2>
+      </div>
+      <div class="panel-body stack">
+        <div>
+          <label class="label" for="pdfFileInput">1. Official PDF Form</label>
+          <input type="file" id="pdfFileInput" accept="application/pdf" />
+        </div>
+
+        <div>
+          <label class="label" for="mappingFileInput">2. Mapping JSON File</label>
+          <input type="file" id="mappingFileInput" accept=".json,application/json" />
+        </div>
+
+        <div>
+          <label class="label" for="dataFileInput">3. User Data JSON File (optional)</label>
+          <input type="file" id="dataFileInput" accept=".json,application/json" />
+        </div>
+
+        <div>
+          <label class="label" for="jsonDataInput">Or paste user data JSON</label>
+          <textarea
+            id="jsonDataInput"
+            placeholder='{
+  "petitioner_full_name": "Matt Tunstall",
+  "case_number": "C-25-123456-1",
+  "has_attorney": false
+}'
+          ></textarea>
+        </div>
+
+        <div class="btn-row">
+          <button class="btn btn-secondary" id="loadSampleBtn">Load Sample Data</button>
+          <button class="btn btn-secondary" id="pullLocalStorageBtn">Pull RecordPathAI Data</button>
+        </div>
+
+        <div class="btn-row">
+          <button class="btn btn-primary" id="validateBtn">Validate Inputs</button>
+          <button class="btn btn-success" id="generateBtn">Generate PDF</button>
+        </div>
+
+        <div class="btn-row">
+          <button class="btn btn-secondary" id="downloadDataBtn">Download User Data JSON</button>
+          <button class="btn btn-danger" id="clearBtn">Clear</button>
+        </div>
+
+        <div class="status-card" id="statusCard">
+          <div class="status-line">PDF: <span class="bad">Not loaded</span></div>
+          <div class="status-line">Mapping: <span class="bad">Not loaded</span></div>
+          <div class="status-line">User Data: <span class="bad">Not loaded</span></div>
+        </div>
+
+        <div>
+          <div class="label">How it works</div>
+          <div class="muted">
+            The engine fills your official court PDF by matching mapping field names
+            to user data keys. Text fields are drawn as text. Checkboxes are drawn
+            as X marks when true.
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <section class="panel">
+      <div class="panel-header">
+        <h3>Engine Output</h3>
+      </div>
+      <div class="preview">
+        <div class="preview-box">
+          <div class="preview-title">Run Log</div>
+          <div class="log" id="logOutput">Waiting for files...</div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const { PDFDocument, StandardFonts, rgb } = PDFLib;
+
+    const pdfFileInput = document.getElementById("pdfFileInput");
+    const mappingFileInput = document.getElementById("mappingFileInput");
+    const dataFileInput = document.getElementById("dataFileInput");
+    const jsonDataInput = document.getElementById("jsonDataInput");
+
+    const loadSampleBtn = document.getElementById("loadSampleBtn");
+    const pullLocalStorageBtn = document.getElementById("pullLocalStorageBtn");
+    const validateBtn = document.getElementById("validateBtn");
+    const generateBtn = document.getElementById("generateBtn");
+    const downloadDataBtn = document.getElementById("downloadDataBtn");
+    const clearBtn = document.getElementById("clearBtn");
+
+    const statusCard = document.getElementById("statusCard");
+    const logOutput = document.getElementById("logOutput");
+
+    let pdfBytes = null;
+    let pdfFileName = "filled-form.pdf";
+    let mappingJson = null;
+    let userData = null;
+
+    function log(message) {
+      const timestamp = new Date().toLocaleTimeString();
+      logOutput.textContent += `\n[${timestamp}] ${message}`;
+      logOutput.scrollTop = logOutput.scrollHeight;
+    }
+
+    function resetLog() {
+      logOutput.textContent = "Waiting for files...";
+    }
+
+    function updateStatus() {
+      const pdfStatus = pdfBytes ? '<span class="good">Loaded</span>' : '<span class="bad">Not loaded</span>';
+      const mappingStatus = mappingJson ? '<span class="good">Loaded</span>' : '<span class="bad">Not loaded</span>';
+      const dataStatus = userData ? '<span class="good">Loaded</span>' : '<span class="bad">Not loaded</span>';
+
+      statusCard.innerHTML = `
+        <div class="status-line">PDF: ${pdfStatus}</div>
+        <div class="status-line">Mapping: ${mappingStatus}</div>
+        <div class="status-line">User Data: ${dataStatus}</div>
+      `;
+    }
+
+    async function readFileAsArrayBuffer(file) {
+      return await file.arrayBuffer();
+    }
+
+    async function readFileAsText(file) {
+      return await file.text();
+    }
+
+    function safeJsonParse(text, label) {
+      try {
+        return JSON.parse(text);
+      } catch (err) {
+        throw new Error(`${label} is not valid JSON.`);
+      }
+    }
+
+    function normalizeMappings(raw) {
+      if (Array.isArray(raw)) return raw;
+      if (raw && Array.isArray(raw.mappings)) return raw.mappings;
+      throw new Error("Mapping JSON must contain a mappings array.");
+    }
+
+    function normalizeUserData(raw) {
+      if (!raw || typeof raw !== "object" || Array.isArray(raw)) {
+        throw new Error("User data must be a JSON object.");
+      }
+      return raw;
+    }
+
+    function valueExists(value) {
+      return value !== undefined && value !== null && value !== "";
+    }
+
+    function parseBoolean(value) {
+      if (typeof value === "boolean") return value;
+      if (typeof value === "number") return value !== 0;
+      if (typeof value === "string") {
+        const v = value.trim().toLowerCase();
+        return ["true", "yes", "1", "checked", "on", "x"].includes(v);
+      }
+      return false;
+    }
+
+    function getNestedValue(obj, path) {
+      if (!path || !obj) return undefined;
+      if (!path.includes(".")) return obj[path];
+
+      return path.split(".").reduce((acc, key) => {
+        if (acc && typeof acc === "object" && key in acc) {
+          return acc[key];
+        }
+        return undefined;
+      }, obj);
+    }
+
+    function fitTextToWidth(text, maxWidth, font, preferredSize, minSize = 7) {
+      let size = preferredSize || 11;
+      while (size > minSize) {
+        const width = font.widthOfTextAtSize(text, size);
+        if (width <= maxWidth) return size;
+        size -= 0.5;
+      }
+      return minSize;
+    }
+
+    function sanitizeFileName(name) {
+      return String(name || "filled-form")
+        .replace(/\.pdf$/i, "")
+        .replace(/[^\w\-]+/g, "-")
+        .replace(/\-+/g, "-")
+        .replace(/^\-+|\-+$/g, "");
+    }
+
+    function downloadBlob(bytes, filename, mimeType) {
+      const blob = new Blob([bytes], { type: mimeType });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    function updateUserDataFromTextarea() {
+      const raw = jsonDataInput.value.trim();
+      if (!raw) {
+        userData = null;
+        updateStatus();
+        return;
+      }
+
+      const parsed = safeJsonParse(raw, "User data");
+      userData = normalizeUserData(parsed);
+      updateStatus();
+    }
+
+    function validateInputs() {
+      const errors = [];
+      const warnings = [];
+
+      if (!pdfBytes) errors.push("Official PDF is missing.");
+      if (!mappingJson) errors.push("Mapping JSON is missing.");
+      if (!userData) errors.push("User data is missing.");
+
+      if (mappingJson) {
+        mappingJson.forEach((field, index) => {
+          if (!field.name) errors.push(`Mapping row ${index + 1} is missing "name".`);
+          if (!field.type) errors.push(`Mapping row ${index + 1} is missing "type".`);
+          if (!field.page) errors.push(`Mapping row ${index + 1} is missing "page".`);
+          if (field.x === undefined) errors.push(`Mapping row ${index + 1} is missing "x".`);
+          if (field.y === undefined) errors.push(`Mapping row ${index + 1} is missing "y".`);
+          if (field.width === undefined) warnings.push(`Mapping row ${index + 1} is missing "width".`);
+          if (field.height === undefined) warnings.push(`Mapping row ${index + 1} is missing "height".`);
+        });
+      }
+
+      if (mappingJson && userData) {
+        const missingDataKeys = [];
+        for (const field of mappingJson) {
+          const value = getNestedValue(userData, field.name);
+          if (value === undefined) {
+            missingDataKeys.push(field.name);
+          }
+        }
+
+        const uniqueMissing = [...new Set(missingDataKeys)];
+        if (uniqueMissing.length) {
+          warnings.push("Some mapping field names do not exist in user data: " + uniqueMissing.join(", "));
+        }
+      }
+
+      resetLog();
+      log("Validation started.");
+
+      if (!errors.length) {
+        log("No blocking errors found.");
+      } else {
+        errors.forEach((err) => log("ERROR: " + err));
+      }
+
+      if (warnings.length) {
+        warnings.forEach((w) => log("WARNING: " + w));
+      } else {
+        log("No warnings.");
+      }
+
+      return {
+        valid: errors.length === 0,
+        errors,
+        warnings
+      };
+    }
+
+    function drawCheckbox(page, field, value) {
+      const pageHeight = page.getHeight();
+      const x = Number(field.x) || 0;
+      const yTop = Number(field.y) || 0;
+      const width = Number(field.width) || 14;
+      const height = Number(field.height) || 14;
+
+      const pdfY = pageHeight - yTop - height;
+
+      page.drawRectangle({
+        x,
+        y: pdfY,
+        width,
+        height,
+        borderWidth: 1,
+        borderColor: rgb(0, 0, 0)
+      });
+
+      if (parseBoolean(value)) {
+        page.drawLine({
+          start: { x: x + 2, y: pdfY + 2 },
+          end: { x: x + width - 2, y: pdfY + height - 2 },
+          thickness: 1.5,
+          color: rgb(0, 0, 0)
+        });
+
+        page.drawLine({
+          start: { x: x + 2, y: pdfY + height - 2 },
+          end: { x: x + width - 2, y: pdfY + 2 },
+          thickness: 1.5,
+          color: rgb(0, 0, 0)
+        });
+      }
+    }
+
+    function drawTextField(page, font, field, rawValue) {
+      if (!valueExists(rawValue)) return;
+
+      const text = String(rawValue);
+      const pageHeight = page.getHeight();
+      const x = Number(field.x) || 0;
+      const yTop = Number(field.y) || 0;
+      const width = Number(field.width) || 180;
+      const height = Number(field.height) || 18;
+
+      const fontSize = fitTextToWidth(
+        text,
+        Math.max(20, width),
+        font,
+        Number(field.fontSize) || 11,
+        7
+      );
+
+      const pdfY = pageHeight - yTop - height + Math.max(0, (height - fontSize) / 2);
+
+      page.drawText(text, {
+        x,
+        y: pdfY,
+        size: fontSize,
+        font,
+        color: rgb(0, 0, 0),
+        maxWidth: width
+      });
+    }
+
+    function drawDateField(page, font, field, rawValue) {
+      if (!valueExists(rawValue)) return;
+      drawTextField(page, font, field, rawValue);
+    }
+
+    function drawSignatureField(page, font, field, rawValue) {
+      if (!valueExists(rawValue)) return;
+      drawTextField(page, font, field, rawValue);
+    }
+
+    async function generateFilledPdf() {
+      const check = validateInputs();
+      if (!check.valid) {
+        log("Generation stopped because validation failed.");
+        return;
+      }
+
+      log("Opening source PDF.");
+      const pdfDoc = await PDFDocument.load(pdfBytes);
+
+      log("Embedding fonts.");
+      const helvetica = await pdfDoc.embedFont(StandardFonts.Helvetica);
+      const helveticaBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+
+      const pages = pdfDoc.getPages();
+      log(`PDF has ${pages.length} page(s).`);
+      log(`Processing ${mappingJson.length} mapped field(s).`);
+
+      let drawCount = 0;
+
+      for (const field of mappingJson) {
+        const pageIndex = Number(field.page) - 1;
+        if (pageIndex < 0 || pageIndex >= pages.length) {
+          log(`Skipping "${field.name}" because page ${field.page} does not exist.`);
+          continue;
+        }
+
+        const page = pages[pageIndex];
+        const value = getNestedValue(userData, field.name);
+        const type = String(field.type || "text").toLowerCase();
+
+        if (type === "text" || type === "textarea") {
+          drawTextField(page, helvetica, field, value);
+          drawCount++;
+          continue;
+        }
+
+        if (type === "checkbox" || type === "check") {
+          drawCheckbox(page, field, value);
+          drawCount++;
+          continue;
+        }
+
+        if (type === "date") {
+          drawDateField(page, helvetica, field, value);
+          drawCount++;
+          continue;
+        }
+
+        if (type === "signature") {
+          drawSignatureField(page, helveticaBold, field, value);
+          drawCount++;
+          continue;
+        }
+
+        if (type === "static_text") {
+          const staticValue = valueExists(field.value) ? field.value : "";
+          drawTextField(page, helvetica, field, staticValue);
+          drawCount++;
+          continue;
+        }
+
+        log(`Unknown field type "${field.type}" for "${field.name}". Falling back to text.`);
+        drawTextField(page, helvetica, field, value);
+        drawCount++;
+      }
+
+      log(`Rendered ${drawCount} field(s).`);
+      log("Saving filled PDF.");
+
+      const outputBytes = await pdfDoc.save();
+
+      const baseName = sanitizeFileName(pdfFileName);
+      const outputName = `${baseName}-filled.pdf`;
+
+      downloadBlob(outputBytes, outputName, "application/pdf");
+      log(`Download started: ${outputName}`);
+    }
+
+    pdfFileInput.addEventListener("change", async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      pdfBytes = await readFileAsArrayBuffer(file);
+      pdfFileName = file.name || "filled-form.pdf";
+      updateStatus();
+      log(`Loaded PDF: ${pdfFileName}`);
+    });
+
+    mappingFileInput.addEventListener("change", async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const text = await readFileAsText(file);
+      const parsed = safeJsonParse(text, "Mapping JSON");
+      mappingJson = normalizeMappings(parsed);
+      updateStatus();
+      log(`Loaded mapping JSON with ${mappingJson.length} field(s).`);
+    });
+
+    dataFileInput.addEventListener("change", async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const text = await readFileAsText(file);
+      const parsed = safeJsonParse(text, "User data JSON");
+      userData = normalizeUserData(parsed);
+      jsonDataInput.value = JSON.stringify(userData, null, 2);
+      updateStatus();
+      log(`Loaded user data JSON with ${Object.keys(userData).length} key(s).`);
+    });
+
+    jsonDataInput.addEventListener("input", () => {
+      try {
+        updateUserDataFromTextarea();
+      } catch (err) {
+        userData = null;
+        updateStatus();
+      }
+    });
+
+    loadSampleBtn.addEventListener("click", () => {
+      const sample = {
+        petitioner_full_name: "Matt Tunstall",
+        case_number: "C-25-123456-1",
+        has_attorney: false,
+        phone: "(702) 555-1212",
+        email: "matt@example.com",
+        address_line_1: "123 Main Street",
+        city: "Las Vegas",
+        state: "NV",
+        zip: "89101",
+        current_date: new Date().toLocaleDateString()
+      };
+
+      userData = sample;
+      jsonDataInput.value = JSON.stringify(sample, null, 2);
+      updateStatus();
+      log("Loaded sample user data.");
+    });
+
+    pullLocalStorageBtn.addEventListener("click", () => {
+      try {
+        const possibleKeys = [
+          "recordPathData",
+          "recordpathData",
+          "recordPathAIData",
+          "packetData",
+          "eligibilityData",
+          "recordDetailsData"
+        ];
+
+        let found = null;
+        let foundKey = null;
+
+        for (const key of possibleKeys) {
+          const raw = localStorage.getItem(key);
+          if (!raw) continue;
+
+          try {
+            const parsed = JSON.parse(raw);
+            if (parsed && typeof parsed === "object") {
+              found = parsed;
+              foundKey = key;
+              break;
+            }
+          } catch (_) {}
+        }
+
+        if (!found) {
+          alert("No matching RecordPathAI data found in localStorage.");
+          return;
+        }
+
+        userData = found;
+        jsonDataInput.value = JSON.stringify(found, null, 2);
+        updateStatus();
+        log(`Loaded user data from localStorage key: ${foundKey}`);
+      } catch (err) {
+        alert("Failed to pull localStorage data.");
+      }
+    });
+
+    validateBtn.addEventListener("click", () => {
+      validateInputs();
+    });
+
+    generateBtn.addEventListener("click", async () => {
+      try {
+        await generateFilledPdf();
+      } catch (err) {
+        log("Generation failed: " + err.message);
+        console.error(err);
+        alert("Generation failed. Check the run log.");
+      }
+    });
+
+    downloadDataBtn.addEventListener("click", () => {
+      try {
+        updateUserDataFromTextarea();
+        if (!userData) {
+          alert("No user data to download.");
+          return;
+        }
+
+        const bytes = new TextEncoder().encode(JSON.stringify(userData, null, 2));
+        downloadBlob(bytes, "recordpathai-user-data.json", "application/json");
+        log("Downloaded user data JSON.");
+      } catch (err) {
+        alert("User data is not valid JSON.");
+      }
+    });
+
+    clearBtn.addEventListener("click", () => {
+      pdfBytes = null;
+      pdfFileName = "filled-form.pdf";
+      mappingJson = null;
+      userData = null;
+
+      pdfFileInput.value = "";
+      mappingFileInput.value = "";
+      dataFileInput.value = "";
+      jsonDataInput.value = "";
+
+      updateStatus();
+      resetLog();
+    });
+
+    updateStatus();
+  </script>
+</body>
+</html>
