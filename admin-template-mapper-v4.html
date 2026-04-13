@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>RecordPathAI - PDF Template Mapper V3</title>
+  <title>RecordPathAI - PDF Template Mapper V4</title>
   <style>
     * { box-sizing: border-box; }
 
@@ -35,7 +35,7 @@
 
     .app {
       display: grid;
-      grid-template-columns: 420px 1fr;
+      grid-template-columns: 450px 1fr;
       min-height: 100vh;
     }
 
@@ -201,7 +201,7 @@
       display: flex;
       flex-direction: column;
       gap: 8px;
-      max-height: 280px;
+      max-height: 260px;
       overflow-y: auto;
     }
 
@@ -216,6 +216,11 @@
     .field-item.active {
       border-color: var(--primary-2);
       box-shadow: 0 0 0 2px rgba(43, 108, 240, 0.12);
+    }
+
+    .field-item.multi {
+      border-color: #0c66e4;
+      background: #f5f9ff;
     }
 
     .field-item.repeatable { border-left: 4px solid #f59e0b; }
@@ -301,6 +306,12 @@
       box-shadow: 0 0 0 3px rgba(12, 102, 228, 0.15);
     }
 
+    .mapper-box.multi {
+      border-color: #0c66e4;
+      background: rgba(12, 102, 228, 0.14);
+      box-shadow: 0 0 0 2px rgba(12, 102, 228, 0.10);
+    }
+
     .mapper-box.repeatable {
       border-style: dashed;
       border-color: #d97706;
@@ -339,10 +350,10 @@
       padding: 3px 6px;
       font-size: 11px;
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       overflow: hidden;
-      white-space: nowrap;
-      text-overflow: ellipsis;
+      white-space: pre-wrap;
+      word-break: break-word;
     }
 
     .checkbox-preview {
@@ -424,7 +435,46 @@
       word-break: break-word;
     }
 
-    @media (max-width: 1200px) {
+    .toolbar-grid {
+      display: grid;
+      gap: 8px;
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    .library-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-height: 180px;
+      overflow-y: auto;
+    }
+
+    .library-item {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: #fff;
+      padding: 10px;
+    }
+
+    .library-title {
+      font-weight: 700;
+      font-size: 13px;
+      margin-bottom: 4px;
+    }
+
+    .library-meta {
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    .library-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    @media (max-width: 1260px) {
       .app { grid-template-columns: 1fr; }
       .sidebar {
         border-right: 0;
@@ -436,9 +486,9 @@
 <body>
   <div class="app">
     <aside class="sidebar">
-      <h1 class="panel-title">RecordPathAI Mapper V3</h1>
+      <h1 class="panel-title">RecordPathAI Mapper V4</h1>
       <p class="panel-subtitle">
-        Court-form mapper with baseline mode, checkbox mode, snapping, repeatable rows, and export-ready JSON.
+        Multi-select, align/distribute, undo/redo, multiline preview, and saved template library.
       </p>
 
       <div class="section">
@@ -504,12 +554,19 @@
             <input type="number" id="newFieldFontSize" value="12" min="6" max="40" />
           </div>
           <div>
+            <label for="newFieldLineHeight">Line Height</label>
+            <input type="number" id="newFieldLineHeight" value="1.2" step="0.1" min="0.8" />
+          </div>
+          <div>
             <label for="newFieldRequired">Required</label>
             <select id="newFieldRequired">
               <option value="true">true</option>
               <option value="false">false</option>
             </select>
           </div>
+        </div>
+
+        <div class="form-row four">
           <div>
             <label for="newFieldAlign">Align</label>
             <select id="newFieldAlign">
@@ -518,9 +575,6 @@
               <option value="right">right</option>
             </select>
           </div>
-        </div>
-
-        <div class="form-row four">
           <div>
             <label for="newFieldRenderMode">Render Mode</label>
             <select id="newFieldRenderMode">
@@ -536,6 +590,9 @@
             <label for="newFieldMaxLength">Max Length</label>
             <input type="number" id="newFieldMaxLength" value="0" min="0" />
           </div>
+        </div>
+
+        <div class="form-row four">
           <div>
             <label for="newFieldCheckboxMark">Checkbox Mark</label>
             <select id="newFieldCheckboxMark">
@@ -544,9 +601,6 @@
               <option value="filled">filled</option>
             </select>
           </div>
-        </div>
-
-        <div class="form-row four">
           <div>
             <label for="newFieldSample">Sample Value</label>
             <input type="text" id="newFieldSample" placeholder="e.g. Matthew Tunstall" />
@@ -562,6 +616,9 @@
               <option value="false">false</option>
             </select>
           </div>
+        </div>
+
+        <div class="form-row four">
           <div>
             <label for="newFieldRepeatable">Repeatable</label>
             <select id="newFieldRepeatable">
@@ -569,9 +626,6 @@
               <option value="true">true</option>
             </select>
           </div>
-        </div>
-
-        <div class="form-row three">
           <div>
             <label for="newFieldRowGroup">Row Group</label>
             <input type="text" id="newFieldRowGroup" placeholder="e.g. offenses" />
@@ -594,14 +648,34 @@
         </div>
 
         <button class="btn btn-primary btn-full" id="addFieldBtn">Add Field</button>
+      </div>
 
-        <div class="status">
-          Add the field, then click the PDF where it should go.
+      <div class="section">
+        <h3>3. Multi-Select Tools</h3>
+        <div class="hint" style="margin-bottom:10px;">
+          Ctrl/Cmd-click fields to multi-select. Shift-click in list also works.
+        </div>
+        <div class="toolbar-grid">
+          <button class="btn btn-secondary" id="selectAllBtn">Select All</button>
+          <button class="btn btn-secondary" id="clearSelectionBtn">Clear</button>
+          <button class="btn btn-secondary" id="invertSelectionBtn">Invert</button>
+
+          <button class="btn btn-secondary" id="alignLeftBtn">Align Left</button>
+          <button class="btn btn-secondary" id="alignCenterBtn">Align Center</button>
+          <button class="btn btn-secondary" id="alignRightBtn">Align Right</button>
+
+          <button class="btn btn-secondary" id="alignTopBtn">Align Top</button>
+          <button class="btn btn-secondary" id="alignMiddleBtn">Align Middle</button>
+          <button class="btn btn-secondary" id="alignBottomBtn">Align Bottom</button>
+
+          <button class="btn btn-secondary" id="distributeHBtn">Dist. H</button>
+          <button class="btn btn-secondary" id="distributeVBtn">Dist. V</button>
+          <button class="btn btn-danger" id="deleteSelectedMultiBtn">Delete Sel.</button>
         </div>
       </div>
 
       <div class="section">
-        <h3>3. Find Fields</h3>
+        <h3>4. Find Fields</h3>
 
         <div class="form-row two">
           <div>
@@ -625,7 +699,7 @@
       </div>
 
       <div class="section">
-        <h3>4. Selected Field</h3>
+        <h3>5. Selected Field</h3>
 
         <div class="form-row two">
           <div>
@@ -654,12 +728,19 @@
             <input type="number" id="editFontSize" min="6" max="40" />
           </div>
           <div>
+            <label for="editLineHeight">Line Height</label>
+            <input type="number" id="editLineHeight" step="0.1" min="0.8" />
+          </div>
+          <div>
             <label for="editRequired">Required</label>
             <select id="editRequired">
               <option value="true">true</option>
               <option value="false">false</option>
             </select>
           </div>
+        </div>
+
+        <div class="form-row four">
           <div>
             <label for="editAlign">Align</label>
             <select id="editAlign">
@@ -668,9 +749,6 @@
               <option value="right">right</option>
             </select>
           </div>
-        </div>
-
-        <div class="form-row four">
           <div>
             <label for="editRenderMode">Render Mode</label>
             <select id="editRenderMode">
@@ -686,6 +764,9 @@
             <label for="editMaxLength">Max Length</label>
             <input type="number" id="editMaxLength" min="0" />
           </div>
+        </div>
+
+        <div class="form-row four">
           <div>
             <label for="editCheckboxMark">Checkbox Mark</label>
             <select id="editCheckboxMark">
@@ -694,9 +775,6 @@
               <option value="filled">filled</option>
             </select>
           </div>
-        </div>
-
-        <div class="form-row two">
           <div>
             <label for="editSampleValue">Sample Value</label>
             <input type="text" id="editSampleValue" />
@@ -704,6 +782,13 @@
           <div>
             <label for="editPage">Page</label>
             <input type="number" id="editPage" min="1" />
+          </div>
+          <div>
+            <label for="editSnap">Snap</label>
+            <select id="editSnap">
+              <option value="true">true</option>
+              <option value="false">false</option>
+            </select>
           </div>
         </div>
 
@@ -754,16 +839,10 @@
             <input type="number" id="editRowStepY" step="0.01" />
           </div>
           <div>
-            <label for="editSnap">Snap</label>
-            <select id="editSnap">
-              <option value="true">true</option>
-              <option value="false">false</option>
-            </select>
-          </div>
-          <div>
             <label for="copyToPage">Copy To Page</label>
             <input type="number" id="copyToPage" min="1" placeholder="page #" />
           </div>
+          <div></div>
         </div>
 
         <div class="form-row four">
@@ -772,15 +851,10 @@
           <button class="btn btn-secondary" id="copyToPageBtn">Copy To Page</button>
           <button class="btn btn-danger" id="deleteFieldBtn">Delete</button>
         </div>
-
-        <div class="hint">
-          Arrow keys move the selected field. Hold Shift for bigger moves. Hold Alt while dragging to ignore snap.
-        </div>
       </div>
 
       <div class="section">
-        <h3>5. Sample Preview</h3>
-
+        <h3>6. Sample Preview</h3>
         <div class="form-row">
           <label for="sampleDataInput">Sample Data JSON</label>
           <textarea id="sampleDataInput">{
@@ -789,6 +863,7 @@
   "cityStateZip": "Henderson, NV 89012",
   "email": "unitedpaintersww@gmail.com",
   "phone": "8656219810",
+  "notes": "Line 1 of narrative.\nLine 2 of narrative.\nLine 3 of narrative.",
   "isPetitioner": true,
   "caseNumber": "C-24-000123-1",
   "offenses": [
@@ -817,24 +892,34 @@
       </div>
 
       <div class="section">
-        <h3>6. Export / Save</h3>
+        <h3>7. Template Library</h3>
+        <div class="form-row two">
+          <button class="btn btn-success" id="saveToLibraryBtn">Save Current Template</button>
+          <button class="btn btn-secondary" id="refreshLibraryBtn">Refresh Library</button>
+        </div>
+        <div class="library-list" id="libraryList"></div>
+      </div>
 
+      <div class="section">
+        <h3>8. Export / Save</h3>
         <div class="form-row four">
           <button class="btn btn-success" id="exportJsonBtn">Generate JSON</button>
           <button class="btn btn-secondary" id="copyJsonBtn">Copy JSON</button>
           <button class="btn btn-success" id="downloadJsonBtn">Save Mapping</button>
           <button class="btn btn-secondary" id="downloadPackageBtn">Save Package</button>
         </div>
-
         <div class="json-output" id="jsonOutput">{}</div>
       </div>
     </aside>
 
     <main class="main">
       <div class="topbar">
-        <div class="brand">RecordPathAI PDF Template Mapper V3</div>
+        <div class="brand">RecordPathAI PDF Template Mapper V4</div>
 
         <div class="topbar-actions">
+          <button class="btn btn-secondary" id="undoBtn">Undo</button>
+          <button class="btn btn-secondary" id="redoBtn">Redo</button>
+
           <button class="btn btn-secondary" id="zoomOutBtn">− Zoom</button>
           <span class="pill" id="zoomPill">Zoom: 150%</span>
           <button class="btn btn-secondary" id="zoomInBtn">+ Zoom</button>
@@ -842,6 +927,7 @@
           <input type="number" id="jumpPageInput" min="1" placeholder="Page" style="width:72px;border:1px solid #d9e3f0;border-radius:10px;padding:8px 10px;" />
           <button class="btn btn-secondary" id="jumpPageBtn">Go</button>
 
+          <span class="pill" id="selectionCountPill">Selected: 0</span>
           <span class="pill" id="pageCountPill">Pages: 0</span>
           <span class="pill" id="fieldCountPill">Fields: 0</span>
         </div>
@@ -859,6 +945,7 @@
       "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.3.136/pdf.worker.min.js";
 
     const SNAP_THRESHOLD_PX = 8;
+    const LIBRARY_KEY = "recordpathai_template_library_v4";
 
     const state = {
       pdfDoc: null,
@@ -872,12 +959,15 @@
       },
       pageMeta: {},
       selectedFieldId: null,
+      selectedFieldIds: [],
       pendingFieldId: null,
       scale: 1.5,
       previewData: {},
       previewEnabled: false,
       filterText: "",
-      filterType: "all"
+      filterType: "all",
+      history: [],
+      historyIndex: -1
     };
 
     const els = {
@@ -892,12 +982,14 @@
       fieldList: document.getElementById("fieldList"),
       pageCountPill: document.getElementById("pageCountPill"),
       fieldCountPill: document.getElementById("fieldCountPill"),
+      selectionCountPill: document.getElementById("selectionCountPill"),
       zoomPill: document.getElementById("zoomPill"),
 
       newFieldLabel: document.getElementById("newFieldLabel"),
       newFieldKey: document.getElementById("newFieldKey"),
       newFieldType: document.getElementById("newFieldType"),
       newFieldFontSize: document.getElementById("newFieldFontSize"),
+      newFieldLineHeight: document.getElementById("newFieldLineHeight"),
       newFieldRequired: document.getElementById("newFieldRequired"),
       newFieldAlign: document.getElementById("newFieldAlign"),
       newFieldRenderMode: document.getElementById("newFieldRenderMode"),
@@ -914,6 +1006,19 @@
       newFieldRowStepY: document.getElementById("newFieldRowStepY"),
       addFieldBtn: document.getElementById("addFieldBtn"),
 
+      selectAllBtn: document.getElementById("selectAllBtn"),
+      clearSelectionBtn: document.getElementById("clearSelectionBtn"),
+      invertSelectionBtn: document.getElementById("invertSelectionBtn"),
+      alignLeftBtn: document.getElementById("alignLeftBtn"),
+      alignCenterBtn: document.getElementById("alignCenterBtn"),
+      alignRightBtn: document.getElementById("alignRightBtn"),
+      alignTopBtn: document.getElementById("alignTopBtn"),
+      alignMiddleBtn: document.getElementById("alignMiddleBtn"),
+      alignBottomBtn: document.getElementById("alignBottomBtn"),
+      distributeHBtn: document.getElementById("distributeHBtn"),
+      distributeVBtn: document.getElementById("distributeVBtn"),
+      deleteSelectedMultiBtn: document.getElementById("deleteSelectedMultiBtn"),
+
       fieldSearch: document.getElementById("fieldSearch"),
       fieldFilterType: document.getElementById("fieldFilterType"),
 
@@ -921,6 +1026,7 @@
       editKey: document.getElementById("editKey"),
       editType: document.getElementById("editType"),
       editFontSize: document.getElementById("editFontSize"),
+      editLineHeight: document.getElementById("editLineHeight"),
       editRequired: document.getElementById("editRequired"),
       editAlign: document.getElementById("editAlign"),
       editRenderMode: document.getElementById("editRenderMode"),
@@ -929,6 +1035,7 @@
       editCheckboxMark: document.getElementById("editCheckboxMark"),
       editSampleValue: document.getElementById("editSampleValue"),
       editPage: document.getElementById("editPage"),
+      editSnap: document.getElementById("editSnap"),
       editX: document.getElementById("editX"),
       editY: document.getElementById("editY"),
       editWidth: document.getElementById("editWidth"),
@@ -938,9 +1045,7 @@
       editRowStart: document.getElementById("editRowStart"),
       editRowMax: document.getElementById("editRowMax"),
       editRowStepY: document.getElementById("editRowStepY"),
-      editSnap: document.getElementById("editSnap"),
       copyToPage: document.getElementById("copyToPage"),
-
       updateFieldBtn: document.getElementById("updateFieldBtn"),
       duplicateFieldBtn: document.getElementById("duplicateFieldBtn"),
       copyToPageBtn: document.getElementById("copyToPageBtn"),
@@ -951,12 +1056,18 @@
       resetPreviewBtn: document.getElementById("resetPreviewBtn"),
       samplePreviewInfo: document.getElementById("samplePreviewInfo"),
 
+      saveToLibraryBtn: document.getElementById("saveToLibraryBtn"),
+      refreshLibraryBtn: document.getElementById("refreshLibraryBtn"),
+      libraryList: document.getElementById("libraryList"),
+
       exportJsonBtn: document.getElementById("exportJsonBtn"),
       copyJsonBtn: document.getElementById("copyJsonBtn"),
       downloadJsonBtn: document.getElementById("downloadJsonBtn"),
       downloadPackageBtn: document.getElementById("downloadPackageBtn"),
       jsonOutput: document.getElementById("jsonOutput"),
 
+      undoBtn: document.getElementById("undoBtn"),
+      redoBtn: document.getElementById("redoBtn"),
       zoomInBtn: document.getElementById("zoomInBtn"),
       zoomOutBtn: document.getElementById("zoomOutBtn"),
       jumpPageInput: document.getElementById("jumpPageInput"),
@@ -984,6 +1095,57 @@
         .replaceAll("'", "&#039;");
     }
 
+    function deepClone(obj) {
+      return JSON.parse(JSON.stringify(obj));
+    }
+
+    function snapshot() {
+      return {
+        template: deepClone(state.template),
+        selectedFieldId: state.selectedFieldId,
+        selectedFieldIds: deepClone(state.selectedFieldIds)
+      };
+    }
+
+    function pushHistory() {
+      const snap = snapshot();
+      state.history = state.history.slice(0, state.historyIndex + 1);
+      state.history.push(snap);
+      state.historyIndex = state.history.length - 1;
+      updateUndoRedoButtons();
+    }
+
+    function restoreSnapshot(snap) {
+      state.template = deepClone(snap.template);
+      state.selectedFieldId = snap.selectedFieldId || null;
+      state.selectedFieldIds = Array.isArray(snap.selectedFieldIds) ? deepClone(snap.selectedFieldIds) : [];
+      syncTemplateInputsFromState();
+      buildExportJson();
+      renderFieldList();
+      renderSelectedFieldForm();
+      renderOverlayBoxes();
+      updateSelectionPill();
+    }
+
+    function undo() {
+      if (state.historyIndex <= 0) return;
+      state.historyIndex -= 1;
+      restoreSnapshot(state.history[state.historyIndex]);
+      updateUndoRedoButtons();
+    }
+
+    function redo() {
+      if (state.historyIndex >= state.history.length - 1) return;
+      state.historyIndex += 1;
+      restoreSnapshot(state.history[state.historyIndex]);
+      updateUndoRedoButtons();
+    }
+
+    function updateUndoRedoButtons() {
+      els.undoBtn.disabled = state.historyIndex <= 0;
+      els.redoBtn.disabled = state.historyIndex >= state.history.length - 1 || state.historyIndex === -1;
+    }
+
     function getFieldById(id) {
       return state.template.fields.find(f => f.id === id) || null;
     }
@@ -992,6 +1154,12 @@
       state.template.templateId = els.templateId.value.trim();
       state.template.state = els.templateState.value.trim();
       state.template.court = els.templateCourt.value.trim();
+    }
+
+    function syncTemplateInputsFromState() {
+      els.templateId.value = state.template.templateId || "";
+      els.templateState.value = state.template.state || "";
+      els.templateCourt.value = state.template.court || "";
     }
 
     function browserToPdf(pageNumber, leftPx, topPx, widthPx, heightPx) {
@@ -1090,7 +1258,7 @@
     function createDefaultSizeForType(type) {
       if (type === "checkbox") return { width: 14, height: 14 };
       if (type === "signature") return { width: 180, height: 24 };
-      if (type === "multiline") return { width: 180, height: 48 };
+      if (type === "multiline") return { width: 180, height: 56 };
       return { width: 120, height: 18 };
     }
 
@@ -1117,6 +1285,7 @@
         width: size.width,
         height: size.height,
         fontSize: Number(els.newFieldFontSize.value) || 12,
+        lineHeight: Number(els.newFieldLineHeight.value) || 1.2,
         required: els.newFieldRequired.value === "true",
         align: els.newFieldAlign.value,
         renderMode: els.newFieldRenderMode.value,
@@ -1138,6 +1307,7 @@
       els.newFieldKey.value = "";
       els.newFieldType.value = "text";
       els.newFieldFontSize.value = "12";
+      els.newFieldLineHeight.value = "1.2";
       els.newFieldRequired.value = "true";
       els.newFieldAlign.value = "left";
       els.newFieldRenderMode.value = "box";
@@ -1158,21 +1328,31 @@
       const field = createFieldFromInputs();
       if (!field) return;
 
+      pushHistory();
       state.template.fields.push(field);
       state.pendingFieldId = field.id;
       state.selectedFieldId = field.id;
+      state.selectedFieldIds = [field.id];
       resetAddFieldForm();
       renderFieldList();
       renderSelectedFieldForm();
       renderOverlayBoxes();
+      updateSelectionPill();
       alert("Field added. Click the PDF where it should go.");
     }
 
     function handleOverlayClick(pageNumber, event) {
-      if (!state.pendingFieldId) return;
+      if (!state.pendingFieldId) {
+        if (!event.ctrlKey && !event.metaKey) {
+          clearSelection();
+        }
+        return;
+      }
 
       const field = getFieldById(state.pendingFieldId);
       if (!field) return;
+
+      pushHistory();
 
       const overlay = event.currentTarget;
       const rect = overlay.getBoundingClientRect();
@@ -1195,10 +1375,12 @@
 
       state.pendingFieldId = null;
       state.selectedFieldId = field.id;
+      state.selectedFieldIds = [field.id];
 
       renderFieldList();
       renderSelectedFieldForm();
       renderOverlayBoxes();
+      updateSelectionPill();
     }
 
     function getFilteredFields() {
@@ -1215,6 +1397,64 @@
       });
     }
 
+    function isSelected(id) {
+      return state.selectedFieldIds.includes(id);
+    }
+
+    function updateSelectionPill() {
+      els.selectionCountPill.textContent = `Selected: ${state.selectedFieldIds.length}`;
+    }
+
+    function selectSingleField(id) {
+      state.selectedFieldId = id;
+      state.selectedFieldIds = [id];
+      renderFieldList();
+      renderSelectedFieldForm();
+      renderOverlayBoxes();
+      updateSelectionPill();
+    }
+
+    function toggleFieldSelection(id) {
+      if (isSelected(id)) {
+        state.selectedFieldIds = state.selectedFieldIds.filter(x => x !== id);
+      } else {
+        state.selectedFieldIds.push(id);
+      }
+      state.selectedFieldId = state.selectedFieldIds[state.selectedFieldIds.length - 1] || null;
+      renderFieldList();
+      renderSelectedFieldForm();
+      renderOverlayBoxes();
+      updateSelectionPill();
+    }
+
+    function clearSelection() {
+      state.selectedFieldId = null;
+      state.selectedFieldIds = [];
+      renderFieldList();
+      renderSelectedFieldForm();
+      renderOverlayBoxes();
+      updateSelectionPill();
+    }
+
+    function selectAllFields() {
+      state.selectedFieldIds = state.template.fields.map(f => f.id);
+      state.selectedFieldId = state.selectedFieldIds[0] || null;
+      renderFieldList();
+      renderSelectedFieldForm();
+      renderOverlayBoxes();
+      updateSelectionPill();
+    }
+
+    function invertSelection() {
+      const current = new Set(state.selectedFieldIds);
+      state.selectedFieldIds = state.template.fields.map(f => f.id).filter(id => !current.has(id));
+      state.selectedFieldId = state.selectedFieldIds[0] || null;
+      renderFieldList();
+      renderSelectedFieldForm();
+      renderOverlayBoxes();
+      updateSelectionPill();
+    }
+
     function renderFieldList() {
       els.fieldList.innerHTML = "";
 
@@ -1229,6 +1469,7 @@
         item.className =
           "field-item" +
           (field.id === state.selectedFieldId ? " active" : "") +
+          (isSelected(field.id) && field.id !== state.selectedFieldId ? " multi" : "") +
           (field.repeatable ? " repeatable" : "") +
           (field.type === "checkbox" ? " checkbox" : "");
 
@@ -1246,7 +1487,14 @@
           </div>
         `;
 
-        item.addEventListener("click", () => selectField(field.id));
+        item.addEventListener("click", (e) => {
+          if (e.ctrlKey || e.metaKey || e.shiftKey) {
+            toggleFieldSelection(field.id);
+          } else {
+            selectSingleField(field.id);
+          }
+        });
+
         els.fieldList.appendChild(item);
       });
 
@@ -1258,7 +1506,7 @@
 
       if (!field) {
         [
-          "editLabel","editKey","editFontSize","editTextOffsetY","editMaxLength",
+          "editLabel","editKey","editFontSize","editLineHeight","editTextOffsetY","editMaxLength",
           "editSampleValue","editPage","editX","editY","editWidth","editHeight",
           "editRowGroup","editRowStart","editRowMax","editRowStepY","copyToPage"
         ].forEach(id => els[id].value = "");
@@ -1277,6 +1525,7 @@
       els.editKey.value = field.key || "";
       els.editType.value = field.type || "text";
       els.editFontSize.value = field.fontSize ?? 12;
+      els.editLineHeight.value = field.lineHeight ?? 1.2;
       els.editRequired.value = String(Boolean(field.required));
       els.editAlign.value = field.align || "left";
       els.editRenderMode.value = field.renderMode || "box";
@@ -1285,6 +1534,7 @@
       els.editCheckboxMark.value = field.checkboxMark || "x";
       els.editSampleValue.value = field.sampleValue || "";
       els.editPage.value = field.page || "";
+      els.editSnap.value = String(field.snap !== false);
       els.editX.value = round(field.x);
       els.editY.value = round(field.y);
       els.editWidth.value = round(field.width);
@@ -1294,14 +1544,6 @@
       els.editRowStart.value = field.rowStart ?? 1;
       els.editRowMax.value = field.rowMax ?? 10;
       els.editRowStepY.value = field.rowStepY ?? 24;
-      els.editSnap.value = String(field.snap !== false);
-    }
-
-    function selectField(fieldId) {
-      state.selectedFieldId = fieldId;
-      renderFieldList();
-      renderSelectedFieldForm();
-      renderOverlayBoxes();
     }
 
     function updateSelectedField() {
@@ -1311,18 +1553,22 @@
         return;
       }
 
+      pushHistory();
+
       field.label = els.editLabel.value.trim();
       field.key = els.editKey.value.trim();
       field.type = els.editType.value;
       field.fontSize = Number(els.editFontSize.value) || 12;
+      field.lineHeight = Number(els.editLineHeight.value) || 1.2;
       field.required = els.editRequired.value === "true";
       field.align = els.editAlign.value;
       field.renderMode = els.editRenderMode.value;
       field.textOffsetY = Number(els.editTextOffsetY.value) || 0;
       field.maxLength = Number(els.editMaxLength.value) || 0;
       field.checkboxMark = els.editCheckboxMark.value;
-      field.sampleValue = els.editSampleValue.value.trim();
+      field.sampleValue = els.editSampleValue.value;
       field.page = Number(els.editPage.value) || field.page;
+      field.snap = els.editSnap.value === "true";
       field.x = Number(els.editX.value) || 0;
       field.y = Number(els.editY.value) || 0;
       field.width = Number(els.editWidth.value) || 20;
@@ -1332,7 +1578,6 @@
       field.rowStart = Number(els.editRowStart.value) || 1;
       field.rowMax = Number(els.editRowMax.value) || 10;
       field.rowStepY = Number(els.editRowStepY.value) || 24;
-      field.snap = els.editSnap.value === "true";
 
       renderFieldList();
       renderSelectedFieldForm();
@@ -1346,8 +1591,10 @@
         return;
       }
 
+      pushHistory();
+
       const clone = {
-        ...JSON.parse(JSON.stringify(field)),
+        ...deepClone(field),
         id: uid(),
         label: field.label + " Copy",
         key: field.key + "_copy",
@@ -1357,37 +1604,47 @@
 
       state.template.fields.push(clone);
       state.selectedFieldId = clone.id;
+      state.selectedFieldIds = [clone.id];
       renderFieldList();
       renderSelectedFieldForm();
       renderOverlayBoxes();
+      updateSelectionPill();
     }
 
     function copySelectedToPage() {
-      const field = getFieldById(state.selectedFieldId);
       const page = Number(els.copyToPage.value);
-
-      if (!field) {
-        alert("Select a field first.");
+      if (!state.selectedFieldIds.length) {
+        alert("Select at least one field.");
         return;
       }
-
       if (!page || page < 1 || page > state.template.pageCount) {
         alert("Enter a valid destination page.");
         return;
       }
 
-      const clone = {
-        ...JSON.parse(JSON.stringify(field)),
-        id: uid(),
-        page,
-        label: field.label + ` P${page}`
-      };
+      pushHistory();
 
-      state.template.fields.push(clone);
-      state.selectedFieldId = clone.id;
+      const newIds = [];
+      state.selectedFieldIds.forEach(id => {
+        const field = getFieldById(id);
+        if (!field) return;
+        const clone = {
+          ...deepClone(field),
+          id: uid(),
+          page,
+          label: field.label + ` P${page}`
+        };
+        state.template.fields.push(clone);
+        newIds.push(clone.id);
+      });
+
+      state.selectedFieldIds = newIds;
+      state.selectedFieldId = newIds[0] || null;
+
       renderFieldList();
       renderSelectedFieldForm();
       renderOverlayBoxes();
+      updateSelectionPill();
 
       const target = document.getElementById(`page-wrap-${page}`);
       if (target) target.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -1399,12 +1656,116 @@
         alert("Select a field first.");
         return;
       }
+      deleteSelectedMulti();
+    }
 
-      if (!confirm(`Delete "${field.label}"?`)) return;
+    function deleteSelectedMulti() {
+      if (!state.selectedFieldIds.length) {
+        alert("Select at least one field.");
+        return;
+      }
 
-      state.template.fields = state.template.fields.filter(f => f.id !== field.id);
-      if (state.pendingFieldId === field.id) state.pendingFieldId = null;
+      if (!confirm(`Delete ${state.selectedFieldIds.length} selected field(s)?`)) return;
+
+      pushHistory();
+
+      const selected = new Set(state.selectedFieldIds);
+      state.template.fields = state.template.fields.filter(f => !selected.has(f.id));
       state.selectedFieldId = null;
+      state.selectedFieldIds = [];
+      renderFieldList();
+      renderSelectedFieldForm();
+      renderOverlayBoxes();
+      updateSelectionPill();
+    }
+
+    function getSelectedFields() {
+      return state.selectedFieldIds
+        .map(id => getFieldById(id))
+        .filter(Boolean);
+    }
+
+    function alignSelected(mode) {
+      const fields = getSelectedFields();
+      if (fields.length < 2) {
+        alert("Select at least two fields.");
+        return;
+      }
+
+      pushHistory();
+
+      if (mode === "left") {
+        const ref = Math.min(...fields.map(f => f.x));
+        fields.forEach(f => { f.x = ref; });
+      } else if (mode === "center") {
+        const ref = fields.reduce((sum, f) => sum + (f.x + f.width / 2), 0) / fields.length;
+        fields.forEach(f => { f.x = ref - f.width / 2; });
+      } else if (mode === "right") {
+        const ref = Math.max(...fields.map(f => f.x + f.width));
+        fields.forEach(f => { f.x = ref - f.width; });
+      } else if (mode === "top") {
+        const ref = Math.max(...fields.map(f => f.y + f.height));
+        fields.forEach(f => { f.y = ref - f.height; });
+      } else if (mode === "middle") {
+        const ref = fields.reduce((sum, f) => sum + (f.y + f.height / 2), 0) / fields.length;
+        fields.forEach(f => { f.y = ref - f.height / 2; });
+      } else if (mode === "bottom") {
+        const ref = Math.min(...fields.map(f => f.y));
+        fields.forEach(f => { f.y = ref; });
+      }
+
+      renderFieldList();
+      renderSelectedFieldForm();
+      renderOverlayBoxes();
+    }
+
+    function distributeSelected(direction) {
+      const fields = getSelectedFields();
+      if (fields.length < 3) {
+        alert("Select at least three fields.");
+        return;
+      }
+
+      pushHistory();
+
+      if (direction === "h") {
+        const sorted = [...fields].sort((a, b) => a.x - b.x);
+        const first = sorted[0];
+        const last = sorted[sorted.length - 1];
+        const totalWidth = sorted.reduce((sum, f) => sum + f.width, 0);
+        const available = (last.x + last.width) - first.x - totalWidth;
+        const gap = available / (sorted.length - 1);
+
+        let cursor = first.x;
+        sorted.forEach((f, index) => {
+          if (index === 0) {
+            cursor = f.x + f.width + gap;
+            return;
+          }
+          if (index === sorted.length - 1) return;
+          f.x = cursor;
+          cursor += f.width + gap;
+        });
+      } else if (direction === "v") {
+        const sorted = [...fields].sort((a, b) => a.y - b.y);
+        const first = sorted[0];
+        const last = sorted[sorted.length - 1];
+        const totalHeight = sorted.reduce((sum, f) => sum + f.height, 0);
+        const available = (last.y + last.height) - first.y - totalHeight;
+        const gap = available / (sorted.length - 1);
+
+        let cursor = first.y;
+        sorted.forEach((f, index) => {
+          if (index === 0) {
+            cursor = f.y + f.height + gap;
+            return;
+          }
+          if (index === sorted.length - 1) return;
+          f.y = cursor;
+          cursor += f.height + gap;
+        });
+      }
+
       renderFieldList();
       renderSelectedFieldForm();
       renderOverlayBoxes();
@@ -1465,48 +1826,38 @@
 
       const candidates = collectSnapCandidates(pageNumber, currentFieldId);
 
-      const myVerticalPoints = [
-        { value: leftPx },
-        { value: leftPx + widthPx / 2 },
-        { value: leftPx + widthPx }
-      ];
-
-      const myHorizontalPoints = [
-        { value: topPx },
-        { value: topPx + heightPx / 2 },
-        { value: topPx + heightPx }
-      ];
+      const myVerticalPoints = [leftPx, leftPx + widthPx / 2, leftPx + widthPx];
+      const myHorizontalPoints = [topPx, topPx + heightPx / 2, topPx + heightPx];
 
       let bestVX = null;
       let bestVDelta = Infinity;
       let bestHY = null;
       let bestHDelta = Infinity;
 
-      for (const p of myVerticalPoints) {
-        for (const c of candidates.vertical) {
-          const delta = c - p.value;
+      myVerticalPoints.forEach(p => {
+        candidates.vertical.forEach(c => {
+          const delta = c - p;
           if (Math.abs(delta) < Math.abs(bestVDelta) && Math.abs(delta) <= SNAP_THRESHOLD_PX) {
             bestVDelta = delta;
             bestVX = c;
           }
-        }
-      }
+        });
+      });
 
-      for (const p of myHorizontalPoints) {
-        for (const c of candidates.horizontal) {
-          const delta = c - p.value;
+      myHorizontalPoints.forEach(p => {
+        candidates.horizontal.forEach(c => {
+          const delta = c - p;
           if (Math.abs(delta) < Math.abs(bestHDelta) && Math.abs(delta) <= SNAP_THRESHOLD_PX) {
             bestHDelta = delta;
             bestHY = c;
           }
-        }
-      }
+        });
+      });
 
       if (bestVX != null) leftPx += bestVDelta;
       if (bestHY != null) topPx += bestHDelta;
 
       drawSnapGuides(pageNumber, { x: bestVX, y: bestHY });
-
       return { leftPx, topPx };
     }
 
@@ -1514,42 +1865,66 @@
       event.preventDefault();
       event.stopPropagation();
 
-      selectField(fieldId);
+      if (event.ctrlKey || event.metaKey) {
+        toggleFieldSelection(fieldId);
+      } else if (!isSelected(fieldId)) {
+        selectSingleField(fieldId);
+      }
 
-      const field = getFieldById(fieldId);
-      if (!field) return;
+      const movingFields = getSelectedFields();
+      if (!movingFields.length) return;
 
-      const meta = state.pageMeta[field.page];
-      const startRect = pdfToBrowser(field.page, field.x, field.y, field.width, field.height);
+      pushHistory();
+
       const startMouseX = event.clientX;
       const startMouseY = event.clientY;
-      const startLeft = startRect.left;
-      const startTop = startRect.top;
+
+      const starts = movingFields.map(f => ({
+        id: f.id,
+        page: f.page,
+        x: f.x,
+        y: f.y,
+        width: f.width,
+        height: f.height,
+        rect: pdfToBrowser(f.page, f.x, f.y, f.width, f.height)
+      }));
+
+      const anchor = starts.find(s => s.id === fieldId) || starts[0];
 
       function onMove(moveEvent) {
         const dx = moveEvent.clientX - startMouseX;
         const dy = moveEvent.clientY - startMouseY;
 
-        let newLeft = clamp(startLeft + dx, 0, meta.viewportWidth - startRect.width);
-        let newTop = clamp(startTop + dy, 0, meta.viewportHeight - startRect.height);
+        const anchorField = getFieldById(anchor.id);
+        const anchorMeta = state.pageMeta[anchor.page];
+        let newLeft = clamp(anchor.rect.left + dx, 0, anchorMeta.viewportWidth - anchor.rect.width);
+        let newTop = clamp(anchor.rect.top + dy, 0, anchorMeta.viewportHeight - anchor.rect.height);
 
         const snapped = applySnap(
-          field.page,
-          field.id,
+          anchor.page,
+          anchor.id,
           newLeft,
           newTop,
-          startRect.width,
-          startRect.height,
-          field.snap !== false,
+          anchor.rect.width,
+          anchor.rect.height,
+          anchorField.snap !== false,
           moveEvent.altKey
         );
 
-        newLeft = clamp(snapped.leftPx, 0, meta.viewportWidth - startRect.width);
-        newTop = clamp(snapped.topPx, 0, meta.viewportHeight - startRect.height);
+        const snappedDx = snapped.leftPx - anchor.rect.left;
+        const snappedDy = snapped.topPx - anchor.rect.top;
 
-        const pdfCoords = browserToPdf(field.page, newLeft, newTop, startRect.width, startRect.height);
-        field.x = pdfCoords.x;
-        field.y = pdfCoords.y;
+        starts.forEach(start => {
+          const field = getFieldById(start.id);
+          if (!field) return;
+
+          const meta = state.pageMeta[start.page];
+          const left = clamp(start.rect.left + snappedDx, 0, meta.viewportWidth - start.rect.width);
+          const top = clamp(start.rect.top + snappedDy, 0, meta.viewportHeight - start.rect.height);
+          const pdfCoords = browserToPdf(start.page, left, top, start.rect.width, start.rect.height);
+          field.x = pdfCoords.x;
+          field.y = pdfCoords.y;
+        });
 
         renderSelectedFieldForm();
         renderFieldList();
@@ -1557,7 +1932,7 @@
       }
 
       function onUp() {
-        clearSnapGuides(field.page);
+        clearSnapGuides(anchor.page);
         window.removeEventListener("mousemove", onMove);
         window.removeEventListener("mouseup", onUp);
       }
@@ -1570,10 +1945,14 @@
       event.preventDefault();
       event.stopPropagation();
 
-      selectField(fieldId);
+      if (!isSelected(fieldId)) {
+        selectSingleField(fieldId);
+      }
 
       const field = getFieldById(fieldId);
       if (!field) return;
+
+      pushHistory();
 
       const meta = state.pageMeta[field.page];
       const startRect = pdfToBrowser(field.page, field.x, field.y, field.width, field.height);
@@ -1642,6 +2021,10 @@
       return field.sampleValue || field.label || field.key;
     }
 
+    function formatMultiline(text, maxLength) {
+      return truncateByMaxLength(text, maxLength);
+    }
+
     function renderRepeatableGhostRows(baseField, overlay) {
       const rows = state.previewData[baseField.rowGroup];
       if (!Array.isArray(rows)) return;
@@ -1661,7 +2044,7 @@
 
         const rowObj = rows[rowNum - 1];
         const rowVal = rowObj ? rowObj[baseField.key] : "";
-        const previewText = truncateByMaxLength(rowVal, baseField.maxLength);
+        const previewText = formatMultiline(rowVal, baseField.maxLength);
 
         const el = document.createElement("div");
         el.className = "mapper-box repeatable" + (baseField.type === "checkbox" ? " checkbox" : "");
@@ -1678,7 +2061,7 @@
           const mark = baseField.checkboxMark === "filled" ? "■" : baseField.checkboxMark === "check" ? "✓" : "✕";
           contentHtml = `<div class="checkbox-preview">${checked ? escapeHtml(mark) : ""}</div>`;
         } else {
-          contentHtml = `<div class="mapper-box-content">${escapeHtml(previewText)}</div>`;
+          contentHtml = `<div class="mapper-box-content" style="line-height:${baseField.lineHeight || 1.2};">${escapeHtml(previewText)}</div>`;
         }
 
         el.innerHTML = `
@@ -1705,12 +2088,13 @@
         if (!box) return;
 
         const rawValue = getPreviewValue(field);
-        const previewText = truncateByMaxLength(rawValue, field.maxLength);
+        const previewText = formatMultiline(rawValue, field.maxLength);
 
         const el = document.createElement("div");
         el.className =
           "mapper-box" +
           (field.id === state.selectedFieldId ? " active" : "") +
+          (isSelected(field.id) && field.id !== state.selectedFieldId ? " multi" : "") +
           (field.repeatable ? " repeatable" : "") +
           (field.type === "checkbox" ? " checkbox" : "");
 
@@ -1729,7 +2113,7 @@
           const mark = field.checkboxMark === "filled" ? "■" : field.checkboxMark === "check" ? "✓" : "✕";
           contentHtml = `<div class="checkbox-preview">${checked ? escapeHtml(mark) : ""}</div>`;
         } else {
-          contentHtml = `<div class="mapper-box-content">${escapeHtml(previewText)}</div>`;
+          contentHtml = `<div class="mapper-box-content" style="line-height:${field.lineHeight || 1.2}; text-align:${field.align || "left"};">${escapeHtml(previewText)}</div>`;
         }
 
         el.innerHTML = `
@@ -1757,7 +2141,11 @@
 
         el.addEventListener("click", (e) => {
           e.stopPropagation();
-          selectField(field.id);
+          if (e.ctrlKey || e.metaKey || e.shiftKey) {
+            toggleFieldSelection(field.id);
+          } else {
+            selectSingleField(field.id);
+          }
         });
 
         overlay.appendChild(el);
@@ -1769,11 +2157,15 @@
     }
 
     function nudgeSelectedField(dxPdf, dyPdf) {
-      const field = getFieldById(state.selectedFieldId);
-      if (!field) return;
+      const fields = getSelectedFields();
+      if (!fields.length) return;
 
-      field.x = Number(field.x || 0) + dxPdf;
-      field.y = Number(field.y || 0) + dyPdf;
+      pushHistory();
+
+      fields.forEach(field => {
+        field.x = Number(field.x || 0) + dxPdf;
+        field.y = Number(field.y || 0) + dyPdf;
+      });
 
       renderSelectedFieldForm();
       renderFieldList();
@@ -1784,7 +2176,7 @@
       try {
         state.previewData = JSON.parse(els.sampleDataInput.value || "{}");
         state.previewEnabled = true;
-        els.samplePreviewInfo.textContent = "Preview enabled. Field boxes now show sample values, checkboxes, and repeatable row previews.";
+        els.samplePreviewInfo.textContent = "Preview enabled. Multiline fields now preserve line breaks and line-height.";
         renderOverlayBoxes();
       } catch (error) {
         alert("Sample JSON is invalid.");
@@ -1816,6 +2208,7 @@
           width: Number(round(field.width)),
           height: Number(round(field.height)),
           fontSize: Number(field.fontSize || 12),
+          lineHeight: Number(field.lineHeight || 1.2),
           required: Boolean(field.required),
           align: field.align || "left",
           renderMode: field.renderMode || "box",
@@ -1862,7 +2255,7 @@
       const mapping = buildExportJson();
       const pkg = {
         packageType: "RecordPathAI_Template_Package",
-        version: 3,
+        version: 4,
         createdAt: new Date().toISOString(),
         pdfFileName: state.pdfFileName || "",
         mapping
@@ -1885,6 +2278,8 @@
 
       const payload = json.mapping ? json.mapping : json;
 
+      pushHistory();
+
       state.template.templateId = payload.templateId || "";
       state.template.state = payload.state || "";
       state.template.court = payload.court || "";
@@ -1901,6 +2296,7 @@
             width: Number(f.width || 120),
             height: Number(f.height || 18),
             fontSize: Number(f.fontSize || 12),
+            lineHeight: Number(f.lineHeight || 1.2),
             required: Boolean(f.required),
             align: f.align || "left",
             renderMode: f.renderMode || "box",
@@ -1917,15 +2313,119 @@
           }))
         : [];
 
-      els.templateId.value = state.template.templateId;
-      els.templateState.value = state.template.state;
-      els.templateCourt.value = state.template.court;
-
       state.selectedFieldId = null;
+      state.selectedFieldIds = [];
+      syncTemplateInputsFromState();
       buildExportJson();
       renderFieldList();
       renderSelectedFieldForm();
       renderOverlayBoxes();
+      updateSelectionPill();
+    }
+
+    function getLibrary() {
+      try {
+        return JSON.parse(localStorage.getItem(LIBRARY_KEY) || "[]");
+      } catch {
+        return [];
+      }
+    }
+
+    function setLibrary(list) {
+      localStorage.setItem(LIBRARY_KEY, JSON.stringify(list));
+    }
+
+    function saveToLibrary() {
+      const mapping = buildExportJson();
+      if (!mapping.templateId) {
+        alert("Enter a template ID first.");
+        return;
+      }
+
+      const library = getLibrary();
+      const item = {
+        id: mapping.templateId,
+        templateId: mapping.templateId,
+        state: mapping.state,
+        court: mapping.court,
+        pageCount: mapping.pageCount,
+        updatedAt: new Date().toISOString(),
+        mapping
+      };
+
+      const existingIndex = library.findIndex(x => x.id === item.id);
+      if (existingIndex >= 0) {
+        library[existingIndex] = item;
+      } else {
+        library.unshift(item);
+      }
+
+      setLibrary(library);
+      renderLibrary();
+      alert("Template saved to library.");
+    }
+
+    function loadFromLibrary(id) {
+      const library = getLibrary();
+      const item = library.find(x => x.id === id);
+      if (!item) return;
+
+      pushHistory();
+
+      state.template.templateId = item.mapping.templateId || "";
+      state.template.state = item.mapping.state || "";
+      state.template.court = item.mapping.court || "";
+      state.template.pageCount = item.mapping.pageCount || state.template.pageCount || 0;
+      state.template.fields = (item.mapping.fields || []).map(f => ({
+        ...deepClone(f),
+        id: uid()
+      }));
+
+      state.selectedFieldId = null;
+      state.selectedFieldIds = [];
+      syncTemplateInputsFromState();
+      buildExportJson();
+      renderFieldList();
+      renderSelectedFieldForm();
+      renderOverlayBoxes();
+      updateSelectionPill();
+    }
+
+    function deleteFromLibrary(id) {
+      if (!confirm("Delete this saved template from library?")) return;
+      const library = getLibrary().filter(x => x.id !== id);
+      setLibrary(library);
+      renderLibrary();
+    }
+
+    function renderLibrary() {
+      const library = getLibrary();
+      els.libraryList.innerHTML = "";
+
+      if (!library.length) {
+        els.libraryList.innerHTML = '<div class="small">No saved templates yet.</div>';
+        return;
+      }
+
+      library.forEach(item => {
+        const el = document.createElement("div");
+        el.className = "library-item";
+        el.innerHTML = `
+          <div class="library-title">${escapeHtml(item.templateId)}</div>
+          <div class="library-meta">
+            ${escapeHtml(item.state || "")}${item.court ? " • " + escapeHtml(item.court) : ""}<br>
+            Pages: ${escapeHtml(String(item.pageCount || 0))} • Updated: ${escapeHtml(new Date(item.updatedAt).toLocaleString())}
+          </div>
+          <div class="library-actions">
+            <button class="btn btn-secondary" data-load="${escapeHtml(item.id)}">Load</button>
+            <button class="btn btn-danger" data-delete="${escapeHtml(item.id)}">Delete</button>
+          </div>
+        `;
+
+        el.querySelector("[data-load]").addEventListener("click", () => loadFromLibrary(item.id));
+        el.querySelector("[data-delete]").addEventListener("click", () => deleteFromLibrary(item.id));
+        els.libraryList.appendChild(el);
+      });
     }
 
     async function zoomTo(newScale) {
@@ -1954,6 +2454,24 @@
 
       const bigStep = e.shiftKey ? 5 : 1;
 
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "z" && !e.shiftKey) {
+        e.preventDefault();
+        undo();
+        return;
+      }
+
+      if (((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "y") || ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === "z")) {
+        e.preventDefault();
+        redo();
+        return;
+      }
+
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "a") {
+        e.preventDefault();
+        selectAllFields();
+        return;
+      }
+
       if (e.key === "ArrowLeft") {
         e.preventDefault();
         nudgeSelectedField(-bigStep, 0);
@@ -1966,9 +2484,11 @@
       } else if (e.key === "ArrowDown") {
         e.preventDefault();
         nudgeSelectedField(0, -bigStep);
-      } else if ((e.key === "Delete" || e.key === "Backspace") && state.selectedFieldId) {
+      } else if ((e.key === "Delete" || e.key === "Backspace") && state.selectedFieldIds.length) {
         e.preventDefault();
-        deleteSelectedField();
+        deleteSelectedMulti();
+      } else if (e.key === "Escape") {
+        clearSelection();
       }
     });
 
@@ -2001,6 +2521,20 @@
     });
 
     els.addFieldBtn.addEventListener("click", addField);
+
+    els.selectAllBtn.addEventListener("click", selectAllFields);
+    els.clearSelectionBtn.addEventListener("click", clearSelection);
+    els.invertSelectionBtn.addEventListener("click", invertSelection);
+    els.alignLeftBtn.addEventListener("click", () => alignSelected("left"));
+    els.alignCenterBtn.addEventListener("click", () => alignSelected("center"));
+    els.alignRightBtn.addEventListener("click", () => alignSelected("right"));
+    els.alignTopBtn.addEventListener("click", () => alignSelected("top"));
+    els.alignMiddleBtn.addEventListener("click", () => alignSelected("middle"));
+    els.alignBottomBtn.addEventListener("click", () => alignSelected("bottom"));
+    els.distributeHBtn.addEventListener("click", () => distributeSelected("h"));
+    els.distributeVBtn.addEventListener("click", () => distributeSelected("v"));
+    els.deleteSelectedMultiBtn.addEventListener("click", deleteSelectedMulti);
+
     els.updateFieldBtn.addEventListener("click", updateSelectedField);
     els.duplicateFieldBtn.addEventListener("click", duplicateSelectedField);
     els.copyToPageBtn.addEventListener("click", copySelectedToPage);
@@ -2009,10 +2543,16 @@
     els.applyPreviewBtn.addEventListener("click", applyPreview);
     els.resetPreviewBtn.addEventListener("click", resetPreview);
 
+    els.saveToLibraryBtn.addEventListener("click", saveToLibrary);
+    els.refreshLibraryBtn.addEventListener("click", renderLibrary);
+
     els.exportJsonBtn.addEventListener("click", buildExportJson);
     els.copyJsonBtn.addEventListener("click", copyJson);
     els.downloadJsonBtn.addEventListener("click", downloadJson);
     els.downloadPackageBtn.addEventListener("click", downloadPackage);
+
+    els.undoBtn.addEventListener("click", undo);
+    els.redoBtn.addEventListener("click", redo);
 
     els.zoomInBtn.addEventListener("click", () => zoomTo(state.scale + 0.25));
     els.zoomOutBtn.addEventListener("click", () => zoomTo(state.scale - 0.25));
@@ -2038,6 +2578,9 @@
 
     renderFieldList();
     renderSelectedFieldForm();
+    renderLibrary();
+    updateSelectionPill();
+    pushHistory();
   </script>
 </body>
 </html>
