@@ -5,9 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>RecordPathAI - PDF Template Mapper V3</title>
   <style>
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     :root {
       --bg: #f4f7fc;
@@ -22,10 +20,10 @@
       --success: #0f7b45;
       --warning: #b54708;
       --checkbox: #7c3aed;
+      --snap: #ef4444;
+      --baseline: #16a34a;
       --shadow: 0 10px 28px rgba(24, 39, 75, 0.08);
       --radius: 16px;
-      --snap: #ef4444;
-      --guide: #22c55e;
     }
 
     body {
@@ -111,17 +109,9 @@
       margin-bottom: 10px;
     }
 
-    .form-row.two {
-      grid-template-columns: 1fr 1fr;
-    }
-
-    .form-row.three {
-      grid-template-columns: 1fr 1fr 1fr;
-    }
-
-    .form-row.four {
-      grid-template-columns: 1fr 1fr 1fr 1fr;
-    }
+    .form-row.two { grid-template-columns: 1fr 1fr; }
+    .form-row.three { grid-template-columns: 1fr 1fr 1fr; }
+    .form-row.four { grid-template-columns: 1fr 1fr 1fr 1fr; }
 
     label {
       font-size: 12px;
@@ -131,10 +121,7 @@
       letter-spacing: 0.02em;
     }
 
-    input,
-    select,
-    textarea,
-    button {
+    input, select, textarea, button {
       font: inherit;
     }
 
@@ -151,7 +138,7 @@
     }
 
     textarea {
-      min-height: 96px;
+      min-height: 110px;
       resize: vertical;
       font-family: monospace;
       font-size: 12px;
@@ -166,42 +153,31 @@
       transition: 0.18s ease;
     }
 
-    .btn:hover {
-      transform: translateY(-1px);
-    }
+    .btn:hover { transform: translateY(-1px); }
 
-    .btn-primary {
-      background: var(--primary-2);
-      color: white;
-    }
-
+    .btn-primary { background: var(--primary-2); color: white; }
     .btn-secondary {
       background: var(--panel-soft);
       color: var(--text);
       border: 1px solid var(--border);
     }
-
     .btn-danger {
       background: #fee4e2;
       color: var(--danger);
       border: 1px solid #fecdca;
     }
-
     .btn-success {
       background: #dcfae6;
       color: var(--success);
       border: 1px solid #abefc6;
     }
-
     .btn-warning {
       background: #fff1e7;
       color: var(--warning);
       border: 1px solid #fbd1a2;
     }
 
-    .btn-full {
-      width: 100%;
-    }
+    .btn-full { width: 100%; }
 
     .pill {
       display: inline-block;
@@ -213,18 +189,13 @@
       color: var(--muted);
     }
 
-    .hint {
+    .hint, .status, .small {
       font-size: 12px;
       color: var(--muted);
       line-height: 1.45;
     }
 
-    .status {
-      font-size: 13px;
-      color: var(--muted);
-      margin-top: 10px;
-      line-height: 1.5;
-    }
+    .status { font-size: 13px; }
 
     .field-list {
       display: flex;
@@ -247,13 +218,8 @@
       box-shadow: 0 0 0 2px rgba(43, 108, 240, 0.12);
     }
 
-    .field-item.repeatable {
-      border-left: 4px solid #f59e0b;
-    }
-
-    .field-item.checkbox {
-      border-left: 4px solid var(--checkbox);
-    }
+    .field-item.repeatable { border-left: 4px solid #f59e0b; }
+    .field-item.checkbox { border-left: 4px solid var(--checkbox); }
 
     .field-item-top {
       display: flex;
@@ -321,7 +287,7 @@
       border: 2px solid var(--primary-2);
       background: rgba(43, 108, 240, 0.12);
       color: var(--primary);
-      min-width: 24px;
+      min-width: 20px;
       min-height: 18px;
       cursor: move;
       user-select: none;
@@ -364,13 +330,8 @@
       text-overflow: ellipsis;
     }
 
-    .mapper-box.repeatable .mapper-box-label {
-      background: #b45309;
-    }
-
-    .mapper-box.checkbox .mapper-box-label {
-      background: var(--checkbox);
-    }
+    .mapper-box.repeatable .mapper-box-label { background: #b45309; }
+    .mapper-box.checkbox .mapper-box-label { background: var(--checkbox); }
 
     .mapper-box-content {
       width: 100%;
@@ -379,7 +340,6 @@
       font-size: 11px;
       display: flex;
       align-items: center;
-      justify-content: flex-start;
       overflow: hidden;
       white-space: nowrap;
       text-overflow: ellipsis;
@@ -406,26 +366,20 @@
       border: 2px solid white;
     }
 
-    .mapper-box.repeatable .resize-handle {
-      background: #b45309;
-    }
-
-    .mapper-box.checkbox .resize-handle {
-      background: var(--checkbox);
-    }
+    .mapper-box.repeatable .resize-handle { background: #b45309; }
+    .mapper-box.checkbox .resize-handle { background: var(--checkbox); }
 
     .baseline-guide {
       position: absolute;
       left: 0;
       width: 100%;
       height: 0;
-      border-top: 2px dashed var(--guide);
+      border-top: 2px dashed var(--baseline);
       pointer-events: none;
-      z-index: 25;
+      z-index: 20;
     }
 
-    .snap-line-v,
-    .snap-line-h {
+    .snap-line-v, .snap-line-h {
       position: absolute;
       pointer-events: none;
       z-index: 30;
@@ -470,16 +424,8 @@
       word-break: break-word;
     }
 
-    .small {
-      font-size: 12px;
-      color: var(--muted);
-    }
-
     @media (max-width: 1200px) {
-      .app {
-        grid-template-columns: 1fr;
-      }
-
+      .app { grid-template-columns: 1fr; }
       .sidebar {
         border-right: 0;
         border-bottom: 1px solid var(--border);
@@ -492,7 +438,7 @@
     <aside class="sidebar">
       <h1 class="panel-title">RecordPathAI Mapper V3</h1>
       <p class="panel-subtitle">
-        Built for real court forms: baseline positioning, checkbox fields, snapping, copy-to-page, and template package import/export.
+        Court-form mapper with baseline mode, checkbox mode, snapping, repeatable rows, and export-ready JSON.
       </p>
 
       <div class="section">
@@ -529,7 +475,7 @@
       </div>
 
       <div class="section">
-        <h3>2. Add a Field</h3>
+        <h3>2. Add Field</h3>
 
         <div class="form-row two">
           <div>
@@ -574,7 +520,7 @@
           </div>
         </div>
 
-        <div class="form-row three">
+        <div class="form-row four">
           <div>
             <label for="newFieldRenderMode">Render Mode</label>
             <select id="newFieldRenderMode">
@@ -590,9 +536,6 @@
             <label for="newFieldMaxLength">Max Length</label>
             <input type="number" id="newFieldMaxLength" value="0" min="0" />
           </div>
-        </div>
-
-        <div class="form-row three">
           <div>
             <label for="newFieldCheckboxMark">Checkbox Mark</label>
             <select id="newFieldCheckboxMark">
@@ -601,6 +544,9 @@
               <option value="filled">filled</option>
             </select>
           </div>
+        </div>
+
+        <div class="form-row four">
           <div>
             <label for="newFieldSample">Sample Value</label>
             <input type="text" id="newFieldSample" placeholder="e.g. Matthew Tunstall" />
@@ -609,9 +555,13 @@
             <label for="newFieldPageHint">Page Hint</label>
             <input type="number" id="newFieldPageHint" min="1" placeholder="optional" />
           </div>
-        </div>
-
-        <div class="form-row three">
+          <div>
+            <label for="newFieldSnap">Snap</label>
+            <select id="newFieldSnap">
+              <option value="true">true</option>
+              <option value="false">false</option>
+            </select>
+          </div>
           <div>
             <label for="newFieldRepeatable">Repeatable</label>
             <select id="newFieldRepeatable">
@@ -619,17 +569,13 @@
               <option value="true">true</option>
             </select>
           </div>
+        </div>
+
+        <div class="form-row three">
           <div>
             <label for="newFieldRowGroup">Row Group</label>
             <input type="text" id="newFieldRowGroup" placeholder="e.g. offenses" />
           </div>
-          <div>
-            <label for="newFieldRowStepY">Row Step Y</label>
-            <input type="number" id="newFieldRowStepY" value="24" step="0.01" />
-          </div>
-        </div>
-
-        <div class="form-row three">
           <div>
             <label for="newFieldRowStart">Row Start</label>
             <input type="number" id="newFieldRowStart" value="1" min="1" />
@@ -638,12 +584,12 @@
             <label for="newFieldRowMax">Row Max</label>
             <input type="number" id="newFieldRowMax" value="10" min="1" />
           </div>
+        </div>
+
+        <div class="form-row">
           <div>
-            <label for="newFieldSnap">Snap</label>
-            <select id="newFieldSnap">
-              <option value="true">true</option>
-              <option value="false">false</option>
-            </select>
+            <label for="newFieldRowStepY">Row Step Y</label>
+            <input type="number" id="newFieldRowStepY" value="24" step="0.01" />
           </div>
         </div>
 
@@ -917,7 +863,6 @@
     const state = {
       pdfDoc: null,
       pdfFileName: "",
-      pdfArrayBuffer: null,
       template: {
         templateId: "",
         state: "",
@@ -932,8 +877,7 @@
       previewData: {},
       previewEnabled: false,
       filterText: "",
-      filterType: "all",
-      guideState: {}
+      filterType: "all"
     };
 
     const els = {
@@ -962,12 +906,12 @@
       newFieldCheckboxMark: document.getElementById("newFieldCheckboxMark"),
       newFieldSample: document.getElementById("newFieldSample"),
       newFieldPageHint: document.getElementById("newFieldPageHint"),
+      newFieldSnap: document.getElementById("newFieldSnap"),
       newFieldRepeatable: document.getElementById("newFieldRepeatable"),
       newFieldRowGroup: document.getElementById("newFieldRowGroup"),
-      newFieldRowStepY: document.getElementById("newFieldRowStepY"),
       newFieldRowStart: document.getElementById("newFieldRowStart"),
       newFieldRowMax: document.getElementById("newFieldRowMax"),
-      newFieldSnap: document.getElementById("newFieldSnap"),
+      newFieldRowStepY: document.getElementById("newFieldRowStepY"),
       addFieldBtn: document.getElementById("addFieldBtn"),
 
       fieldSearch: document.getElementById("fieldSearch"),
@@ -1074,24 +1018,10 @@
       };
     }
 
-    function getFilteredFields() {
-      const q = state.filterText.trim().toLowerCase();
-      return state.template.fields.filter(field => {
-        const typeMatch = state.filterType === "all" || field.type === state.filterType;
-        if (!typeMatch) return false;
-        if (!q) return true;
-        return (
-          (field.label || "").toLowerCase().includes(q) ||
-          (field.key || "").toLowerCase().includes(q) ||
-          (field.rowGroup || "").toLowerCase().includes(q)
-        );
-      });
-    }
-
     async function loadPdf(file) {
       state.pdfFileName = file.name;
-      state.pdfArrayBuffer = await file.arrayBuffer();
-      const loadingTask = pdfjsLib.getDocument({ data: state.pdfArrayBuffer.slice(0) });
+      const arrayBuffer = await file.arrayBuffer();
+      const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
       state.pdfDoc = await loadingTask.promise;
       state.template.pageCount = state.pdfDoc.numPages;
       state.pageMeta = {};
@@ -1153,17 +1083,14 @@
         }).promise;
       }
 
-      renderOverlayBoxes();
       renderFieldList();
+      renderOverlayBoxes();
     }
 
     function createDefaultSizeForType(type) {
-      if (type === "checkbox") {
-        return { width: 14, height: 14 };
-      }
-      if (type === "signature") {
-        return { width: 180, height: 24 };
-      }
+      if (type === "checkbox") return { width: 14, height: 14 };
+      if (type === "signature") return { width: 180, height: 24 };
+      if (type === "multiline") return { width: 180, height: 48 };
       return { width: 120, height: 18 };
     }
 
@@ -1197,23 +1124,16 @@
         maxLength: Number(els.newFieldMaxLength.value) || 0,
         checkboxMark: els.newFieldCheckboxMark.value,
         sampleValue: els.newFieldSample.value.trim(),
+        snap: els.newFieldSnap.value === "true",
         repeatable: els.newFieldRepeatable.value === "true",
         rowGroup: els.newFieldRowGroup.value.trim(),
-        rowStepY: Number(els.newFieldRowStepY.value) || 24,
         rowStart: Number(els.newFieldRowStart.value) || 1,
         rowMax: Number(els.newFieldRowMax.value) || 10,
-        snap: els.newFieldSnap.value === "true"
+        rowStepY: Number(els.newFieldRowStepY.value) || 24
       };
     }
 
-    function addField() {
-      const field = createFieldFromInputs();
-      if (!field) return;
-
-      state.template.fields.push(field);
-      state.pendingFieldId = field.id;
-      state.selectedFieldId = field.id;
-
+    function resetAddFieldForm() {
       els.newFieldLabel.value = "";
       els.newFieldKey.value = "";
       els.newFieldType.value = "text";
@@ -1226,17 +1146,26 @@
       els.newFieldCheckboxMark.value = "x";
       els.newFieldSample.value = "";
       els.newFieldPageHint.value = "";
+      els.newFieldSnap.value = "true";
       els.newFieldRepeatable.value = "false";
       els.newFieldRowGroup.value = "";
-      els.newFieldRowStepY.value = "24";
       els.newFieldRowStart.value = "1";
       els.newFieldRowMax.value = "10";
-      els.newFieldSnap.value = "true";
+      els.newFieldRowStepY.value = "24";
+    }
 
+    function addField() {
+      const field = createFieldFromInputs();
+      if (!field) return;
+
+      state.template.fields.push(field);
+      state.pendingFieldId = field.id;
+      state.selectedFieldId = field.id;
+      resetAddFieldForm();
       renderFieldList();
       renderSelectedFieldForm();
       renderOverlayBoxes();
-      alert("Field added. Click the PDF to place it.");
+      alert("Field added. Click the PDF where it should go.");
     }
 
     function handleOverlayClick(pageNumber, event) {
@@ -1250,7 +1179,7 @@
       const clickX = event.clientX - rect.left;
       const clickY = event.clientY - rect.top;
 
-      const defaultWidthPx = Math.max((field.width || 120) * state.scale, 28);
+      const defaultWidthPx = Math.max((field.width || 120) * state.scale, 20);
       const defaultHeightPx = Math.max((field.height || 18) * state.scale, 18);
 
       const leftPx = clamp(clickX - 10, 0, rect.width - defaultWidthPx);
@@ -1272,156 +1201,18 @@
       renderOverlayBoxes();
     }
 
-    function getPreviewValue(field) {
-      if (!state.previewEnabled) {
-        return field.sampleValue || field.label || field.key;
-      }
-
-      if (field.repeatable && field.rowGroup) {
-        const rows = state.previewData[field.rowGroup];
-        if (Array.isArray(rows)) {
-          const rowIndex = (field.rowStart || 1) - 1;
-          const row = rows[rowIndex];
-          if (row && field.key in row) return row[field.key];
-        }
-      }
-
-      if (field.key in state.previewData) {
-        return state.previewData[field.key];
-      }
-
-      return field.sampleValue || field.label || field.key;
-    }
-
-    function truncateByMaxLength(value, maxLength) {
-      if (!maxLength || maxLength <= 0) return String(value ?? "");
-      return String(value ?? "").slice(0, maxLength);
-    }
-
-    function renderOverlayBoxes() {
-      document.querySelectorAll(".overlay").forEach(overlay => {
-        overlay.innerHTML = "";
+    function getFilteredFields() {
+      const q = state.filterText.trim().toLowerCase();
+      return state.template.fields.filter(field => {
+        const typeMatch = state.filterType === "all" || field.type === state.filterType;
+        if (!typeMatch) return false;
+        if (!q) return true;
+        return (
+          (field.label || "").toLowerCase().includes(q) ||
+          (field.key || "").toLowerCase().includes(q) ||
+          (field.rowGroup || "").toLowerCase().includes(q)
+        );
       });
-
-      state.template.fields.forEach(field => {
-        if (!field.page || !state.pageMeta[field.page]) return;
-
-        const overlay = document.querySelector(`.overlay[data-page-number="${field.page}"]`);
-        if (!overlay) return;
-
-        const box = pdfToBrowser(field.page, field.x, field.y, field.width, field.height);
-        if (!box) return;
-
-        const previewRaw = getPreviewValue(field);
-        const previewText = truncateByMaxLength(previewRaw, field.maxLength);
-
-        const el = document.createElement("div");
-        el.className =
-          "mapper-box" +
-          (field.id === state.selectedFieldId ? " active" : "") +
-          (field.repeatable ? " repeatable" : "") +
-          (field.type === "checkbox" ? " checkbox" : "");
-        el.dataset.fieldId = field.id;
-        el.style.left = box.left + "px";
-        el.style.top = box.top + "px";
-        el.style.width = box.width + "px";
-        el.style.height = box.height + "px";
-
-        const labelText = field.repeatable
-          ? `${field.rowGroup || "rows"}[${field.rowStart || 1}].${field.key}`
-          : (field.key || field.label || "Field");
-
-        let contentHtml = "";
-        if (field.type === "checkbox") {
-          const checked = !!previewRaw && previewRaw !== "false" && previewRaw !== "0" && previewRaw !== false;
-          const mark = field.checkboxMark === "filled" ? "■" : field.checkboxMark === "check" ? "✓" : "✕";
-          contentHtml = `<div class="checkbox-preview">${checked ? escapeHtml(mark) : ""}</div>`;
-        } else {
-          contentHtml = `<div class="mapper-box-content">${escapeHtml(previewText)}</div>`;
-        }
-
-        el.innerHTML = `
-          <div class="mapper-box-label">${escapeHtml(labelText)}</div>
-          ${contentHtml}
-          <div class="resize-handle"></div>
-        `;
-
-        if (field.renderMode === "baseline") {
-          const baselineEl = document.createElement("div");
-          baselineEl.className = "baseline-guide";
-          const baselineY = Math.max(0, Math.min(box.height, box.height - ((field.textOffsetY || 0) * state.scale)));
-          baselineEl.style.top = baselineY + "px";
-          el.appendChild(baselineEl);
-        }
-
-        el.addEventListener("mousedown", (e) => {
-          if (e.target.classList.contains("resize-handle")) return;
-          startDragField(e, field.id);
-        });
-
-        el.querySelector(".resize-handle").addEventListener("mousedown", (e) => {
-          startResizeField(e, field.id);
-        });
-
-        el.addEventListener("click", (e) => {
-          e.stopPropagation();
-          selectField(field.id);
-        });
-
-        overlay.appendChild(el);
-
-        if (field.repeatable && field.rowGroup && state.previewEnabled) {
-          renderRepeatableGhostRows(field, overlay);
-        }
-      });
-    }
-
-    function renderRepeatableGhostRows(baseField, overlay) {
-      const rows = state.previewData[baseField.rowGroup];
-      if (!Array.isArray(rows)) return;
-
-      const start = Number(baseField.rowStart || 1);
-      const max = Number(baseField.rowMax || rows.length || 1);
-      const stepY = Number(baseField.rowStepY || 24);
-
-      for (let rowNum = start + 1; rowNum <= Math.min(max, rows.length); rowNum++) {
-        const ghostField = {
-          ...baseField,
-          y: baseField.y - ((rowNum - start) * stepY)
-        };
-
-        const box = pdfToBrowser(ghostField.page, ghostField.x, ghostField.y, ghostField.width, ghostField.height);
-        if (!box) continue;
-
-        const rowObj = rows[rowNum - 1];
-        const previewText = truncateByMaxLength(rowObj && baseField.key in rowObj ? rowObj[baseField.key] : "", baseField.maxLength);
-
-        const el = document.createElement("div");
-        el.className = "mapper-box" + (baseField.type === "checkbox" ? " checkbox" : "") + " repeatable";
-        el.style.left = box.left + "px";
-        el.style.top = box.top + "px";
-        el.style.width = box.width + "px";
-        el.style.height = box.height + "px";
-        el.style.opacity = "0.55";
-        el.style.pointerEvents = "none";
-
-        let contentHtml = "";
-        if (baseField.type === "checkbox") {
-          const rowVal = rowObj ? rowObj[baseField.key] : "";
-          const checked = !!rowVal && rowVal !== "false" && rowVal !== "0" && rowVal !== false;
-          const mark = baseField.checkboxMark === "filled" ? "■" : baseField.checkboxMark === "check" ? "✓" : "✕";
-          contentHtml = `<div class="checkbox-preview">${checked ? escapeHtml(mark) : ""}</div>`;
-        } else {
-          contentHtml = `<div class="mapper-box-content">${escapeHtml(String(previewText ?? ""))}</div>`;
-        }
-
-        el.innerHTML = `
-          <div class="mapper-box-label">${escapeHtml((baseField.rowGroup || "rows") + "[" + rowNum + "]." + baseField.key)}</div>
-          ${contentHtml}
-        `;
-
-        overlay.appendChild(el);
-      }
     }
 
     function renderFieldList() {
@@ -1440,7 +1231,6 @@
           (field.id === state.selectedFieldId ? " active" : "") +
           (field.repeatable ? " repeatable" : "") +
           (field.type === "checkbox" ? " checkbox" : "");
-        item.dataset.fieldId = field.id;
 
         item.innerHTML = `
           <div class="field-item-top">
@@ -1468,9 +1258,11 @@
 
       if (!field) {
         [
-          "editLabel","editKey","editFontSize","editTextOffsetY","editMaxLength","editSampleValue","editPage","editX","editY",
-          "editWidth","editHeight","editRowGroup","editRowStart","editRowMax","editRowStepY","copyToPage"
+          "editLabel","editKey","editFontSize","editTextOffsetY","editMaxLength",
+          "editSampleValue","editPage","editX","editY","editWidth","editHeight",
+          "editRowGroup","editRowStart","editRowMax","editRowStepY","copyToPage"
         ].forEach(id => els[id].value = "");
+
         els.editType.value = "text";
         els.editRequired.value = "true";
         els.editAlign.value = "left";
@@ -1613,7 +1405,6 @@
       state.template.fields = state.template.fields.filter(f => f.id !== field.id);
       if (state.pendingFieldId === field.id) state.pendingFieldId = null;
       state.selectedFieldId = null;
-
       renderFieldList();
       renderSelectedFieldForm();
       renderOverlayBoxes();
@@ -1622,7 +1413,7 @@
     function clearSnapGuides(pageNumber) {
       const overlay = document.querySelector(`.overlay[data-page-number="${pageNumber}"]`);
       if (!overlay) return;
-      overlay.querySelectorAll(".snap-line-v,.snap-line-h").forEach(n => n.remove());
+      overlay.querySelectorAll(".snap-line-v,.snap-line-h").forEach(el => el.remove());
     }
 
     function drawSnapGuides(pageNumber, guide) {
@@ -1631,14 +1422,14 @@
 
       clearSnapGuides(pageNumber);
 
-      if (guide?.x != null) {
+      if (guide.x != null) {
         const v = document.createElement("div");
         v.className = "snap-line-v";
         v.style.left = guide.x + "px";
         overlay.appendChild(v);
       }
 
-      if (guide?.y != null) {
+      if (guide.y != null) {
         const h = document.createElement("div");
         h.className = "snap-line-h";
         h.style.top = guide.y + "px";
@@ -1675,15 +1466,15 @@
       const candidates = collectSnapCandidates(pageNumber, currentFieldId);
 
       const myVerticalPoints = [
-        { name: "left", value: leftPx },
-        { name: "center", value: leftPx + widthPx / 2 },
-        { name: "right", value: leftPx + widthPx }
+        { value: leftPx },
+        { value: leftPx + widthPx / 2 },
+        { value: leftPx + widthPx }
       ];
 
       const myHorizontalPoints = [
-        { name: "top", value: topPx },
-        { name: "middle", value: topPx + heightPx / 2 },
-        { name: "bottom", value: topPx + heightPx }
+        { value: topPx },
+        { value: topPx + heightPx / 2 },
+        { value: topPx + heightPx }
       ];
 
       let bestVX = null;
@@ -1714,10 +1505,7 @@
       if (bestVX != null) leftPx += bestVDelta;
       if (bestHY != null) topPx += bestHDelta;
 
-      drawSnapGuides(pageNumber, {
-        x: bestVX,
-        y: bestHY
-      });
+      drawSnapGuides(pageNumber, { x: bestVX, y: bestHY });
 
       return { leftPx, topPx };
     }
@@ -1827,6 +1615,159 @@
       window.addEventListener("mouseup", onUp);
     }
 
+    function truncateByMaxLength(value, maxLength) {
+      const str = String(value ?? "");
+      if (!maxLength || maxLength <= 0) return str;
+      return str.slice(0, maxLength);
+    }
+
+    function getPreviewValue(field) {
+      if (!state.previewEnabled) {
+        return field.sampleValue || field.label || field.key;
+      }
+
+      if (field.repeatable && field.rowGroup) {
+        const rows = state.previewData[field.rowGroup];
+        if (Array.isArray(rows)) {
+          const rowIndex = (field.rowStart || 1) - 1;
+          const row = rows[rowIndex];
+          if (row && field.key in row) return row[field.key];
+        }
+      }
+
+      if (field.key in state.previewData) {
+        return state.previewData[field.key];
+      }
+
+      return field.sampleValue || field.label || field.key;
+    }
+
+    function renderRepeatableGhostRows(baseField, overlay) {
+      const rows = state.previewData[baseField.rowGroup];
+      if (!Array.isArray(rows)) return;
+
+      const start = Number(baseField.rowStart || 1);
+      const max = Number(baseField.rowMax || rows.length || 1);
+      const stepY = Number(baseField.rowStepY || 24);
+
+      for (let rowNum = start + 1; rowNum <= Math.min(max, rows.length); rowNum++) {
+        const ghostField = {
+          ...baseField,
+          y: baseField.y - ((rowNum - start) * stepY)
+        };
+
+        const box = pdfToBrowser(ghostField.page, ghostField.x, ghostField.y, ghostField.width, ghostField.height);
+        if (!box) continue;
+
+        const rowObj = rows[rowNum - 1];
+        const rowVal = rowObj ? rowObj[baseField.key] : "";
+        const previewText = truncateByMaxLength(rowVal, baseField.maxLength);
+
+        const el = document.createElement("div");
+        el.className = "mapper-box repeatable" + (baseField.type === "checkbox" ? " checkbox" : "");
+        el.style.left = box.left + "px";
+        el.style.top = box.top + "px";
+        el.style.width = box.width + "px";
+        el.style.height = box.height + "px";
+        el.style.opacity = "0.55";
+        el.style.pointerEvents = "none";
+
+        let contentHtml = "";
+        if (baseField.type === "checkbox") {
+          const checked = !!rowVal && rowVal !== "false" && rowVal !== "0" && rowVal !== false;
+          const mark = baseField.checkboxMark === "filled" ? "■" : baseField.checkboxMark === "check" ? "✓" : "✕";
+          contentHtml = `<div class="checkbox-preview">${checked ? escapeHtml(mark) : ""}</div>`;
+        } else {
+          contentHtml = `<div class="mapper-box-content">${escapeHtml(previewText)}</div>`;
+        }
+
+        el.innerHTML = `
+          <div class="mapper-box-label">${escapeHtml((baseField.rowGroup || "rows") + "[" + rowNum + "]." + baseField.key)}</div>
+          ${contentHtml}
+        `;
+
+        overlay.appendChild(el);
+      }
+    }
+
+    function renderOverlayBoxes() {
+      document.querySelectorAll(".overlay").forEach(overlay => {
+        overlay.innerHTML = "";
+      });
+
+      state.template.fields.forEach(field => {
+        if (!field.page || !state.pageMeta[field.page]) return;
+
+        const overlay = document.querySelector(`.overlay[data-page-number="${field.page}"]`);
+        if (!overlay) return;
+
+        const box = pdfToBrowser(field.page, field.x, field.y, field.width, field.height);
+        if (!box) return;
+
+        const rawValue = getPreviewValue(field);
+        const previewText = truncateByMaxLength(rawValue, field.maxLength);
+
+        const el = document.createElement("div");
+        el.className =
+          "mapper-box" +
+          (field.id === state.selectedFieldId ? " active" : "") +
+          (field.repeatable ? " repeatable" : "") +
+          (field.type === "checkbox" ? " checkbox" : "");
+
+        el.style.left = box.left + "px";
+        el.style.top = box.top + "px";
+        el.style.width = box.width + "px";
+        el.style.height = box.height + "px";
+
+        const labelText = field.repeatable
+          ? `${field.rowGroup || "rows"}[${field.rowStart || 1}].${field.key}`
+          : (field.key || field.label || "Field");
+
+        let contentHtml = "";
+        if (field.type === "checkbox") {
+          const checked = !!rawValue && rawValue !== "false" && rawValue !== "0" && rawValue !== false;
+          const mark = field.checkboxMark === "filled" ? "■" : field.checkboxMark === "check" ? "✓" : "✕";
+          contentHtml = `<div class="checkbox-preview">${checked ? escapeHtml(mark) : ""}</div>`;
+        } else {
+          contentHtml = `<div class="mapper-box-content">${escapeHtml(previewText)}</div>`;
+        }
+
+        el.innerHTML = `
+          <div class="mapper-box-label">${escapeHtml(labelText)}</div>
+          ${contentHtml}
+          <div class="resize-handle"></div>
+        `;
+
+        if (field.renderMode === "baseline" && field.type !== "checkbox") {
+          const baselineEl = document.createElement("div");
+          baselineEl.className = "baseline-guide";
+          const baselineY = Math.max(0, Math.min(box.height, box.height - ((field.textOffsetY || 0) * state.scale)));
+          baselineEl.style.top = baselineY + "px";
+          el.appendChild(baselineEl);
+        }
+
+        el.addEventListener("mousedown", (e) => {
+          if (e.target.classList.contains("resize-handle")) return;
+          startDragField(e, field.id);
+        });
+
+        el.querySelector(".resize-handle").addEventListener("mousedown", (e) => {
+          startResizeField(e, field.id);
+        });
+
+        el.addEventListener("click", (e) => {
+          e.stopPropagation();
+          selectField(field.id);
+        });
+
+        overlay.appendChild(el);
+
+        if (field.repeatable && field.rowGroup && state.previewEnabled) {
+          renderRepeatableGhostRows(field, overlay);
+        }
+      });
+    }
+
     function nudgeSelectedField(dxPdf, dyPdf) {
       const field = getFieldById(state.selectedFieldId);
       if (!field) return;
@@ -1843,7 +1784,7 @@
       try {
         state.previewData = JSON.parse(els.sampleDataInput.value || "{}");
         state.previewEnabled = true;
-        els.samplePreviewInfo.textContent = "Preview enabled. Field boxes now show sample values, including checkboxes and repeatable rows.";
+        els.samplePreviewInfo.textContent = "Preview enabled. Field boxes now show sample values, checkboxes, and repeatable row previews.";
         renderOverlayBoxes();
       } catch (error) {
         alert("Sample JSON is invalid.");
@@ -1853,7 +1794,7 @@
     function resetPreview() {
       state.previewEnabled = false;
       state.previewData = {};
-      els.samplePreviewInfo.textContent = "Preview reset. Field boxes now show field labels or sample values.";
+      els.samplePreviewInfo.textContent = "Preview reset. Field boxes now show labels or sample values.";
       renderOverlayBoxes();
     }
 
@@ -1877,4 +1818,226 @@
           fontSize: Number(field.fontSize || 12),
           required: Boolean(field.required),
           align: field.align || "left",
-          renderMode: field.renderMode ||
+          renderMode: field.renderMode || "box",
+          textOffsetY: Number(round(field.textOffsetY || 0)),
+          maxLength: Number(field.maxLength || 0),
+          checkboxMark: field.checkboxMark || "x",
+          sampleValue: field.sampleValue || "",
+          snap: Boolean(field.snap !== false),
+          repeatable: Boolean(field.repeatable),
+          rowGroup: field.rowGroup || "",
+          rowStart: Number(field.rowStart || 1),
+          rowMax: Number(field.rowMax || 10),
+          rowStepY: Number(round(field.rowStepY || 24))
+        }))
+      };
+
+      els.jsonOutput.textContent = JSON.stringify(output, null, 2);
+      return output;
+    }
+
+    async function copyJson() {
+      try {
+        await navigator.clipboard.writeText(els.jsonOutput.textContent);
+        alert("JSON copied.");
+      } catch {
+        alert("Could not copy JSON.");
+      }
+    }
+
+    function downloadJson() {
+      const json = buildExportJson();
+      const blob = new Blob([JSON.stringify(json, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = (json.templateId || "template-mapping") + ".json";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    function downloadPackage() {
+      const mapping = buildExportJson();
+      const pkg = {
+        packageType: "RecordPathAI_Template_Package",
+        version: 3,
+        createdAt: new Date().toISOString(),
+        pdfFileName: state.pdfFileName || "",
+        mapping
+      };
+
+      const blob = new Blob([JSON.stringify(pkg, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = (mapping.templateId || "template-package") + "-package.json";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    async function loadMappingFile(file) {
+      const text = await file.text();
+      const json = JSON.parse(text);
+
+      const payload = json.mapping ? json.mapping : json;
+
+      state.template.templateId = payload.templateId || "";
+      state.template.state = payload.state || "";
+      state.template.court = payload.court || "";
+      state.template.pageCount = payload.pageCount || state.template.pageCount || 0;
+      state.template.fields = Array.isArray(payload.fields)
+        ? payload.fields.map(f => ({
+            id: uid(),
+            label: f.label || "",
+            key: f.key || "",
+            type: f.type || "text",
+            page: f.page || null,
+            x: Number(f.x || 0),
+            y: Number(f.y || 0),
+            width: Number(f.width || 120),
+            height: Number(f.height || 18),
+            fontSize: Number(f.fontSize || 12),
+            required: Boolean(f.required),
+            align: f.align || "left",
+            renderMode: f.renderMode || "box",
+            textOffsetY: Number(f.textOffsetY || 0),
+            maxLength: Number(f.maxLength || 0),
+            checkboxMark: f.checkboxMark || "x",
+            sampleValue: f.sampleValue || "",
+            snap: Boolean(f.snap !== false),
+            repeatable: Boolean(f.repeatable),
+            rowGroup: f.rowGroup || "",
+            rowStart: Number(f.rowStart || 1),
+            rowMax: Number(f.rowMax || 10),
+            rowStepY: Number(f.rowStepY || 24)
+          }))
+        : [];
+
+      els.templateId.value = state.template.templateId;
+      els.templateState.value = state.template.state;
+      els.templateCourt.value = state.template.court;
+
+      state.selectedFieldId = null;
+      buildExportJson();
+      renderFieldList();
+      renderSelectedFieldForm();
+      renderOverlayBoxes();
+    }
+
+    async function zoomTo(newScale) {
+      if (!state.pdfDoc) return;
+      state.scale = clamp(newScale, 0.5, 3);
+      await renderPdfPages();
+    }
+
+    function jumpToPage() {
+      const page = Number(els.jumpPageInput.value);
+      if (!page || page < 1 || page > (state.template.pageCount || 1)) {
+        alert("Enter a valid page number.");
+        return;
+      }
+
+      const target = document.getElementById(`page-wrap-${page}`);
+      if (target) {
+        target.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    }
+
+    document.addEventListener("keydown", (e) => {
+      const tag = document.activeElement?.tagName?.toLowerCase();
+      const isTyping = tag === "input" || tag === "textarea" || tag === "select";
+      if (isTyping) return;
+
+      const bigStep = e.shiftKey ? 5 : 1;
+
+      if (e.key === "ArrowLeft") {
+        e.preventDefault();
+        nudgeSelectedField(-bigStep, 0);
+      } else if (e.key === "ArrowRight") {
+        e.preventDefault();
+        nudgeSelectedField(bigStep, 0);
+      } else if (e.key === "ArrowUp") {
+        e.preventDefault();
+        nudgeSelectedField(0, bigStep);
+      } else if (e.key === "ArrowDown") {
+        e.preventDefault();
+        nudgeSelectedField(0, -bigStep);
+      } else if ((e.key === "Delete" || e.key === "Backspace") && state.selectedFieldId) {
+        e.preventDefault();
+        deleteSelectedField();
+      }
+    });
+
+    els.pdfFile.addEventListener("change", async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      if (file.type !== "application/pdf") {
+        alert("Please upload a PDF.");
+        return;
+      }
+
+      try {
+        await loadPdf(file);
+      } catch (error) {
+        console.error(error);
+        alert("Could not load PDF.");
+      }
+    });
+
+    els.mappingFile.addEventListener("change", async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      try {
+        await loadMappingFile(file);
+      } catch (error) {
+        console.error(error);
+        alert("Could not load mapping JSON.");
+      }
+    });
+
+    els.addFieldBtn.addEventListener("click", addField);
+    els.updateFieldBtn.addEventListener("click", updateSelectedField);
+    els.duplicateFieldBtn.addEventListener("click", duplicateSelectedField);
+    els.copyToPageBtn.addEventListener("click", copySelectedToPage);
+    els.deleteFieldBtn.addEventListener("click", deleteSelectedField);
+
+    els.applyPreviewBtn.addEventListener("click", applyPreview);
+    els.resetPreviewBtn.addEventListener("click", resetPreview);
+
+    els.exportJsonBtn.addEventListener("click", buildExportJson);
+    els.copyJsonBtn.addEventListener("click", copyJson);
+    els.downloadJsonBtn.addEventListener("click", downloadJson);
+    els.downloadPackageBtn.addEventListener("click", downloadPackage);
+
+    els.zoomInBtn.addEventListener("click", () => zoomTo(state.scale + 0.25));
+    els.zoomOutBtn.addEventListener("click", () => zoomTo(state.scale - 0.25));
+
+    els.jumpPageBtn.addEventListener("click", jumpToPage);
+    els.jumpPageInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") jumpToPage();
+    });
+
+    els.fieldSearch.addEventListener("input", () => {
+      state.filterText = els.fieldSearch.value;
+      renderFieldList();
+    });
+
+    els.fieldFilterType.addEventListener("change", () => {
+      state.filterType = els.fieldFilterType.value;
+      renderFieldList();
+    });
+
+    els.templateId.addEventListener("input", syncTemplateMeta);
+    els.templateState.addEventListener("input", syncTemplateMeta);
+    els.templateCourt.addEventListener("input", syncTemplateMeta);
+
+    renderFieldList();
+    renderSelectedFieldForm();
+  </script>
+</body>
+</html>
