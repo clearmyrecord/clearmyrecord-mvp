@@ -305,6 +305,12 @@
       border-color: #f1ddac;
     }
 
+    .callout.success {
+      background: #eaf7ef;
+      border-left-color: #258344;
+      border-color: #cfe8d6;
+    }
+
     .record-list {
       display: grid;
       gap: 14px;
@@ -444,6 +450,11 @@
       font-size: clamp(20px, 2.2vw, 26px);
       font-weight: 800;
       text-align: center;
+    }
+
+    .packet-btn:disabled {
+      cursor: not-allowed;
+      opacity: 0.75;
     }
 
     .packet-btn-primary {
@@ -620,7 +631,7 @@
         <section class="packet-card">
           <h1 class="packet-title">Your Filing Packet</h1>
           <p class="packet-subtitle">
-            Review your saved intake and record details, see the eligibility screening result, and generate the packet tied to the court where the case was actually filed.
+            Review your saved intake and record details, see the eligibility screening result, and unlock the packet tied to the court where the case was actually filed.
           </p>
         </section>
 
@@ -703,6 +714,10 @@
             Reviewing which packet template should be used for this case.
           </div>
 
+          <div id="paymentCallout" class="callout warning">
+            Complete payment to unlock packet generation.
+          </div>
+
           <div id="stateConflictCallout" class="callout warning" style="display:none;">
             Your residence state and case state are different. That is okay. The packet will follow the <strong>case state</strong>, not your home address.
           </div>
@@ -735,7 +750,7 @@
               Open Source PDF
             </button>
             <button type="button" class="packet-btn packet-btn-muted" id="payAndSubmitBtn">
-              Pay $50 & Submit to Court
+              Pay $50 & Unlock Packet
             </button>
           </div>
 
@@ -807,6 +822,7 @@
         phone: "8556219810"
       };
 
+      const PAYMENT_STORAGE_KEY = "recordPathPaymentComplete";
       let signatureImageBytes = null;
 
       function setStatus(message, mode = "normal") {
@@ -969,15 +985,6 @@
         } catch (e) {
           return {};
         }
-      }
-
-      function getCurrentRecord(state) {
-        if (!state || !Array.isArray(state.records) || !state.records.length) return null;
-        if (state.currentRecordId) {
-          const match = state.records.find((r) => r && r.id === state.currentRecordId);
-          if (match) return match;
-        }
-        return state.records[0] || null;
       }
 
       function getPacketData() {
@@ -1451,6 +1458,38 @@
         setStatus("Signature cleared.");
       }
 
+      function isPaymentComplete() {
+        return localStorage.getItem(PAYMENT_STORAGE_KEY) === "true";
+      }
+
+      function updatePaymentUI() {
+        const payBtn = document.getElementById("payAndSubmitBtn");
+        const callout = document.getElementById("paymentCallout");
+        const paid = isPaymentComplete();
+
+        if (paid) {
+          payBtn.disabled = true;
+          payBtn.textContent = "Payment Complete";
+          payBtn.classList.remove("packet-btn-muted");
+          payBtn.classList.add("packet-btn-secondary");
+
+          callout.className = "callout success";
+          callout.innerHTML = `
+            Payment received. You can now generate your packet.
+          `;
+        } else {
+          payBtn.disabled = false;
+          payBtn.textContent = "Pay $50 & Unlock Packet";
+          payBtn.classList.remove("packet-btn-secondary");
+          payBtn.classList.add("packet-btn-muted");
+
+          callout.className = "callout warning";
+          callout.innerHTML = `
+            Complete payment to unlock packet generation.
+          `;
+        }
+      }
+
       async function fetchTemplateBytes(templateUrl) {
         if (!templateUrl) {
           throw new Error("No PDF template is mapped for this case state yet.");
@@ -1500,6 +1539,10 @@
 
       async function generateSealingPdf() {
         try {
+          if (!isPaymentComplete()) {
+            throw new Error("Please complete the $50 payment before generating your packet.");
+          }
+
           const data = getPacketData();
           const template = getTemplateForState(data.caseState);
 
@@ -1622,8 +1665,99 @@
         }
       }
 
-      function handlePayAndSubmit() {
-        alert("Payment and court submission are not live on this page yet.");
+      async function handlePayAndSubmit() {
+        const button = document.getElementById("payAndSubmitBtn");
+
+        try {
+          button.disabled = true;
+          button.textContent = "Redirecting to secure checkout...";
+          setStatus("Creating Stripe checkout session...");
+
+          const data = getPacketData();
+          const eligibility = getEligibilityResult(data);
+          const estimatedEligibleDate =
+            estimateEligibleDate(data, eligibility) ||
+            (eligibility && eligibility.earliestEligibleDate) ||
+            "";
+
+          const payload = {
+            amount: 5000,
+            currency: "usd",
+            productType: "record-sealing-packet",
+            successPath: "/payment-success.html",
+            cancelPath: "/packet.html?payment=cancelled",
+            applicant: {
+              fullName: safe(data.fullName),
+              email: safe(data.email),
+              phone: safe(data.phone),
+              street: safe(data.street),
+              apartment: safe(data.apartment),
+              city: safe(data.city),
+              residenceState: safe(data.residenceState),
+              zip: safe(data.zip)
+            },
+            caseInfo: {
+              caseState: safe(data.caseState),
+              caseNumber: safe(data.caseNumber),
+              chargeName: safe(data.chargeName),
+              offenseCode: safe(data.offenseCode),
+              chargeLevel: safe(data.chargeLevel),
+              disposition: safe(data.disposition),
+              dispositionDate: safe(data.dispositionDate),
+              dischargeDate: safe(data.dischargeDate),
+              court: safe(data.court),
+              county: safe(data.county),
+              estimatedEligibleDate: safe(estimatedEligibleDate)
+            },
+            eligibility: {
+              status: safe(eligibility && eligibility.status),
+              reliefType: safe(eligibility && eligibility.reliefType),
+              manualReview: !!(eligibility && eligibility.manualReview)
+            }
+          };
+
+          const response = await fetch("/api/create-checkout-session", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify(payload)
+          });
+
+          const result = await response.json().catch(() => ({}));
+
+          if (!response.ok) {
+            throw new Error(result.error || "Unable to create checkout session.");
+          }
+
+          if (!result.url) {
+            throw new Error("Stripe did not return a checkout URL.");
+          }
+
+          setStatus("Redirecting to Stripe...");
+          window.location.href = result.url;
+        } catch (error) {
+          console.error(error);
+          setStatus(error.message || "Payment could not be started.", "error");
+          button.disabled = false;
+          button.textContent = "Pay $50 & Unlock Packet";
+          alert(error.message || "Payment could not be started.");
+          updatePaymentUI();
+        }
+      }
+
+      function handlePaymentReturn() {
+        const pageParams = new URLSearchParams(window.location.search);
+        const paymentParam = pageParams.get("payment");
+
+        if (paymentParam === "success") {
+          localStorage.setItem(PAYMENT_STORAGE_KEY, "true");
+          setStatus("Payment received. You can now generate your packet.");
+        } else if (paymentParam === "cancelled") {
+          setStatus("Checkout was cancelled. No payment was made.", "error");
+        }
+
+        updatePaymentUI();
       }
 
       const initialData = getPacketData();
@@ -1653,6 +1787,7 @@
       renderAllRecords(initialData);
       updateTemplateCallout(initialData);
       updateEligibilitySection(initialData, initialEligibility);
+      handlePaymentReturn();
       document.getElementById("typedSignature").value = initialData.fullName || "";
       setTypedSignature();
     });
