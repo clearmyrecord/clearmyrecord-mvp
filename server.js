@@ -161,7 +161,7 @@ app.post("/api/create-checkout-session", async (req, res) => {
 
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
-      ui_mode: "hosted",
+      ui_mode: "hosted_page",
       success_url: successUrl,
       cancel_url: cancelUrl,
       client_reference_id: internalOrderId,
